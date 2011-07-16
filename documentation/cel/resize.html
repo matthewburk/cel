@@ -1,0 +1,38 @@
+<html><body>
+                <h1>cel:resize</h1>
+        <p>Updates dimensions(w, h) of a cel.</p>
+        <p><code><pre>      acel:resize(w[, h])
+    </pre></code></p>
+        <div class="arguments">
+          <h2>arguments</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li><li>
+            <span>number</span> <span>w</span> <span>new width of self. Defaults to self.w if nil</span>
+          </li><li>
+            <span>number</span> <span>h</span> <span>new height of self. Defautls to self.h if nil</span>
+          </li></ul>
+          </div>
+        
+        <div class="arguments">
+          <h2>returns</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li></ul>
+          </div>
+        
+      
+            <h2>notes</h2>
+    <p><p>resize(w, h) is a shortcut for move(nil, nil, w, h)</p></p>
+    
+            <h2>examples</h2>
+    <p><p><code><pre>    local cel = require 'cel'
+    local host = ...
+
+    local acel = cel.new(100, 100, cel.color.rgb(133, 133, 133)):link(host)
+
+    --resize cel 
+    acel:resize(host.w, host.h)
+    </pre></code></p></p>
+    
+      </body></html>

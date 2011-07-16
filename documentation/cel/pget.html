@@ -1,0 +1,59 @@
+<html><body>
+                  <h1>cel:pget</h1>
+          <p>property getter returns properties of a cel by name.</p>
+          <p><code><pre>      acel:pget(...)
+    </pre></code></p>
+          <div class="arguments">
+          <h2>arguments</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li><li>
+            <span>string</span> <span>'x'</span> <span>acel.x</span>
+          </li><li>
+            <span>string</span> <span>'y'</span> <span>acel.y</span>
+          </li><li>
+            <span>string</span> <span>'w'</span> <span>acel.w</span>
+          </li><li>
+            <span>string</span> <span>'h'</span> <span>acel.h</span>
+          </li><li>
+            <span>string</span> <span>'xval'</span> <span>acel.xval</span>
+          </li><li>
+            <span>string</span> <span>'yval'</span> <span>acel.yval</span>
+          </li><li>
+            <span>string</span> <span>'face'</span> <span>acel.face</span>
+          </li><li>
+            <span>string</span> <span>'minw'</span> <span>acel.minw</span>
+          </li><li>
+            <span>string</span> <span>'maxw'</span> <span>acel.maxw</span>
+          </li><li>
+            <span>string</span> <span>'minh'</span> <span>acel.minh</span>
+          </li><li>
+            <span>string</span> <span>'maxh'</span> <span>acel.maxh</span>
+          </li></ul>
+          </div>
+        
+          <div class="arguments">
+          <h2>returns</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li><li>
+            <span>...</span> <span>...</span> <span>the corresponding value for each property name passed in.</span>
+          </li></ul>
+          </div>
+        
+            <h2>notes</h2>
+    <p><p>pget can be more efficient when you need to get mulitiple properties, but less effecient for 1.</p></p>
+        <h2>examples</h2>
+    <p><p><code><pre>    local cel = require 'cel'
+    local host = ...
+
+    local document = cel.document.new()
+    local acel = cel.new(100, 100, cel.color.rgb(133, 133, 133))
+
+    document:put(acel)
+    document:write(string.format('x, y, w, h = %d, %d, %d, %d', acel:pget('x', 'y', 'w', 'h')))
+
+    document:link(host, 'edges')
+    </pre></code></p></p>
+    
+      </body></html>

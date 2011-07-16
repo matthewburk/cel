@@ -1,0 +1,27 @@
+<html><body>
+                <h1>cel:freemouse</h1>
+        <p>Releases the mouse if the cel has the mouse trapped. On return cel.root will have the mouse trapped unless the onescape callback traps the mouse elsewhere.</p>
+        <p><code><pre>      acel:freemouse([reason])
+    </pre></code></p>
+        <div class="arguments">
+          <h2>arguments</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li><li>
+            <span>string</span> <span>reason</span> <span>An explanatory string passed to the onescape callback given when the mouse was trapped.</span>
+          </li></ul>
+          </div>
+        
+        <div class="arguments">
+          <h2>returns</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li></ul>
+          </div>
+        
+      
+            <h2>notes</h2>
+    <p><p>When the mouse is freed onescape (given when the mouse was trapped by the cel) is called before returning. onescape may retrap the mouse.</p></p>
+    
+        
+      </body></html>

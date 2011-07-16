@@ -1,0 +1,50 @@
+<html><body>
+                <h1>cel:addlistener</h1>
+        <p>Adds a listener for the specified event.</p>
+        <p><code><pre>      acel:addlistener(event, listener)
+    </pre></code></p>
+        <div class="arguments">
+          <h2>arguments</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li><li>
+            <span>string</span> <span>event</span> <span>the name of the event.</span>
+          </li><li>
+            <span>function</span> <span>listener</span> <span>function to call when event happens.</span>
+          </li></ul>
+          </div>
+        
+        <div class="arguments">
+          <h2>returns</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li></ul>
+          </div>
+        
+      
+            <h2>notes</h2>
+    <p><p>Any events that were queued before the listener is added will not be seen by the listener.</p><p>There can be any number of listeners for an event, order of seeing the events is not
+      specified between listeners.</p><p>An event will be seen by the metacel and/or the cel event callback before the listener sees it.</p><p>When creating a factory or metacel that needs to see events on other cels using a listener is the best choice,
+      becuase the event callback function is for use by the creator of a cel (typically an application).</p></p>
+    
+            <h2>examples</h2>
+    <p><p><code><pre>    local cel = require 'cel'
+    local host = ...
+
+    local listbox = cel.listbox.new(host.w/2):link(host, 'edges', 5, 5) 
+
+    function host:onmouseup(button, x, y, intercepted)
+      listbox:insert('callback ' ..' '.. button ..' '.. x ..' '.. y ..' '.. tostring(intercepted))
+    end
+
+    host:addlistener('onmouseup', function()
+      listbox:insert('listener 1')
+      listbox:scrollto(nil, math.huge)
+    end)
+    host:addlistener('onmouseup', function()
+      listbox:insert('listener 2')
+      listbox:scrollto(nil, math.huge)
+    end)
+    </pre></code></p></p>
+    
+      </body></html>

@@ -1,0 +1,53 @@
+<html><body>
+                <h1>cel:moveby</h1>
+        <p>Updates position(x, y) and dimensions(w, h) of a cel relative to current values.</p>
+        <p><code><pre>      acel:moveby(x[, y[, w[, h]]])
+    </pre></code></p>
+        <div class="arguments">
+          <h2>arguments</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li><li>
+            <span>number</span> <span>x</span> <span>add to self.x. Defaults to 0 if nil.</span>
+          </li><li>
+            <span>number</span> <span>y</span> <span>add to self.y. Defaults to 0 if nil.</span>
+          </li><li>
+            <span>number</span> <span>w</span> <span>add to self.w. Defaults to 0 if nil.</span>
+          </li><li>
+            <span>number</span> <span>h</span> <span>add to self.h. Defaults to 0 if nil.</span>
+          </li></ul>
+          </div>
+        
+        <div class="arguments">
+          <h2>returns</h2>
+          <ul><li>
+            <span>cel</span> <span>self</span> <span>self</span>
+          </li></ul>
+          </div>
+        
+      
+            <h2>notes</h2>
+    <p><p>moveby(rx, ry, rw, rh) is a shortcut for move(acel.x + rx, acel.y + ry, acel.w + rw, acel.h + rh)</p><p>When doing a relative move, moveby is more effecient.</p></p>
+    
+            <h2>examples</h2>
+    <p><p><code><pre>    local cel = require 'cel'
+    local host = ...
+
+    local acel = cel.new(100, 100, cel.color.rgb(133, 133, 133)):link(host)
+
+    --update cel position
+    acel:moveby(10, 10)
+    acel:moveby(10, 10)
+    </pre></code></p><hr><p><code><pre>    local cel = require 'cel'
+    local host = ...
+
+    local acel = cel.new(100, 100, cel.color.rgb(133, 133, 133)):link(host)
+
+    --grow cel 
+    acel:moveby(nil, nil, 10, 10)
+
+    --grow cel width
+    acel:moveby(nil, nil, 20)
+    </pre></code></p></p>
+    
+      </body></html>

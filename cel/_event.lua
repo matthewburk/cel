@@ -1,0 +1,559 @@
+return function(_ENV, M)
+  setfenv(1, _ENV)
+  local _metacel = _metacel
+
+  event = {}
+
+  event.first = 0
+  event.last = -1
+
+  function event:push(v)
+    local last = self.last + 1
+    self.last = last
+    self[last] = v
+  end
+
+  function event:pop()
+    local first = self.first
+
+    if first > self.last then 
+      return nil 
+    end
+
+    local value = self[first]
+    self[first] = nil
+    self.first = first + 1
+
+    return value
+  end
+
+  --wait to dispatch events 
+  function event:wait()
+    local count = self.count or 0
+    self.count = count + 1
+  end
+
+  do
+    local dispatching = false
+
+    local function traceback(err)
+      err = string.format('error {\n%s\n}', err)
+      return debug.traceback(err, 2)
+    end
+    local function trydispatch()
+      local e = event:pop()
+
+      while e do
+        if e.dispatch then
+          e.dispatch()
+        else
+          e[1](e)
+        end
+        e = event:pop()
+      end
+      event.first = 0
+      event.last = -1
+    end
+
+    function event:signal()
+      local count = self.count
+      assert(count and count > 0)
+      count = count - 1
+      self.count = count
+
+      
+      if count > 0 or dispatching then return end
+
+      do
+        dispatching = true
+        repeat
+          ---[[
+          local ok, msg = xpcall( trydispatch, traceback) 
+
+          if msg then
+            print(msg)
+          end
+          --]]
+          --[[
+          ok = true
+          trydispatch()
+          --]]
+        until ok
+
+        dispatching = false 
+      end
+
+
+      --[[ WTF is this here for
+      if refreshtable[root] and root.refresh then
+        root.refresh()
+      end
+      --]]
+    end
+  end
+
+  local function dispatchtolisteners(cel, listenertype, ...)
+    local ret = false
+    local listeners = cel[listenertype]
+    if listeners then
+      for listener, active in pairs(listeners) do
+        if active then
+          if listener(cel, ...) then
+            ret = true
+          end
+        end
+      end
+    end
+    return ret
+  end
+
+  do --onlink --only send to metacel --TODO work out a way to send extra param like onlinkmove and onresize
+    local dispatch = function(e)
+      local cel, link, index = e[2], e[3], e[4]
+      cel[_metacel]:onlink(cel, link, index)
+    end
+
+    function event:onlink(cel, link, index)
+      if cel[_metacel].onlink then
+        self:push({dispatch, cel, link, index})
+      end
+    end
+  end
+
+  do --onlinkmove --onlysend to metacel
+    local _metacel = _metacel
+    local dispatch = function(e)
+      local cel, link, ox, oy, ow, oh, extra = e[2], e[3], e[4], e[5], e[6], e[7], e[8]
+      cel[_metacel]:onlinkmove(cel, link, ox, oy, ow, oh, extra)
+    end
+
+    function event:onlinkmove(cel, link, ox, oy, ow, oh)
+      local extra
+      if cel[_metacel].onlinkmove then 
+        self:push({dispatch, cel, link, ox, oy, ow, oh, extra})
+        --print('pushing onlinkmove', cel, link)
+      end
+    end
+  end
+
+  do --onresize
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel, ow, oh, extra)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      i = i + 1; queue[i] = ow 
+      i = i + 1; queue[i] = oh
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      local ow = queue[i]; queue[i] = nil; i = i + 1
+      local oh = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel, ow, oh 
+    end
+
+    local dispatch = function(e)
+      local cel, ow, oh = e[2], e[3], e[4]
+      if cel[_metacel].onresize then 
+        cel[_metacel]:onresize(cel, ow, oh) 
+      end
+      if cel.onresize then cel:onresize(ow, oh) end
+    end
+
+    function queue.dispatch()
+      local cel, ow, oh = pop() 
+      if cel[_metacel].onresize then 
+        cel[_metacel]:onresize(cel, ow, oh) 
+      end
+      if cel.onresize then cel:onresize(ow, oh) end
+    end
+
+    function event:onresize(cel, ow, oh)
+      if rawget(cel[_metacel], 'onresize') or rawget(cel, 'onresize') then
+        push(self, cel, ow, oh) 
+      end
+    end
+  end
+
+  do --raise
+    local unpack = unpack
+    local dispatch = function(e)
+      local metacel, eventname, t, argc = e[2], e[3], e[4], e[5]
+      
+      if not t.cancel then
+        metacel[eventname](metacel, unpack(e, 6, 6 + argc))
+      end
+    end
+
+    function event:raise(metacel, eventname, t, ...)
+      self:push({dispatch, metacel, eventname, t, select('#', ...), ...})
+    end
+  end
+
+  do --onmousemove
+    local dispatch = function(e)
+      local cel, x, y = e[2], e[3], e[4]
+      if cel[_metacel].onmousemove then cel[_metacel]:onmousemove(cel, x, y) end
+      if cel.onmousemove then cel:onmousemove(x, y) end
+    end
+
+    function event:onmousemove(cel, lx, ly)
+      if cel[_metacel].onmousemove or cel.onmousemove then 
+        self:push({dispatch, cel, lx, ly})
+      end
+    end
+  end
+
+  do --onmousein
+    local events = setmetatable({}, {__mode = 'kv'})
+    local dispatch = function(e)
+      local cel = e[2]
+      if cel[_metacel].onmousein then cel[_metacel]:onmousein(cel) end
+      if cel.onmousein then cel:onmousein() end
+    end
+
+    function event:onmousein(cel)
+      if cel[_metacel].onmousein or cel.onmousein then
+        self:push({dispatch, cel})
+      end
+    end
+  end
+
+  do --onmouseout
+    local dispatch = function(e)
+      local cel = e[2]
+      if cel[_metacel].onmouseout then cel[_metacel]:onmouseout(cel) end
+      if cel.onmouseout then cel:onmouseout() end
+    end
+
+    function event:onmouseout(cel)
+      if cel[_metacel].onmouseout or cel.onmouseout then
+        self:push({dispatch, cel})
+      end
+    end
+  end
+
+  do --ontimer
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel, value, source)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      i = i + 1; queue[i] = value 
+      i = i + 1; queue[i] = source 
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      local value = queue[i]; queue[i] = nil; i = i + 1
+      local source = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel, value, source
+    end
+
+    function queue.dispatch()
+      local cel, value, source = pop() 
+      if cel[_metacel].ontimer then cel[_metacel]:ontimer(cel, value, source) end
+      if cel.ontimer then cel:ontimer(value, source) end
+      dispatchtolisteners(cel, _timerlistener, value, source)
+    end
+
+    function event:ontimer(cel, value, source)
+      if rawget(cel[_metacel], 'ontimer') or 
+         rawget(cel, 'ontimer')           or
+         rawget(cel, _timerlistener) then
+
+        push(self, cel, value, source)
+      end
+    end
+  end
+
+  do --onfocus
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel, b)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      i = i + 1; queue[i] = b 
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      local b = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel, b 
+    end
+
+    function queue.dispatch()
+      local cel, b = pop() 
+      if cel[_metacel].onfocus then cel[_metacel]:onfocus(cel, b) end
+      if cel.onfocus then cel:onfocus(b) end
+      dispatchtolisteners(cel, _focuslistener, b)
+    end
+
+    function event:onfocus(cel, b)
+      if cel[_metacel].onfocus or cel.onfocus or cel[_focuslistener] then
+        push(self, cel, b) 
+      end
+    end
+  end
+
+  do --onmousedown
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel, button, x, y, trigger)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      i = i + 1; queue[i] = button 
+      i = i + 1; queue[i] = x 
+      i = i + 1; queue[i] = y
+      i = i + 1; queue[i] = trigger
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      local button = queue[i]; queue[i] = nil; i = i + 1
+      local x = queue[i]; queue[i] = nil; i = i + 1
+      local y = queue[i]; queue[i] = nil; i = i + 1
+      local trigger = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel, button, x, y, trigger 
+    end
+
+    function queue.dispatch()
+      local cel, button, x, y, t = pop()
+      local intercepted = t[1]
+      if cel[_metacel].onmousedown then
+        if cel[_metacel]:onmousedown(cel, button, x, y, intercepted) then
+          t[1] = true
+        end
+      end
+      --TODO only dispatch to this if it existed at the time the event was pushed, no need to do same for metacel
+      --since that is not supposed to be dynamic
+      if rawget(cel, 'onmousedown') then
+        if cel:onmousedown(button, x, y, intercepted) then
+          t[1] = true --TODO make all events handled only if the function returns true
+        end
+      end
+      --TODO only dispatch to old listeners, not any that were created after this event was pushed, not sure how 
+      --to do that
+      if dispatchtolisteners(cel, _mousedownlistener, button, x, y, intercepted) then
+        t[1] = true
+      end
+    end
+
+    function event:onmousedown(cel, button, x, y, intercepted)
+      if cel[_metacel].onmousedown or rawget(cel, 'onmousedown') or rawget(cel, _mousedownlistener) then
+        push(self, cel, button, x, y, intercepted)
+      end
+    end
+  end
+
+  do --onmouseup
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel, button, x, y, trigger)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      i = i + 1; queue[i] = button 
+      i = i + 1; queue[i] = x 
+      i = i + 1; queue[i] = y
+      i = i + 1; queue[i] = trigger
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      local button = queue[i]; queue[i] = nil; i = i + 1
+      local x = queue[i]; queue[i] = nil; i = i + 1
+      local y = queue[i]; queue[i] = nil; i = i + 1
+      local trigger = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel, button, x, y, trigger 
+    end
+
+    function queue.dispatch()
+      local cel, button, x, y, t = pop()
+      local intercepted = t[1]
+      if cel[_metacel].onmouseup then
+        if cel[_metacel]:onmouseup(cel, button, x, y, intercepted) then
+          t[1] = true
+        end
+      end
+      --TODO only dispatch to this if it existed at the time the event was pushed, no need to do same for metacel
+      --since that is not supposed to be dynamic
+      if cel.onmouseup then
+        if cel:onmouseup(button, x, y, intercepted) then
+          t[1] = true --TODO make all events handled only if the function returns true
+        end
+      end
+      --TODO only dispatch to old listeners, not any that were created after this event was pushed, not sure how 
+      --to do that
+      if dispatchtolisteners(cel, _mouseuplistener, button, x, y, intercepted) then
+        t[1] = true
+      end
+    end
+
+    function event:onmouseup(cel, button, x, y, trigger)
+      if cel[_metacel].onmouseup or cel.onmouseup or cel[_mouseuplistener] then
+        push(self, cel, button, x, y, trigger)
+      end
+    end
+  end
+
+  do --task
+    local dispatch = function(e)
+      local task = e[2]
+      if task then 
+        task() 
+      end
+    end
+    
+    function event:task(task)
+      self:push({dispatch, task.action})
+    end
+  end
+
+  do --onmousewheel
+    local dispatch = function(e)
+      local cel, direction, x, y, t = e[2], e[3], e[4], e[5], e[6]
+      if cel[_metacel].onmousewheel then
+        if cel[_metacel]:onmousewheel(cel, direction, x, y, t[1]) then
+          t[1] = true
+        end
+      end
+      if cel.onmousewheel then
+        cel:onmousewheel(direction, x, y, t[1])
+        t[1] = true
+      end
+    end
+
+    function event:onmousewheel(cel, direction, x, y, trigger)
+      if cel[_metacel].onmousewheel or cel.onmousewheel then
+        self:push({dispatch, cel, direction, x, y, trigger})
+      end
+    end
+  end
+
+  do --onkeydown
+    local dispatch = function(e)
+      local cel, key, t = e[2], e[3], e[4]
+      if cel[_metacel].onkeydown then
+        if cel[_metacel]:onkeydown(cel, key, t[1]) then
+          t[1] = true
+        end
+      end
+      if cel.onkeydown then
+        cel:onkeydown(key, t[1])
+        t[1] = true
+      end
+    end
+
+    function event:onkeydown(cel, key, trigger)
+      if cel[_metacel].onkeydown or cel.onkeydown then
+        self:push({dispatch, cel, key, trigger})
+      end
+    end
+  end
+
+  do --onkeypress
+    local dispatch = function(e)
+      local cel, key, t = e[2], e[3], e[4]
+      if cel[_metacel].onkeypress then
+        if cel[_metacel]:onkeypress(cel, key, t[1]) then
+          t[1] = true
+        end
+      end
+      if cel.onkeypress then
+        cel:onkeypress(key, t[1])
+        t[1] = true
+      end
+    end
+
+    function event:onkeypress(cel, key, trigger)
+      if cel[_metacel].onkeypress or cel.onkeypress then
+        self:push({dispatch, cel, key, trigger})
+      end
+    end
+  end
+
+  do --onkeyup
+    local dispatch = function(e)
+      local cel, key, t = e[2], e[3], e[4]
+      if cel[_metacel].onkeyup then
+        if cel[_metacel]:onkeyup(cel, key, t[1]) then
+          t[1] = true
+        end
+      end
+      if cel.onkeyup then
+        cel:onkeyup(key, t[1])
+        t[1] = true
+      end
+    end
+
+    function event:onkeyup(cel, key, trigger)
+      if cel[_metacel].onkeyup or cel.onkeyup then
+        self:push({dispatch, cel, key, trigger})
+      end
+    end
+  end
+
+  do --onchar
+    local dispatch = function(e)
+      local cel, char, t = e[2], e[3], e[4]
+      if cel[_metacel].onchar then
+        if cel[_metacel]:onchar(cel, char, t[1]) then
+          t[1] = true
+        end
+      end
+      if cel.onchar then
+        cel:onchar(char, t[1])
+        t[1] = true
+      end
+    end
+
+    function event:onchar(cel, char, trigger)
+      if cel[_metacel].onchar or cel.onchar then
+        self:push({dispatch, cel, char, trigger})
+      end
+    end
+  end
+
+  do --oncommand
+    local dispatch = function(e)
+      local cel, command, data, t = e[2], e[3], e[4], e[5]
+      if cel[_metacel].oncommand then
+        if cel[_metacel]:oncommand(cel, command, data, t[1]) then
+          t[1] = true
+        end
+      end
+      if cel.oncommand then
+        cel:oncommand(command, data, t[1])
+        t[1] = true
+      end
+    end
+
+    function event:oncommand(cel, command, data, trigger)
+      if cel[_metacel].oncommand or cel.oncommand then
+        self:push({dispatch, cel, command, data, trigger})
+      end
+    end
+  end
+  return event
+end
