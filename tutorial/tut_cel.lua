@@ -121,6 +121,7 @@ cel.face {
   metacel = 'label',
   name = '@comment',
   textcolor = cel.color.rgb(0, 100, 0),
+  fillcolor = false,
   font = cel.loadfont('monospace:normal:italic', 10)
 }
 
@@ -128,6 +129,7 @@ cel.face {
   metacel = 'label',
   name = '@code',
   textcolor = cel.color.rgb(.05, .05, .05),
+  fillcolor = false,
   font = cel.loadfont('code', 14)
 }
 

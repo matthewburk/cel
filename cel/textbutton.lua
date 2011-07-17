@@ -59,12 +59,16 @@ function metatable.getmetrics(button)
 end
 --]]
 
-function metatable.getfontorigin(button)
+function metatable.getbaseline(button)
   return button[_penx], button[_peny]
 end
 
 function metatable.__tostring(button)
   return 'textbutton[' .. button[_text] .. ']'
+end
+
+function metatable:getfont()
+  return self[_font]
 end
 
 --TODO onresize must include new width and height, or the information is lost

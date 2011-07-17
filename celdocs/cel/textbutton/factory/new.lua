@@ -1,26 +1,26 @@
 namespace 'celdocs'
 
 export[...] {
-  functiondef['cel.button.new'] {
-    description = [[Creates a new button.]];
+  functiondef['cel.textbutton.new'] {
+    description = [[Creates a new textbutton.]];
 
     synopsis = [==[
-      cel.button.new([w[, h[, face[, minw[, maxw[, minh[, maxh]]]]]]])
-      cel.button.new([w[, h[, facename[, minw[, maxw[, minh[, maxh]]]]]]])
+      cel.textbutton.new(text, [, face])
+      cel.textbutton.new(text, [, facename])
     ]==];
 
     params = {
-      param.number[[w - Initial width of the button. Default is 0.]];
-      param.number[[h - Initial height of the button. Default is 0.]];
-      param.face[[face - The face of the button. 
-        If not a valid face for the 'button' metacel then the metacel face is used.]];
-      param.any[[facename - The name of a face for the 'button' metacel.  
-        If the facename does not refer to a valid face then the metacel face is used.]];
+      param.string[[text - The text to display.]];
+      param.face[[face - The face. 
+        If not a valid face for the 'textbutton' metacel then the metacel
+        face is used.]];
+      param.any[[facename - The name of a textbutton face.  
+        If the facename does not refer to a valid face then the metacel
+        face is used.]];
     };
 
     returns = {
-      --TODO what to do for type button is a factory and button is an instance
-      param.button[[button - A new button where x is 0, y is 0, w is math.floor(w), h is math.floor(h).]];
+      param.textbutton[[textbutton - A new textbutton]];
     };
   };
 
@@ -28,7 +28,11 @@ export[...] {
     [==[
     local cel = require('cel')
 
-    local button = cel.button.new(40, 20)
+    local tb = cel.textbutton.new('Hello World')
+
+    tb:link(root, 'center')
     ]==];
   };
+
+
 }
