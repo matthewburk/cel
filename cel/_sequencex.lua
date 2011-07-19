@@ -482,8 +482,8 @@ do --metatable.clear
   end
 end
 
-do --metatable.items
-  function metatable.items(sequence)
+do --metatable.links
+  function metatable.links(sequence)
     return ipairs(sequence[_links])
   end
 end
@@ -513,22 +513,28 @@ do --metatable.flux
     end
 
     sequence[_influx] = sequence[_influx] - 1
+    return sequence
   end
 end
 
 do --metatable.beginflux
   --TODO remove this, or put it in metacel too easy to fuck up
-  function metatable.beginflux(sequence)
+  function metatable.beginflux(sequence, reconcile)
     sequence[_influx] = (sequence[_influx] or 0) + 1
-    rowformation:reconcile(sequence, true)
+    if reconcile then 
+      rowformation:reconcile(sequence, true) 
+    end
+    return sequence
   end
 end
 
 do --metatable.endflux
   --TODO remove this, or put it in metacel too easy to fuck up
-  function metatable.endflux(sequence)
+  function metatable.endflux(sequence, force)
     sequence[_influx] = sequence[_influx] - 1
-    rowformation:reconcile(sequence, true)
+    if force == nil then force = true end
+    rowformation:reconcile(sequence, force)
+    return sequence
   end
 end
 

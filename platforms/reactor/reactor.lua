@@ -1,10 +1,9 @@
---[[do 
+do 
   local _print = print
   function print(...)
     _print(...) io.flush() 
   end
 end
---]]
 
 package.path = '../../?.lua;../../?/init.lua;' .. package.path
 

@@ -305,10 +305,10 @@ do --textbutton
   local face = cel.face {
     metacel = 'textbutton',
     layout = {
-      fitx = 'bbox',
       padding = {
+        fitx = 'bbox',
         l = function(w,h) return 10 + (w * .1) end,
-        t = function(w,h) return h * .5 end, 
+        t = function(w,h) return h * .35 end, 
       },
     },
     cornerradius = 0,
@@ -623,7 +623,7 @@ do --window
       draw = function(self, t)
         local cr = self.cr
         local color
-        if t.mousefocus == 1 or t.grabbed then
+        if t.mousefocus == 1 or t.isgrabbed then
           color = self.grabcolor
         else
           color = self.fillcolor

@@ -473,9 +473,9 @@ do --loadfont TODO make driver supply path and extension
       --font is font passed to cel.text.measure
       --layout is where margin is defined
       --w, h, xmin, xmax, ymin, ymax is results returns from cel.text.measure
-      function fontmt.pad(font, layout, w, h, xmin, xmax, ymin, ymax)
-        local fitx = layout.fitx or layout.fit or 'default'
-        local fity = layout.fity or layout.fit or 'default'
+      function fontmt.pad(font, padding, w, h, xmin, xmax, ymin, ymax)
+        local fitx = padding.fitx or padding.fit or 'default'
+        local fity = padding.fity or padding.fit or 'default'
         --w is advancew, h is font height
 
         if 'default' == fitx then
@@ -497,8 +497,6 @@ do --loadfont TODO make driver supply path and extension
           ymin = font.bbox.ymin
         end
 
-        local padding = layout.padding
-        if padding then
           local l = padding.l or 0
           local t = padding.t or 0
           if type(l) == 'function' then l = math.floor(l(w,h) + .5) end
@@ -514,9 +512,6 @@ do --loadfont TODO make driver supply path and extension
 
           --subtractig b from h becuase t and b were both alrady added to h
           return -xmin + l, (h + ymin - b), w, h, l, t, r, b
-        end
-
-        return -xmin, h + ymin, w, h
       end
     end
   end

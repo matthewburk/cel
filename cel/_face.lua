@@ -14,7 +14,7 @@ return function(_ENV, M)
     local metaface = face[_metafaces][metacelname]
 
     if not metaface then
-      metaface = {}
+      metaface = {getmetacel = function() return metacelname end}
       face[_metafaces][metacelname] = metaface
       setmetatable(metaface, {__index = face[_metafaces]['cel']})
     end

@@ -8,17 +8,15 @@ local _items = {}
 local _selected = {}
 local _current = {}
 local _changes = {}
+local _slotface = {}
+local slotface = cel.face { metacel='listbox.items.item' }
 
 local layout = {
   scroll = nil,
   items = {
-    face = cel.face {
-      metacel = 'listbox.items',
-      layout = {
-        gap = 0,
-        slotface = cel.face {metacel = 'listbox.items.item'},
-      },
-    },
+    gap = 0,
+    face = cel.face { metacel = 'listbox.items' },
+    slotface = slotface
   },
 }
 
@@ -101,7 +99,7 @@ do
 
       return pairs(self[_selected])
     end
-    return self[_items]:items()
+    return self[_items]:links()
   end
 end
 
@@ -282,6 +280,7 @@ end
 
 function metacel:__link(listbox, link, linker, xval, yval, option)
   if option ~= 'raw' then
+    --TODO link must accept an option
     return listbox[_items], linker, xval, yval, option
   end
 end
@@ -371,7 +370,7 @@ do --metacel.__describeslot
   function metacel:__describeslot(items, item, index, t)
     local listbox = items[_listbox]
 
-    t.metacel = 'listbox.items.item'
+    t.face = listbox[_slotface]
 
     if listbox[_selected] and listbox[_selected][item] then
       t.selected = true
@@ -419,8 +418,9 @@ do
     local layout = face.layout or layout
 
     local listbox = _new(self, w, h, face)
+    listbox[_slotface] = layout.slotface or slotface
 
-    local items = metacel['.items']:new(nil, layout.items.face)
+    local items = metacel['.items']:new(layout.items.gap, layout.items.face)
 
     items[_listbox] = listbox
     listbox[_items] = items

@@ -10,7 +10,6 @@ local _influx = {}
 local _fluxh = {}
 local _fluxw = {}
 local _fluxminw = {}
-local _slotface = {}
 
 local colformation = {}
 
@@ -392,6 +391,8 @@ do --colformation.pick
 end
 
 do --colformation.describeslot
+  local slotface = M.face[_metafaces]['cel']
+
   function colformation:describeslot(seq, host, gx, gy, gl, gt, gr, gb, index, link, hasmouse)
     if not seq[_metacel].__describeslot then
       return describe(link, host, gx, gy, gl, gt, gr, gb)
@@ -405,8 +406,8 @@ do --colformation.describeslot
 
       local t = {
         id = 0,
-        metacel = 'sequence.y.slot',
-        face = seq[_slotface],
+        metacel = false,
+        face = slotface,
         host = host,
         x = gx,
         y = gy,
@@ -475,11 +476,12 @@ do --metatable.clear
 
     sequence[_links] = {}
     event:signal()
+    return sequence
   end
 end
 
-do --metatable.items
-  function metatable.items(sequence)
+do --metatable.links
+  function metatable.links(sequence)
     return ipairs(sequence[_links])
   end
 end
@@ -511,15 +513,18 @@ do --metatable.flux
     end
 
     sequence[_influx] = sequence[_influx] - 1
+    return sequence
   end
 end
 
 do --metatable.beginflux
   --TODO remove this, or put it in metacel too easy to fuck up
-  function metatable.beginflux(sequence, force)
+  function metatable.beginflux(sequence, reconcile)
     sequence[_influx] = (sequence[_influx] or 0) + 1
-    if force == nil then force = true end
-    colformation:reconcile(sequence, force)
+    if reconcile then 
+      colformation:reconcile(sequence, true) 
+    end
+    return sequence
   end
 end
 
@@ -529,6 +534,7 @@ do --metatable.endflux
     sequence[_influx] = sequence[_influx] - 1
     if force == nil then force = true end
     colformation:reconcile(sequence, force)
+    return sequence
   end
 end
 
@@ -564,6 +570,7 @@ do --metatable.insert
       item = index
       item:link(sequence)
     end
+    return sequence
   end
 end
 
@@ -574,6 +581,7 @@ do --metatable.remove
     if item then
       item:unlink()
     end
+    return sequence
   end
 end
 
@@ -616,30 +624,21 @@ do --metacel.onmousemove
   end
 end
 
-local layout = {
-  gap = 0,
-  slotface = M.face {
-    metacel = 'sequence.y.slot',
-  } 
-}
-
 do --metacel.new, metacel.compile
   local _new = metacel.new
   function metacel:new(gap, face)
-    face = self:getface(face)
-    local layout = face.layout or layout
-    local sequence = _new(self, 0, 0, face)
+    --TODO note somewhere that we use self:getface so that it is going through topmost metacel
+    local sequence = _new(self, 0, 0, self:getface(face))
     sequence[_reform] = false 
     sequence[_brace] = false 
     sequence[_links] = {}
-    sequence[_gap] = gap or layout.gap or 0
+    sequence[_gap] = gap or 0
     sequence[_minw] = 0
     sequence[_minh] = 0
     sequence[_maxh] = 0
     sequence[_fluxw] = 0
     sequence[_fluxh] = 0
     sequence[_fluxminw] = 0
-    sequence[_slotface] = layout.slotface
     sequence[_formation] = colformation
     return sequence
   end
@@ -648,7 +647,7 @@ do --metacel.new, metacel.compile
   function metacel:compile(t, sequence)
     sequence = sequence or metacel:new(t.gap, t.face)
     --sequence[_influx] = 1
-    sequence.onchange = t.onchange
+    --sequence.onchange = t.onchange
     _compile(self, t, sequence)
     --sequence[_influx] = 0 
     --colformation:reconcile(sequence)
@@ -656,6 +655,6 @@ do --metacel.new, metacel.compile
   end
 end
 
-return metacel:newfactory({layout=layout})
+return metacel:newfactory()
 
 end

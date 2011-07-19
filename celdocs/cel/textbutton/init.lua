@@ -1,21 +1,28 @@
-template['T.cel']
-{
-  protocel = 'button';
+namespace 'celdocs'
 
-  metacel = 'textbutton';
+export[...] {
+  factorydef['cel.textbutton'] {
 
-  factory = 'cel.textbutton';
+    functions = {
+      '__call',
+      'new',
+      'newmetacel',
+      'newfactory',
+      'gettext',
+      'settext',
+      'printf',
+    };
 
-  description = [[ 
-    A button with text.
-  ]];
+    entries = {
+      key.layout {
+        tabledef {
+          description=[[textbutton layout table. The layout table controls how much space surrounds the text.]];
+          key.padding[[padding options table, see font:pad(...)]];
+        }
+      }
+    }
 
-  functions = [[
-    gettext
-    settext
-    printf
-  ]];
-
+    --[=[
   drawtable = {
     --include description of button
     [[string text - The text to display.]];
@@ -32,5 +39,7 @@ template['T.cel']
     [[A textbutton has a minimum width and height to ensure the text is always displayed in full, based on its font,
       padding, and text.]];
   };
+  --]=]
+  }
 }
 

@@ -11,8 +11,8 @@ local _textw = {}
 local _texth = {}
 
 local layout = {
-  fitx = 'bbox',
   padding = {
+    fitx = 'bbox',
     l = 0,
     t = 0,
   },
@@ -31,7 +31,7 @@ function metatable.settext(button, text)
 
   --TODO text.fit should not clamp
   local textw, texth, xmin, xmax, ymin, ymax = font:measure(text)
-  local penx, peny, w, h = font:pad(layout, textw, texth, xmin, xmax, ymin, ymax) 
+  local penx, peny, w, h = font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax) 
   local offsetx = ((button.w-w)/2)
   local offsety = ((button.h-h)/2)
   --button[_font] = font
@@ -109,7 +109,7 @@ do
     local layout = face.layout or layout
     local font = face.font
     local textw, texth, xmin, xmax, ymin, ymax = font:measure(text)
-    local penx, peny, w, h = font:pad(layout, textw, texth, xmin, xmax, ymin, ymax) 
+    local penx, peny, w, h = font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax) 
     local button = _new(self, w, h, face, w, nil, h, nil)
     button[_font] = font
     button[_text] = text

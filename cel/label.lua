@@ -32,7 +32,7 @@ function metatable.settext(label, text)
   local font = label[_font]
   local layout = label[_layout]
   local textw, texth, xmin, xmax, ymin, ymax = font:measure(text)
-  local penx, peny, w, h = font:pad(layout, textw, texth, xmin, xmax, ymin, ymax)  
+  local penx, peny, w, h = font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax)  
 
   label[_penx] = math.floor(penx)
   label[_peny] = math.floor(peny)
@@ -73,7 +73,7 @@ do
     local layout = face.layout or layout
     local font = face.font
     local textw, texth, xmin, xmax, ymin, ymax = font:measure(text)
-    local penx, peny, w, h = font:pad(layout, textw, texth, xmin, xmax, ymin, ymax)
+    local penx, peny, w, h = font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax)
     local label = _new(self, w, h, face, w, w, h, h)
     label[_font] = font
     label[_text] = text

@@ -127,11 +127,12 @@ function metatable.getgrip(grip)
 end
 
 function metacel:__describe(grip, properties)
-  properties.grabbed = grip[_grabbedat] ~= nil
+  properties.isgrabbed = grip[_grabbedat] ~= nil
 end
 
 local function ontrapfailed(grip, mouse, reason)
   grip[_grabbedat] = nil 
+  --TODO call onrelease if ongrab was called
   grip:refresh()
 end
 
@@ -143,7 +144,7 @@ function metacel:onmousedown(grip, button, x, y, intercepted)
   grip:trapmouse(ontrapfailed)
 
   if grip.ongrab and grip[_grabbedat] then 
-    grip:ongrab(button, x, y) 
+    grip:ongrab(x, y) 
   end
 
   grip:refresh()
@@ -155,7 +156,7 @@ function metacel:onmouseup(grip, button, x, y, intercepted)
   if button ~= mouse.buttons.left then return end
 
   if grip[_grabbedat] and grip.onrelease then 
-    grip:onrelease(button, x, y) 
+    grip:onrelease() 
   end
 
   grip:freemouse()
@@ -193,9 +194,10 @@ do
     grip = grip or metacel:new(t.w, t.h, t.face)
     grip.ongrab = t.ongrab
     grip.ondrag = t.ondrag
+    grip.onrelease = t.onrelease
 
-    if t.grip then
-      grip:grip(t.grip, t.mode)
+    if t.target then
+      grip:grip(t.target, t.mode)
     end
 
     return _compile(self, t, grip)
