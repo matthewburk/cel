@@ -10,6 +10,9 @@
   <p>A cel ([c]ontrol [el]ement) is the basic unit or building block of the Cel
   library. To use the libarry effectively you must understand what a cel is
   as well as what it can and can't do.</p>
+
+  <h2>History</h2>
+  <p>
   
   <h2>the cel rectangle</h2>
   <p>A cel is a rectangle cel.x is the left of the rectangle, cel.y is the top,
@@ -18,6 +21,88 @@
   y increases down.  The right of a cel is cel.x + cel.w, and the bottom is
   cel.y + cel.h.  A cel contains all points where x &gt;= 0 and x &lt; cel.w 
   and y &gt;=0 and y &lt; cel.h.  This set can be restricted but not increased.</p>
+
+  <h2>Goals - the requirements that shaped the Cel library</h2>
+  <p>Cels design is influenced by these requirements (listed by importance):
+
+  <h3>Embeddable</h3>
+  The prime requirement of Cel is it should be embeddable. Meaning embedding Cel in a host process that uses it and 
+  controls it.  This implies that the requirements for a suitable host should be minimal.  This requirement is
+  why Cel is passive, the host process always tells Cel when and how to act.  Cel also does not render anything,
+  nor does it define a pattern for rendering, rendering is the job of the host process.
+
+  <h3>Easy to use</h3>
+  This is just a hair less important than the prime requirement.  Easy to use is the whole point of an api in the 
+  place.  My view is that there are endless ways to achieve the same result, an api is a path to that result.  Adding 
+  features can make an api easier to use or harder to use, most of the time a feature will make some things easier
+  and some harder.  Makeing those decisions is the art of api programming, there is no formula.  
+  
+  <br>Cel is targeted to three types of users:
+  <ol>
+    <li>The user interacting with gui.  This means full featured controls, for example a scrollbar that works as
+    expected, not a watered down shell of what we are all familiar with using.
+    </li>
+    <li>
+    The platform(like Love) programmer who has all the basic ingredients for a gui, such as mouse and keyboard 
+    input, and rendering capabilites.  There are literrally hundreds of these platforms, each custom made and 
+    lovingly crafted.  Many of them have primitive gui support (becuase its more work than it seems).  I want
+    them all to use Cel, and I want Cel to be a natural fit for their platform so that they want to use it.  
+    This means providing what they don't have, and not what they do, which is why Cel does not render.
+    </li>  
+    <li>
+    The gui programmer.  This could be a programmer using a platform or the platform programmer.  If these guys
+    don't like Cel, then the platform programmer will not want to offer it.  This programmer is the true test
+    of the api, and most of the api design favors making this user happy, sometimes at the cost of the other 
+    types of users.
+    </li>  
+  </ol>
+  </p>
+
+  <h2>Derived Requirements</h2>
+  <p>These requirements are aimed at making Cel easy to use without breaking the prime requirement of embedability.</p>
+
+  <h3>Text metrics and display</h3>
+  <p>Cel should have halfway decent text output, meaning support basic font metrics.  Ideally it would just give you
+    beautiful font rendering (becuase its not fun or easy to roll your own).  Unfortunately I could not achieve this
+    becuase it would be a large hurdle to embedability.  Cel, instead, attempts to ease the burden of dealing with
+    text.</p>
+
+  <ol>
+    <li>
+    
+    </li>
+    <li></li>
+    <li>
+    It should be easy to use.
+    </li>
+    <li>
+    
+    though.
+    </li>
+    <li>
+    It should provide flexible unobtrusive automatic layout.
+    </li>
+    <li>
+    The cel tree should me mutable.  The primary functions to enable this are cel:link() and cel:unlink().
+    </li>
+    <li>
+    There should be no special cases or special cels that are allowed to break the rules.
+    This is an ideal, but alas the root cel is special becuase it cannot link or be unlinked.
+    </li>
+    <li>
+    Creating a new type of cel (called a metacel) should be easy.  Its not as easy as I wanted it to be.
+    </li>
+    <li>
+    A composite cel should be able to assert full control of the layout and lifecycle of its component cels.
+    </li>
+    <li>
+    All of the requirements have priority over speed.  Speed is the easiest goal to achieve, simply reduce
+    features and/or write it in assembly.  I'm not saying speed is not important, it is very important but an api
+    is the antithesis of speed. The job of an api is to make good tradeoffs between execution speed and ease
+    of use.  Obviously what ends up on the screen can be done another way with a different set of tradeoffs.
+    </li>
+  </ol>
+  </p>
 
   <h2>hosts and links</h2>
   <p>ALL cels are containers.  This means that any cel (with the exception of
@@ -42,7 +127,11 @@
   as expected.  This ideal is actually required by Cel, becuase the cel tree
   is 100% mutable.  To acheive this ideal Cel was carefully designed so that
   it requires intentionally malicious code to break it (sandboxing address 
-  this problem).  The single most influtial design criteria is that the cel
+  this problem).  </p>
+
+  
+  
+  The single most influtial design criteria is that the cel
   tree cannot be queried or walked.  This means there is no way to get the host
   of a cel or get the links of a cel.  The second criteria is that there
   be no method that exposes a cel that the application did not create.  This 
