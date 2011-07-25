@@ -1061,7 +1061,7 @@ do --metatable.pget
   end
 end
 
-do --metatable.getface
+do --metatable.getface --TODO remove this, face is mutable, breaks sandbox
   local _face, _metacel = _face, _metacel
   function metatable.getface(cel)
     return cel[_face] or cel[_metacel][_face]
@@ -1138,6 +1138,7 @@ do --metatable.flow, metatable.flowvalue, metatable.flowlink
   end
 
   --TODO if cel relinks, losing the flowlinker, then cancel flow or finalize it or something
+  --TODO rename to flowrelink
   function metatable.flowlink(cel, flow, linker, xval, yval, update, finalize)
     update = update or move
 
