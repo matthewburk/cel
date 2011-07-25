@@ -34,6 +34,7 @@ link (because it is linked to the host). When reading the
 documentation, up the cel tree means towards the root of the tree. From
 here on out the terms host and link will be used.</p>
 
+
 <h2>composite cels</h2>
 
 <p>A composite cel is a cel that is composed from other cels. The host
@@ -574,8 +575,93 @@ single most important feature it provides. If they are not well defined
 reacting to them reliably can be a challenge. One of the pimary design
 goals of Cel was to make event handling effortless and natural. This is
 harder than it sounds, (especially when balanced against encapsulation
-and sandboxing. </p>
-
+and sandboxing).&nbsp; There are two types of events in Cel,
+synchronous and asynchonous.&nbsp; An event is considered synchonous if
+the event handler is called when the event is generated, an
+asynchronous event is put in a fifo queue and the event handler is
+called when the event is taken off of the queue.&nbsp; <br>
+</p>
+<p>The primary reason Cel uses asynchronous events is to allow the
+event handler to be unrestricted.&nbsp; The onmousein event is a good
+example.&nbsp; If onmousein were synchornous then there would have to
+be these restrictions on the hadler:</p>
+<ul>
+  <li>Do not mutate the cel tree - don't link, unlink, relink, move, resize, raise, sink etc.</li>
+  <li>Do not trap the mouse or change focus etc.</li>
+</ul>
+The reason for the restrictions is becuase the cel tree is walked as
+these events are generated.&nbsp; These complications are all neatly
+solved by using asynchrnous events.&nbsp; These basic cel events are
+asynchronous:<br>
+<ul>
+  <li>onresize</li>
+  <li>onmousemove</li>
+  <li>onmousein</li>
+  <li>oumouseout</li>
+  <li>onmousedown</li>
+  <li>onmouseup</li>
+  <li>onmousewheel</li>
+  <li>onkeydown</li>
+  <li>onkeypress</li>
+  <li>onkeyup</li>
+  <li>onchar</li>
+  <li>oncommand<br>
+  </li>
+  <li>ontimer</li>
+  <li>onfocus</li>
+</ul>
+There are other pros/cons for syncrounous vs asynchrnous events which I
+will not go into here.&nbsp; A normal cel has no synchronous events, an
+event that is triggered by an asynchronous event should be synchronous
+in most cases.&nbsp; A button defines these events which are all
+syncrhonous<br>
+<ul>
+  <li>onpress - triggered by onmousedown</li>
+  <li>onhold - triggered by ontimer</li>
+  <li>onclick - triggered by onmouseup</li>
+</ul>
+An event handler is just a normal function, the parameters to the
+function vary by event.&nbsp; Define the function on the cel to act on
+the event:<br>
+<div style="margin-left: 40px;"><code>local button = cel.button.new(20, 20)</code><br>
+<code></code><br>
+<code>function button:onresize(ow, oh)</code><br>
+<code>&nbsp; print('button resized', self, ow, oh)</code><br>
+<code>end</code><br>
+</div>
+When the button is resized the onresize function will be called when
+the event is taken off the event queue.&nbsp; This approach is simple
+and the most common scenario.&nbsp; Using the event listener approach
+is useful when multiple (decoupled) listeners need to recieve the
+event.&nbsp; <br>
+<div style="margin-left: 40px;"><code>local function acelresized(self, ow, oh)</code><br>
+<code>&nbsp; print('cel', self, 'resized', ow, oh, self.w, self.h)</code><br>
+<code>end</code><br>
+<code></code><br>
+<code>button:addlistener('onresize', acelresized)</code><br>
+</div>
+The listener approach is more cumbersome, and often unecessary, but it
+can be useful.&nbsp; Both techniques can be used together, for a single
+event the event handlers are called in this order:<br>
+<ol>
+  <li>The metacels on[event] function</li>
+  <li>The cels on[event] function</li>
+  <li>The listener functions for on[event], the order in which these are called is not defined.</li>
+</ol>
+There is another order to events that is important to understand.&nbsp;
+When an event applies to a cel and its host, for example onmousedown,
+it is always sent to the cel furthest down the cel tree first, then<br>
+up the cel tree to its host (known as event bubbling).&nbsp; Cel does
+not allow a host cel to prevent its links from receiving events (known
+as event capturing), this is prevented to ensure that any type of cel
+can be linked to any other type of cel and still function.&nbsp;
+Likewise a cel cannot terminate an event.&nbsp; For events that bubble
+up the cel tree a flag is sent to the event hander indicating if the
+event was intercepted,&nbsp; the handler may want to alter its behavior
+if the event was already intercepted.&nbsp; To intercept an event, the
+event handler should return true.<br>
+<br>
+<br>
 <h2>Why Lua</h2>
 
 <p>This is where I say how ridiculously awesome Lua is, coming soon</p>
