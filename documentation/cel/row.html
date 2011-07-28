@@ -1,0 +1,348 @@
+      <html>
+      <head>
+        <link rel="stylesheet" type="text/css" href="cel.css" />
+      </head>
+      <body>
+        <h1>cel.row<p class="factorydesc">(module)<br><br>Factory for the row metacel</p></h1>
+        Factory for the row metacel       <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.row(t)&nbsp;
+          <span class="functiondesc">Creates a new row.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new row. The row is influx until this function returns. <div class="code"><pre><code>cel.row {</code>
+<code>  {minw = number, weight = number, [1] = cel}</code>
+<code>}</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">slot definition</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>When a table (that is not a cel) appears in the array part of
+        the row constructor the row interprets it as a slot definition. If the entry at array index 1 is a cel (or string) it is
+          linked to the row and the slot is created.  minw is the minimum
+          width of the slot(default 0) and weight is the weight
+          of the slot(default 0)</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>row</code></dt> 
+          <dd>a new row</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.row.new([gap [, face]])&nbsp;
+          <span class="functiondesc">Creates a new row.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new row.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">gap</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>amount of space to leave between slots.  Default is 0.</dd>
+                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>row</code></dt> 
+          <dd>a new row</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+       <div class="celdef">
+      <h1>row<p class="celdefdesc">(cel)<br><br>A row is horizontal sequence, however unlike a horizontal sequence a rows 
+    width is more flexible.</p></h1>
+      A row is horizontal sequence, however unlike a horizontal sequence a rows 
+    width is more flexible. Every cel linked to a row is hosted in a cel.slot.  
+    When the row width is increased the extra space is allocated to each slot
+    based on a weighting algorithm.  This behavior allows for more flexible 
+    layout than a standard sequence. Slot width allocation is determined by the weight of the slot, which is set
+    when a cel is linked to the row.  The weight of the row is the sum of the
+    weights of its slots.  The ratio of the slot weight to the row weight is
+    used to determine how much space is allocated to the slot.       <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          row:get(index)&nbsp;
+          <span class="functiondesc">Get a link by index.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Get a link by index.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>an array index.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the cel that is linked to the row at the specified index, or nil.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          row:insert(link[, index[, weight[, minw]]])&nbsp;
+          <span class="functiondesc">links the given cel to the row, inserting it at the given index.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>links the given cel to the row, inserting it at the given index. This is a shortcut for using link, when a linker is not required.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>cel to link to the row.</dd>
+                     <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>An array index.  If not provided then link is
+        appended to the end of the row</dd>
+                     <dt><code><span class="paramname">weight</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>weight of the slot the link occupies, default
+        is 0</dd>
+                     <dt><code><span class="paramname">minw</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>minimum width of the slot the link occupies,
+        default is 0</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>row</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          row:remove(index)&nbsp;
+          <span class="functiondesc">unlinks the cel at the given index.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>unlinks the cel at the given index. If the index is invalid the row remains unmutated. When the link is removed the slot it occupies is also removed</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>an array index.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>row</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          row:clear()&nbsp;
+          <span class="functiondesc">effciently unlinks all cels from the row.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>effciently unlinks all cels from the row. The row will be in flux for the duration of clear().</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>row</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          row:len()&nbsp;
+          <span class="functiondesc">returns array length of the row.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>returns array length of the row.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>The length of the row</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          row:next(link)&nbsp;
+          <span class="functiondesc">Get the cel which has an index that is 1 greater than the index
+      of the given link in the row.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Get the cel which has an index that is 1 greater than the index
+      of the given link in the row.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a cel linked to the row, if the cel is not in
+        the row nil is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the link following the given link in the row, or nil</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          row:prev(link)&nbsp;
+          <span class="functiondesc">Get the cel which has an index that is 1 less than the index of the
+      given link in the row.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Get the cel which has an index that is 1 less than the index of the
+      given link in the row.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a cel linked to the row, if the cel is not in the
+        row nil is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the link preceding the given link in the row, or nil</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          row:indexof(link)&nbsp;
+          <span class="functiondesc">Get the array index of the given link in the row.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Get the array index of the given link in the row.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a cel linked to the row, if the cel is not in the
+        row nil is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>the array index of the given link in the row,
+        or nil.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          flux&nbsp;
+          <span class="functiondesc">inherited from sequence</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>inherited from sequence</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          beginflux&nbsp;
+          <span class="functiondesc">inherited from sequence</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>inherited from sequence</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          endflux&nbsp;
+          <span class="functiondesc">inherited from sequence</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>inherited from sequence</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          pick&nbsp;
+          <span class="functiondesc">TODO make note of reimplementation</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>TODO make note of reimplementation</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          sort&nbsp;
+          <span class="functiondesc">TODO make note of reimplementation</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>TODO make note of reimplementation</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          swap&nbsp;
+          <span class="functiondesc">TODO make note of reimplementation</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>TODO make note of reimplementation</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          replace&nbsp;
+          <span class="functiondesc">TODO make note of reimplementation</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>TODO make note of reimplementation</p>
+        
+        
+        </div>
+      </div>
+      
+      </div>
+      </body></html>
