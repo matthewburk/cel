@@ -421,9 +421,9 @@ do --loadfont TODO make driver supply path and extension
 
       --boundaries rightboundary, newline, word
       --preserves word continuity if possible
-      function fontmt.wordwrap(font, text, rightboundary, mode, i, j)
-        i = i or 1 
-        j = j or #text
+      function fontmt.wordwrap(font, text, rightboundary, mode)
+        local i = 1 
+        local j = #text
         mode = mode or 'strongwords' --strongwords means they don't get sliced unless there is no other choice
         --weaklines means lines can be sliced
         local string = string

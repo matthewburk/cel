@@ -59,6 +59,7 @@ return function(_ENV, M)
     return rawget(metaface, facename)
   end
 
+  --[[
   function face.new(metacelname, facename, t)
     if not facename then
       return false, 'expected a name'
@@ -66,10 +67,7 @@ return function(_ENV, M)
 
     return defineface(metacelname or 'cel', facename, t)
   end
-
-  function face.rgba(r, g, b, a, metacelname)
-    --TODO
-  end
+  --]]
 
   local function __call(face, t)
     if not t then

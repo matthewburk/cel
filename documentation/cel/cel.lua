@@ -1,195 +1,18 @@
 export['cel'] {
   [[This is the main module for the Cel libarary.]];
 
-  typedef['font'] {
-    [[A font is a driver object representing a fontface and size]];
-    [[Cel is only concerned with font metrics, how to render the font is not specified.]];
-    [[The driver is required to implement font.bbox, font.lineheight, font.ascent, font.descent, and font.metrics]];
-    [[Cel provides convenience functions to measure strings, if the driver implements any of these functions the
-    drivers version will be used.  To implement kerning for example the driver would have to implement all
-    of the font functions becuase kerning pairs are not part of the metrics.]];
 
-    tabledef.bbox {
-      [[a table describing a tight bounding box around the inked portion of all glyphs in the font.]];
-      key.xmin[[distance from the pen origin to the left-most inked portion of any glyph in the font]];
-      key.xmax[[distance from the pen origin to the right-most inked portion of any glyph in the font]];
-      key.ymin[[distance from the pen origin to the bottom-most inked portion of any glyph in the
-                font(usually negative)]];
-      key.ymax[[distance from the pen origin to the top-most inked portion of any glyph in the font]];
-    };
-
-    key.lineheight[[See freetype FT_Face.height]];
-    key.ascent[[See freetype FT_Face.ascender]];
-    key.descent[[See freetype FT_Face.descender]];
-
-    tabledef.metrics {
-      [[a table with an entry for each glyph in the font (in a future version this will be a unicode value,
-      for now it is implemented as the value of string.byte('a') where 'a' is the charater the glyph represents.]];
-      [[The metrics table is indexed by string.byte('A') where 'A' is the the string.char() value]];
-      key.glyph[[the value of string.byte() for the corresponding char]];
-      key.char[[the value of string.char() for the corresponding glyph]];
-      key.advance[[the horizontal advance of the pen when this glyph is drawn]];
-      key.xmin[[distance from the pen origin to the left-most inked portion of the glyph]];
-      key.xmax[[distance from the pen origin to the right-most inked portion of the glyph]];
-      key.ymin[[distance from the pen origin to the bottom-most inked portion of the glyph]];
-      key.ymax[[distance from the pen origin to the top-most inked portion of the glyph]];
-    };
-
-    functiondef['font:height()'] {
-      [[Returns the height of the font (font.bbox.ymax - font.bbox.ymin)]];
-    };
-
-    functiondef['font:measure(text, i, j)'] {
-      [[Measures a string of text returning horizontal advance, font:height(), xmin, xmax, ymin, ymax]];
-      [[i and j are used to indicate a substring of the text to measure]];
-      [[Driver note: does not depend on other font functions]];
-      params = {
-        param.string[[text - the source text to measure]];
-        param.integer[[i - same behaviour as string.sub(text, i, j), a new string is not created however]];
-        param.integer[[j - same behaviour as string.sub(text, i, j), a new string is not created however]];
-      };
-
-      returns = {
-        param.integer[[(horizontal advance) horizontal advance of the pen]];
-        param.integer[[(font height) font.bbox.ymax - font.bbox.ymin]];
-        param.integer[[(xmin)distance from the pen origin to the left-most inked portion of the text]];
-        param.integer[[(xmax)distance from the pen origin to the right-most inked portion of the text]];
-        param.integer[[(ymin)distance from the pen origin to the bottom-most inked portion of the text]];
-        param.integer[[(ymax)distance from the pen origin to the top-most inked portion of the text]];
-      };
-    };
-
-    functiondef['font:measurebbox(text, i, j)'] {
-      [[Measures a string of text returning xmin, xmax, ymin, ymax]];
-      [[i and j are used to indicate a substring of the text to measure]];
-      [[Driver note: does not depend on other font functions]];
-      params = {
-        param.string[[text - the source text to measure]];
-        param.integer[[i - same behaviour as string.sub(text, i, j), a new string is not created however]];
-        param.integer[[j - same behaviour as string.sub(text, i, j), a new string is not created however]];
-      };
-
-      returns = {
-        param.integer[[(xmin)distance from the pen origin to the left-most inked portion of the text]];
-        param.integer[[(xmax)distance from the pen origin to the right-most inked portion of the text]];
-        param.integer[[(ymin)distance from the pen origin to the bottom-most inked portion of the text]];
-        param.integer[[(ymax)distance from the pen origin to the top-most inked portion of the text]];
-      };
-    };
-
-    functiondef['font:measureadvance(text, i, j)'] {
-      [[Measures a string of text returning horizontal advance of the pen]];
-      [[i and j are used to indicate a substring of the text to measure]];
-      [[Driver note: does not depend on other font functions]];
-      params = {
-        param.string[[text - the source text to measure]];
-        param.integer[[i - same behaviour as string.sub(text, i, j), a new string is not created however]];
-        param.integer[[j - same behaviour as string.sub(text, i, j), a new string is not created however]];
-      };
-
-      returns = {
-        param.integer[[horizontal advance of the pen]];
-      };
-    };
-
-    functiondef['font:pad(padding, w, h, xmin, xmax, ymin, ymax)'] {
-      [[Applies padding to text measurements, and returns penx, peny, w, h]];
-      [[The values returned by font:measure() correspond to w, h, xmin, xmax, ymin, ymax.]];
-      [[Driver note: do not reimplement]];
-
-      params = {
-        param.table {
-          name = 'padding';
-          [[A table with instructions on how to pad the measurements.]];
-          key.fit[[Can be nil, 'default' or 'bbox', this will be used for fitx if it is nil and for fity 
-          if it is nil.]];
-          key.fitx[[If this is 'bbox' the padding is applied to a tight bounding box around the inked
-          portion of the glyphs (horizontally).
-          If this 'default' the padding is applied to a bounding box that includes the horizontal
-          advance and 0.]]; 
-          key.fity[[If this is 'bbox' the padding is applied to a tight bounding box around the inked
-          portion of the glyphs (vertically).
-          If this is 'default' the padding is applied to a bounding box that includes font.bbox.ymin 
-          and font.bbox.ymax.]]; 
-          key.l[[The amount of left padding to apply. If this is a number the value is added to the width
-            and penx returned.  If it is a function, then the padding is calculated by 
-            l = math.floor(l(w,h) + .5) where w and h are the w and h (adjusted by fitx and fity) passed
-            into font:pad()]];
-          key.t[[The amount of top padding to apply. If this is a number the value is added to the height 
-            and peny returned.  If it is a function, then the padding is calculated by 
-            t = math.floor(t(w,h) + .5) where w and h are the w and h (adjusted by fitx and fity) passed
-            into font:pad()]];
-          key.r[[The amount of right padding to apply. If the is nil, then it will use the same value
-            as padding.l.  If this is a number the value is added to the width
-            returned.  If it is a function, then the padding is calculated by 
-            r = math.floor(r(w,h) + .5) where w and h are the w and h (adjusted by fitx and fity) passed
-            into font:pad()]];
-          key.b[[The amount of bottom padding to apply. If the is nil, then it will use the same value
-            as padding.t.  If this is a number the value is added to the height
-            returned.  If it is a function, then the padding is calculated by 
-            b = math.floor(b(w,h) + .5) where w and h are the w and h (adjusted by fitx and fity) passed
-            into font:pad()]];
-        };
-        param.integer[[w - (horizontal advance) horizontal advance of the pen]];
-        param.integer[[h - (font height) font.bbox.ymax - font.bbox.ymin]];
-        param.integer[[xmin - distance from the pen origin to the left-most inked portion of the text]];
-        param.integer[[xmax - distance from the pen origin to the right-most inked portion of the text]];
-        param.integer[[ymin - distance from the pen origin to the bottom-most inked portion of the text]];
-        param.integer[[ymax - distance from the pen origin to the top-most inked portion of the text]];
-      };
-
-      returns = {
-        param.integer[[x coordinate of pen origin to use when drawing the text]];
-        param.integer[[y coordinate of pen origin to use when drawing the text]];
-        param.integer[[(xmin)distance from the pen origin to the left-most inked portion of the text]];
-        param.integer[[(xmax)distance from the pen origin to the right-most inked portion of the text]];
-        param.integer[[(ymin)distance from the pen origin to the bottom-most inked portion of the text]];
-        param.integer[[(ymax)distance from the pen origin to the top-most inked portion of the text]];
-      };
-    };
+  propertydef['cel.mouse'] {
+    [[The mouse]];
   };
 
-  typedef['face'] {
+  propertydef['cel.keyboard'] {
+    [[The keyboard]];
   };
+  
+  --cel.clipboard
 
-  --objectdef when it is a single instance 
-  objectdef['cel.mouse'] {
-    [[cel.mouse represents the mouse inputsource. The cel driver defines values for mouse buttons etc.]];
-    tabledef.buttons {
-      key.left[[The driver assigned value for the left mouse button.]];
-      key.middle[[The driver assigned value for the middle mouse button.]];
-      key.right[[The driver assigned value for the right mouse button.]];
-    };
-    tabledef.states {
-      key.unknown[[The driver assigned value indicating that Cel does not know if a mouse button is pressed]];
-      key.normal[[The driver assigned value indicating the mouse button is not pressed]];
-      key.pressed[[The driver assigned value indicating the mouse button is pressed]];
-    };
-    tabledef.wheeldirection {
-      key.up[[The driver assigned value for a wheel scrollup.]];
-      key.down[[The driver assigned value for a wheel scrolldown.]];
-    };
-
-    key.scrollines[[The driver assigned value for the number of lines to scroll when the mousewheel is moved.]];
-
-    functiondef['cel.mouse:pick()'] {
-    };
-
-    functiondef['cel.mouse:xy()'] {
-    };
-
-    functiondef['cel.mouse:vector()'] {
-    };
-
-    functiondef['cel.mouse:isdown(button)'] {
-    };
-  };
-
-  objectdef['cel.keyboard'] {
-  };
-
-  objectdef['cel.clipboard'] {
-  };
+  
 
   functiondef['cel(t)'] {
     [[Creates a new cel]];
@@ -256,7 +79,7 @@ export['cel'] {
     [[Creates a new cel.]];
 
     params = {
-      param.number[[width, default is 0.]];
+      param.number[[width - default is 0.]];
       param.number[[h - height, default is 0.]];
       param.face[[face - face or face name.]];
     };
@@ -280,7 +103,7 @@ export['cel'] {
     --TODO document the driver interface
     [[Installs the driver for the Cel libarary.]];
     [[Only one driver is allowed to be installed, installdriver will raise an error after the first call.]];
-    [[See ??? for a detailed documentation of the driver interface.]]
+    [[See ??? for a detailed documentation of the driver interface.]];
 
     params = {
       param.table {
@@ -310,7 +133,7 @@ export['cel'] {
           [[a table that maps the platform key codes and states to Cel names]];
           key.keys {
             --TODO define these
-            key.A['A key']
+            key.A[[A key]];
           };
           key.states {
             key.unknown[[indicates that Cel does not know if a key is pressed]];
@@ -344,12 +167,13 @@ export['cel'] {
       param.table[[The metatable that is assigned to cels created with the metacel.  This is also an entry 
         in metacel (metacel.metatable).]];
     };
-  }
+  };
 
   functiondef['cel.loadfont([name[, size]])'] {
-    [[Returns a new or existing font.  If the font already exists it is returned, otherwise the driver.loadfont will
+    [[Returns a new or existing font.]];
+    [[If the font already exists it is returned, otherwise the driver.loadfont will
     be invoked to load the font.  If the driver.loadfont() fails it is called again, with 'default' for the font
-    name.]]
+    name.]];
     [[The driver may choose to not honor the requested name or size]];
 
     params = {
@@ -386,25 +210,62 @@ export['cel'] {
   };
 
   functiondef['cel.getlinker(name)'] {
-  }
+  };
   functiondef['cel.addlinker(name, function)'] {
-  }
+  };
   functiondef['cel.composelinker(a, b)'] {
-  }
+  };
   functiondef['cel.rcomposelinker(a, b)'] {
-  }
+  };
   functiondef['cel.timer()'] {
-  }
+  };
   functiondef['cel.iscel(table)'] {
-  }
+  };
   functiondef['cel.doafter(ms, function)'] {
-  }
+  };
   --TODO remove
   functiondef['cel.translate(from, to, x, y)'] {
-  }
+  };
   functiondef['cel.tocel(v, host)'] {
-  }
+  };
 
+  functiondef['cel.face(t)'] {
+    [[Defines the contents of a face, t.metacel and t.name are the unique index of a face.]];
+    [[Even if the metacel's module has not been loaded the face is created.  
+    When the metacel is created the metacel face will __index the metacel face of the metacel it was created from.]];
+    [[A named face will __index the unnamed metacel face.]];
+    [[Note that this function only updates (or creates) a face, and cannot remove existing entries.]];
+
+    code[=[
+    cel.face {
+      metacel = string,
+      name = any,
+      ...
+    }
+    ]=];
+
+    params = {
+      param.string[[metacel - name of the metacel for the face, if nil then the face is for 'cel'.]];
+      param.any[[name - name of the face, if nil the face is unamed and is the default face for the metacel.]];
+      param['...'][[... - each additional entry in the table is set on the face.]];
+    };
+
+    returns = {
+      param.face[[the face]];
+    };
+  };
+
+  functiondef['cel.face.get(metacel, name)'] {
+    [[Returns a face or nil if one does not exist]];
+
+    params = {
+      param.string[[metacel - name of the metacel, if nil then 'cel' is used.]]; 
+      param.any[[name - name of the face, if nil the unnamed face of the metacel is returned.]];
+    };
+    returns = {
+      param.face[[face or nil if no face has been defined.]];
+    };
+  };
   
 
   functiondef['cel.color.rgb(r, g, b)'] {
@@ -415,7 +276,8 @@ export['cel'] {
 
   --The name of celdef is the name of its metacel
   celdef['cel'] {
-    [[The primary building block of the cel library. The name cel is short for control element.]];
+    [[The primary building block of the cel library.]];
+    [[The name cel is short for control element.]];
     [[The functions and behavior defined by a cel are shared by all cels.]];
 
     functiondef['cel:link(host[, x[, y[, option]]])'] {
@@ -433,7 +295,7 @@ export['cel'] {
       returns = {
         param.cel[[self]];
       };
-    }
+    };
 
     functiondef['cel:link(host[, linker[, xval[, yval[, option]]]])'] {
       [[Links a cel to a host cel.]];
@@ -832,7 +694,7 @@ export['cel'] {
       for each cel that gains focus.  This means that there is opportunity for another cel to take focus before
       takefoucs returns.]];
       [[The focus of the mouse is controlled by moving the mouse cursor, takefocus will have no effect on the mouse 
-      focus.]]
+      focus.]];
 
       params = {
         param.inputsource[[inputsource - Defaults to cel.keyboard if nil.]];
@@ -873,12 +735,12 @@ export['cel'] {
         param.cel[[self - self]];
         param['function'] {
           name='onescape';
-          [[If present this function is called when the mouse is no longer trapped by the cel.]]
+          [[If present this function is called when the mouse is no longer trapped by the cel.]];
           callbackdef['onescape(cel, mouse, reason)'] {
             params = {
-              param.cel['cel - cel that had the mouse trapped.'];
-              param.mouse['mouse - cel.mouse.'];
-              param.string['reason - an explanatory string.'];
+              param.cel'cel - cel that had the mouse trapped.';
+              param.mouse'mouse - cel.mouse.';
+              param.string'reason - an explanatory string.';
             };
           };
         };
@@ -918,7 +780,7 @@ export['cel'] {
       [[Disables the cel preventing user input.]];
       [[Any links will also be prevented from receiving user input.]];
       [[If the cel has focus (see cel.hasfocus) when it is unlinked then focus is given to its host via takefocus.
-      [[If the mouse is in the cel when it is disabled then a new cel is picked. (see mouse.pick).]];
+        If the mouse is in the cel when it is disabled then a new cel is picked. (see mouse.pick).]];
       [[If the cel has the mouse trapped (see cel.trapmouse and cel.hasmousetrapped) when it is 
         disabled then the mouse is released (see cel.releasemouse).]];
 
@@ -1051,9 +913,9 @@ export['cel'] {
       Thereafter flowfunction/update are called when the cel driver moves cel.timer() forward.]];  
 
       params = {
-        param['flowfunction'] {
+        param['function,key'] {
           name='flowfunction';
-          [[The flow function can be either a function or key to a flowfunction defined in the cel's face.]]
+          [[The flow function can be either a function or key to a flowfunction defined in the cel's face.]];
           callbackdef['flowfunction(context, ox, x, oy, y, ow, w, oh, h)'] {
             [[a function that produces intermediate states]]; 
             params = {
@@ -1210,7 +1072,7 @@ export['cel'] {
       params = {
         param['flowfunction'] {
           name='flowfunction';
-          [[The flow function can be either a function or key to a flowfunction defined in the cel's face.]]
+          [[The flow function can be either a function or key to a flowfunction defined in the cel's face.]];
           callbackdef['flowfunction(context, ox, x, oy, y, ow, w, oh, h)'] {
             [[a function that produces intermediate states]]; 
             params = {
@@ -1303,7 +1165,7 @@ export['cel'] {
 
     functiondef['cel:flowvalue(flowfunction, a, b, update, finalize)'] {
       [[TODO, probably will be removed when overhauling flows]];
-    }
+    };
 
     propertydef['cel.x'] {
       [[The x coordinate of the topleft of the cel.]];
@@ -1593,7 +1455,7 @@ export['cel'] {
       };
     };
 
-    descriptiondef = {
+    descriptiondef['cel'] {
       [[This table is the description of a cel intended to be used to render the cel.]];
 
       code[=[
@@ -1620,35 +1482,42 @@ export['cel'] {
       }
       ]=];
 
-      param.number[[id - a unique id for the cel the cel that is described, 
-                         this is 0 if the cel has no id (meaning its a virtual cel)]];
+      params = {
+        param.number[[id - a unique id for the cel the cel that is described, 
+                           this is 0 if the cel has no id (meaning its a virtual cel)]];
 
-      param.table[[host - refers to the host description.]];
-      param.number[[x - The absolute x coordinate of the cel. Absolute means not relative to its host cel.]];
-      param.number[[y - The absolute y coordinate of the cel.]];
-      param.number[[w - The width of the cel.]];
-      param.number[[h - The height of the cel.]];
-      param.boolean[[mousein - if true then the mouse cursor is in the cel]];
-      param.boolean[[mousetouch - if true then the mouse cursor is touching the cel.]];
-      param.boolean[[focus - if true the cel has focus.]];
-      param.table[[clip - defines a rectangle in absolute coordinates, that the cel is cliped to. 
-                          This will always be as or more restrictive than the clipping recatangle for the host.
-                          If the area defined by clip is <= 0 for a cel then that cel is not described.
-                          Which means that clip.l < clip.r is always true and clip.t < clip.b is always true.]];
-      param.number[[clip.l - The left of the clipping rectangle, this is always less than the right]];
-      param.number[[clip.r - The right of the clipping rectangle this is always greater than the left side]];
-      param.number[[clip.t - The top of the clipping rectangle, this is always less than the bottom.]];
-      param.number[[clip.b - the bottom of the clipping rectangle, this is always greater than the top.]];
-      param.any[[flowcontext - This is nil by default, if present this cel is 'flowing' and
-                 this is the context passed to the flow function. The flow function can put additional
-                 information in the context, the suggested usage is event based animations.]];
-      param.face[[face - The cel face]];
-      param.string[[metacel - This is the name of the metacel for the cel. The metacel is basically the
-                    type of cel such as 'button', 'label', 'listbox', 'root']];
-      param['table'][[[1,n] - This is the array portion of the cels description, (it meets the requirements for the 
-      # operator to return its length). Any cel that is linked to the cel and is not entirely clipped will
-      be described in this array in z order. (The topmost link will be at index 1). For cels that define a layout,
-      such as a sequence, the order is not based on z order]];
+        param.table[[host - refers to the host description.]];
+        param.number[[x - The absolute x coordinate of the cel. Absolute means not relative to its host cel.]];
+        param.number[[y - The absolute y coordinate of the cel.]];
+        param.number[[w - The width of the cel.]];
+        param.number[[h - The height of the cel.]];
+        param.boolean[[mousein - if true then the mouse cursor is in the cel]];
+        param.boolean[[mousetouch - if true then the mouse cursor is touching the cel.]];
+        param.boolean[[focus - if true the cel has focus.]];
+        param.table{
+          name='clip';
+          [[defines a rectangle in absolute coordinates, that the cel is cliped to. 
+            This will always be as or more restrictive than the clipping recatangle for the host.
+            If the area defined by clip is <= 0 for a cel then that cel is not described.
+            Which means that clip.l < clip.r is always true and clip.t < clip.b is always true.]];
+          tabledef {
+            param.number[[l - The left of the clipping rectangle, this is always less than the right]];
+            param.number[[r - The right of the clipping rectangle this is always greater than the left side]];
+            param.number[[t - The top of the clipping rectangle, this is always less than the bottom.]];
+            param.number[[b - the bottom of the clipping rectangle, this is always greater than the top.]];
+          };
+        };
+        param.any[[flowcontext - This is nil by default, if present this cel is 'flowing' and
+                   this is the context passed to the flow function. The flow function can put additional
+                   information in the context, the suggested usage is event based animations.]];
+        param.face[[face - The cel face]];
+        param.string[[metacel - This is the name of the metacel for the cel. The metacel is basically the
+                      type of cel such as 'button', 'label', 'listbox', 'root']];
+        param['table'][[[1,n] - This is the array portion of the cels description, (it meets the requirements for the 
+        # operator to return its length). Any cel that is linked to the cel and is not entirely clipped will
+        be described in this array in z order. (The topmost link will be at index 1). For cels that define a layout,
+        such as a sequence, the order is not based on z order]];
+      };
     };
   };
 
