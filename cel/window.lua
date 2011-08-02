@@ -1,12 +1,10 @@
 local cel = require 'cel'
-require 'cel.grip'
-require 'cel.button'
 
 local metacel, metatable = cel.newmetacel('window')
-metacel['@border'] = cel.grip.newmetacel('window@border')
-metacel['@corner'] = cel.grip.newmetacel('window@corner')
-metacel['@handle'] = cel.grip.newmetacel('window@handle')
-metacel['@client'] = cel.newmetacel('window@client')
+metacel['.border'] = cel.grip.newmetacel('window.border')
+metacel['.corner'] = cel.grip.newmetacel('window.corner')
+metacel['.handle'] = cel.grip.newmetacel('window.handle')
+metacel['.client'] = cel.newmetacel('window.client')
 
 local _client = {}
 local _state = {}
@@ -14,6 +12,7 @@ local _activated = {}
 local _title = {}
 local _bordersize = {}
 local _handle = {}
+local _grips = {} --border and corners, so we can disable and reenable them, note used yet
 
 local layout = {
   minw = 30 + 30 + 30 + 5 + 5,
@@ -23,9 +22,9 @@ local layout = {
 
   border = {
     size = 5,
-    corner = {
-      size = 20,
-    },
+  },
+  corner = {
+    size = 20,
   },
   handle = {
     w = 31,
@@ -73,9 +72,9 @@ function metatable.adddefaultcontrols(window)
 end
 
 --when extending the window metacel, redefine this funciton if you redefine the metacel version
-function metatable.setlimits(...)
-  metacel:setlimits(...)
-  return window
+function metatable:setlimits(...)
+  metacel:setlimits(self, ...)
+  return self
 end
 
 function metatable.getbordersize(window)
@@ -96,30 +95,46 @@ function metatable.isactivated(window)
 end
 
 function metatable.getstate(window)
-  return window[_state]
+  return window[_state] or 'normal'
+end
+
+local function onrestored(window)
+  local oldstate = window[_state]
+  window[_state] = nil
+  if window.onchange then
+    window:onchange('normal', oldstate)
+  end
 end
 
 do
-  local function onrestored(window)
-    window[_state] = nil
-  end
-
+  
   local function onmaximized(window)
+    local oldstate = window[_state]
     window[_state] = 'maximized'
+    if window.onchange then
+      window:onchange('maximized', oldstate)
+    end
   end
 
   function metatable.maximize(window)
-    if 'maximized' == window[_state] then return end
+    if 'maximized' == window[_state] then 
+      return window 
+    end
     
-    if not window.restore then
+    if not rawget(window, 'restore') then
+      --TODO pget minw, maxw, minh, maxh should return nil for unset values
+      --explain this is so the values can be passed back into with forcing a value to be
+      --stored for the default value
       local linker, xval, yval, x, y, w, h = window:pget('linker', 'xval', 'yval', 'x', 'y', 'w', 'h')
 
       function window:restore()
         window.restore = nil
         window[_state] = 'restoring'
-        window:setlimits(window:pget('minw'), nil, window:pget('minh'), nil)
         if linker then
-          window:flowlink('restore', linker, xval, yval, nil, onrestored)
+          window:relink():flow('restore', x, y, w, h, nil, function(...)
+            window:relink(linker, xval, yval)
+            onrestored(...) 
+          end)
         else
           window:relink():flow('restore', x, y, w, h, nil, onrestored)
         end
@@ -127,49 +142,59 @@ do
     end
 
     window[_state] = 'maximizing'
-    window:setlimits(window:pget('minw'), nil, window:pget('minh'), nil)
     window:flowlink('maximize', 'edges', -window[_bordersize], -window[_bordersize], nil, onmaximized)
+    return window
   end
 end
 
+function metatable:restore()
+  --do nothing, this is only visible when the window.restore has not been defined by minimize or maximize
+  return self
+end
 do
   local function minimizelinker(hw, hh, x, y, w, h, xval, yval, minw, maxw, minh, maxh)
     return 0, hh - minh, minw, minh 
   end
 
-  local function onrestored(window)
-    window[_state] = nil
-  end
-
   local function onminimized(window)
+    local oldstate = window[_state]
+    window:resize(0, 0) --hack becuase relink is not honored as a move request by layout formations as it should be
     window[_state] = 'minimized'
-    window:setlimits(window:pget('minw', 'minw', 'minh', 'minh'))
+    if window.onchange then
+      window:onchange('minimized', oldstate)
+    end
   end
 
   function metatable.minimize(window)
-    if 'minimized' == window[_state] then return end
+    if 'minimized' == window[_state] then 
+      return window
+    end
       
-    if not window.restore then
+    if not rawget(window, 'restore') then
       local linker, xval, yval, x, y, w, h = window:pget('linker', 'xval', 'yval', 'x', 'y', 'w', 'h')
-      
-
       function window:restore()
         window.restore = nil
         window[_state] = 'restoring'
-        window:setlimits(window:pget('minw'), nil, window:pget('minh'), nil)
-        window:relink(linker, xval, yval) --TODO need to flow to this and the move at the same time
-        window:flow('restore', x, y, w, h, nil, onrestored)
+        if linker then
+          window:relink():flow('restore', x, y, w, h, nil, function(...)
+            window:relink(linker, xval, yval)
+            onrestored(...) 
+          end)
+        else
+          window:relink():flow('restore', x, y, w, h, nil, onrestored)
+        end
       end
     end
 
     window[_state] = 'minimizing'
     window:flowlink('minimize', minimizelinker, nil, nil, nil, onminimized)
+    return window
   end
 end
 
 function metacel:__describe(window, t)
-  t.activated = window[_activated]
-  t.state = window[_state]
+  t.activated = window[_activated] or false
+  t.state = window[_state] or 'normal'
   t.title = window[_title]
 end
 
@@ -189,7 +214,7 @@ function metacel:onfocus(window, b)
   if b then
     self:activate(window)
   else
-    window[_activated] = nil
+    window[_activated] = false 
   end
   window:refresh()
 end
@@ -258,55 +283,55 @@ do
       bordersize = layout.size
 
       do --top
-        local border = self['@border']:new(bordersize, bordersize, layout.face)
+        local border = self['.border']:new(bordersize, bordersize, layout.face)
         border:grip(window, 'top') 
         border:link(window, 'width.top', bordersize, 0, 'raw')
       end
       do --bottom
-        local border = self['@border']:new(bordersize, bordersize, layout.face)
+        local border = self['.border']:new(bordersize, bordersize, layout.face)
         border:grip(window, 'bottom')
         border:link(window, 'width.bottom', bordersize, 0, 'raw')
       end
       do --left
-        local border = self['@border']:new(bordersize, bordersize, layout.face)
+        local border = self['.border']:new(bordersize, bordersize, layout.face)
         border:grip(window, 'left')
         border:link(window, 'left.height', 0, bordersize, 'raw')
       end
       do --right
-        local border = self['@border']:new(bordersize, bordersize, layout.face)
+        local border = self['.border']:new(bordersize, bordersize, layout.face)
         border:grip(window, 'right')
         border:link(window, 'right.height', 0, bordersize, 'raw')
       end
+    end
 
-      do
-        local layout = layout.corner
-        local cs = layout.size
-        do --topleft
-          local corner = self['@corner']:new(cs, cs, layout.face)
-          corner:grip(window, 'topleft')
-          corner:link(window, nil, nil, nil, 'raw')
-        end
-        do --topright
-          local corner = self['@corner']:new(cs, cs, layout.face)
-          corner:grip(window, 'topright')
-          corner:link(window, 'right.top', nil, nil, 'raw')
-        end
-        do --bottomleft
-          local corner = self['@corner']:new(cs, cs, layout.face)
-          corner:grip(window, 'bottomleft')
-          corner:link(window, 'left.bottom', nil, nil, 'raw')
-        end
-        do --bottomright
-          local corner = self['@corner']:new(cs, cs, layout.face)
-          corner:grip(window, 'bottomright')
-          corner:link(window, 'right.bottom', nil, nil, 'raw')
-        end
+    if layout.corner then
+      local layout = layout.corner
+      local cs = layout.size
+      do --topleft
+        local corner = self['.corner']:new(cs, cs, layout.face)
+        corner:grip(window, 'topleft')
+        corner:link(window, nil, nil, nil, 'raw')
+      end
+      do --topright
+        local corner = self['.corner']:new(cs, cs, layout.face)
+        corner:grip(window, 'topright')
+        corner:link(window, 'right.top', nil, nil, 'raw')
+      end
+      do --bottomleft
+        local corner = self['.corner']:new(cs, cs, layout.face)
+        corner:grip(window, 'bottomleft')
+        corner:link(window, 'left.bottom', nil, nil, 'raw')
+      end
+      do --bottomright
+        local corner = self['.corner']:new(cs, cs, layout.face)
+        corner:grip(window, 'bottomright')
+        corner:link(window, 'right.bottom', nil, nil, 'raw')
       end
     end
 
     if layout.handle then 
       local layout = layout.handle
-      local handle = self['@handle']:new(layout.w, layout.h, layout.face)
+      local handle = self['.handle']:new(layout.w, layout.h, layout.face)
       handle:grip(window)
       handle.onmousedown = handlemousedown
       handle:link(window, layout.link, 'raw')
@@ -315,7 +340,7 @@ do
 
     do
       layout = layout.client
-      local client = self['@client']:new(layout.w, layout.h, layout.face)
+      local client = self['.client']:new(layout.w, layout.h, layout.face)
       client:link(window, layout.link)
       window[_client] = client 
     end
@@ -328,7 +353,7 @@ do
   local _compile = metacel.compile
   function metacel:compile(t, window)
     window = window or metacel:new(t.w, t.h, t.title, t.face)
-    window.onclose = t.onclose
+    window.onchange = t.onchange
     return _compile(self, t, window)
   end
 end

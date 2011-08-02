@@ -23,6 +23,13 @@ print(fname) io.flush()
 
 local fout = io.open(fname, 'w')
 
+local navigation
+do
+  local f = io.open('navigation.html')
+  navigation = f:read('*a')
+  f:close()
+end
+
 local function tconcat(t, context, n)
   local tc = {}
   for i, v in ipairs(t) do
@@ -45,9 +52,16 @@ do
         <link rel="stylesheet" type="text/css" href="cel.css" />
       </head>
       <body>
+        <div id="navigation">
+        ${navigation}
+        </div>
+        <div id="content">
         <h1>${name}<p class="factorydesc">(module)<br><br>${brief}</p></h1>
         ${content}
-      </body></html>]] % {content=tconcat(t, 'factory', 2), name=name, brief=brief}
+        </div>
+      </body></html>]] % {content=tconcat(t, 'factory', 2), name=name, brief=brief,
+      navigation = navigation,
+      }
       fout:write(html)
       fout:close()
   end
@@ -149,6 +163,123 @@ do
 end
 
 do
+  local function newmetaceldef(name, t)
+    return function(context)
+      if not context then return 'metaceldef' end
+      local brief = ''
+      if type(t[1]) == 'string' then brief = t[1] end
+
+      local composition
+      local description
+      local layout
+
+      if t.composition then
+        local t = t.composition
+        local params
+        if t.params then
+          for k, v in ipairs(t.params) do
+            t.params[k] = v('argument')
+          end
+          params = [[
+            <div class="arguments">
+              <span class="arguments">cels</span>
+              <dl class="arguments">${arguments}</dl>
+            </div>]] % {arguments=tconcat(t.params, 'params')}
+        end
+
+        composition = [[
+        <div class="metacelcomposition">
+          <dt class="metacelcomposition">composition</dt>
+          <dd>
+          ${content}
+          ${params}
+          </dd>
+        </div>]] % {content=tconcat(t, 'composition') or '', params=params or ''}
+      end
+
+      if t.description then
+        local t = t.description
+        local params
+        if t.params then
+          for k, v in ipairs(t.params) do
+            t.params[k] = v('argument')
+          end
+          params = [[
+            <div class="arguments">
+              <span class="arguments">entries</span>
+              <dl class="arguments">${arguments}</dl>
+            </div>]] % {arguments=tconcat(t.params, 'params')}
+        end
+
+        description = [[
+        <div class="metaceldescription">
+          <dt class="metaceldescription">description</dt>
+          <dd>
+          ${content}
+          ${params}
+          </dd>
+        </div>]] % {content=tconcat(t, 'description') or '', params=params or ''}
+      end
+
+      if t.layout then
+        local t = t.layout
+        local params
+        if t.params then
+          for k, v in ipairs(t.params) do
+            t.params[k] = v('argument')
+          end
+          params = [[
+            <div class="arguments">
+              <span class="arguments">entries</span>
+              <dl class="arguments">${arguments}</dl>
+            </div>]] % {arguments=tconcat(t.params, 'params')}
+        end
+        layout = [[
+        <div class="metacellayout">
+          <dt class="metacellayout">layout</dt>
+          <dd>
+          ${content}
+          ${params}
+          </dd>
+        </div>]] % {content=tconcat(t, 'layout') or '', params=params or ''}
+      end
+
+      return [[
+      <div class="metaceldef">
+      <p class="metaceldefheader">metacel</p>
+        <h3 class="metaceldefname">
+          ${name}&nbsp;
+          <span class="metaceldefdesc">${brief}</span>
+        </h3>
+        <div class="metaceldeffulldesc">
+        <p>${content}</p>
+        <dl>
+        ${composition}
+        ${description}
+        ${layout}
+        </dl>
+        </div>
+      </div>
+      ]] % { 
+        name = name or '',
+        brief = brief or '',
+        content=tconcat(t, 'metaceldef') or '',
+        composition = composition or '',
+        description = description or '',
+        layout = layout or '',
+      }
+    end
+  end
+  metaceldef = setmetatable({}, {
+    __index = function(t, k)
+      return function(t)
+        return newmetaceldef(k, t);
+      end
+    end
+  })
+end
+
+do
   local function neweventdef(signature, t)
     return function(context)
       if not context then return 'eventdef' end
@@ -216,15 +347,30 @@ do
   local function newceldef(name, t)
     return function(context)
       if not context then return 'celdef' end
+
+      local __link = ''
+
+      if t.__link then
+        __link = [[<div class="linkopt">
+         <p class="divtitle">behavior</p>
+          <h3 class="linkopt">link options</h3>
+          <div class="linkoptfulldesc">
+          <p>${content}</p>
+          </div>
+        </div>]] % { content=tconcat(t.__link, '__link') }
+      end
+
       local brief = ''
       if type(t[1]) == 'string' then brief = t[1] end
       return [[<div class="celdef">
       <h1>${name}<p class="celdefdesc">(cel)<br><br>${brief}</p></h1>
       ${content}
+      ${__link}
       </div>]] % { 
         name = name or '',
         content=tconcat(t, 'celdef') or '',
         brief = brief or '',
+        __link = __link,
       }
     end
   end
@@ -245,18 +391,18 @@ do
       local header = {}
       for i, v in ipairs(t) do
         if type(v) == 'string' then
-          header[#header + 1] = v
+          content[#content + 1] = v
         else
-          content[#content + 1] = '<li>' .. v('tabledef') .. '</li>'
+          content[#content + 1] = v('tabledef')
         end
       end
 
-      return [[<div class="tabledef">
-      <h3>${name}</h3>
-      ${header}
-      <ul>
-      ${content}
-      </ul>
+      return [[
+      <div class="tabledef">
+        <p class="tabledefname">${name}</p>
+        <dl class="tabledef">
+          ${content}
+        </dl>
       </div>]] % { 
         name = name or '',
         header = table.concat(header) or '',
@@ -479,14 +625,26 @@ end
 do
   local function newkey(name, s)
     if type(s) == 'table' then 
-      return tabledef[name](s)
-    end
-    return function(context) 
-      if not context then return 'key' end
-      return [[<div class="key"><span>${name}</span> <span>${content}</span></div>]] % {
-        name=name,
-        content=s,
-      }
+      return function(context)
+        return [[
+          <dt class="key">${name}</dt>
+          <dd class="value">
+            <dl class="innertabledef">
+              ${content}
+            </dl>
+          </dd>]] % {
+          name=name,
+          content=tconcat(s, 'innertabledef') or '',
+        }
+      end
+    else
+      return function(context) 
+        if not context then return 'key' end
+        return [[<dt class="key">${name}</dt><dd class="value">${content}</dd>]] % {
+          name=name,
+          content=s,
+        }
+      end
     end
   end
   key = setmetatable({}, {

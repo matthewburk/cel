@@ -677,11 +677,9 @@ do --metacel.getface
         if face then
           return face
         end
-        --print('facename is', facename)
         if type(facename) == 'string' and #facename == 4 then
           colorface.color = facename
-          --print('making face from color', M.color.decode(facename))
-          face = M.face.new('cel', facename, colorface) 
+          face = defineface('cel', facename, colorface)
           assert(face)
           return face
         end
@@ -933,6 +931,9 @@ do --metatable.relink
     cel[_yval] = nil
 
     --TODO must have formation:relink like formation:link so it can enforce linker
+    --TODO more important to have formation:relink so it can know that the relink is
+    --a command and it should accomodate instead of ignoring linker changes to 
+    --height like sequence.y does
     if linker then
       cel[_linker] = linker
       cel[_xval] = xval

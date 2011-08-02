@@ -261,13 +261,31 @@ do --colformation.testlinker
     local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
     local minw, maxw, minh, maxh = link[_minw] or 0, link[_maxw] or maxdim, link[_minh] or 0, link[_maxh] or maxdim
 
-    local x, _, w, _ = selflinker(self, host, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
+    local x, y, w, h = ox, oy, ow, oh
+    do
+      local hw, hh = host[_w], h 
+      local ow = w
+      --hh is link.h we ignore return y and h becuase the linker must not alter them
+      x, _, w, h = linker(hw, h, x, 0, w, h, xval, yval, minw, maxw, minh, maxh)
+      x = math.modf(x)
+      w = math.floor(w)
+      h = math.floor(h)
+
+      if w > hw then w = hw end
+      if h > hh then h = hh end
+
+      if x + w > hw then x = hw - w end
+      
+      x, y, w, h = math.max(x, 0), link[_y], w, h
+    end
 
     --enforce min/max
     if w < minw then w = minw end
     if w > maxw then w = maxw end
+    if h < minh then h = minh end
+    if h > maxh then h = maxh end
 
-    return math.modf(x), oy, math.floor(w), oh
+    return math.modf(x), oy, math.floor(w), h
   end
 end
 

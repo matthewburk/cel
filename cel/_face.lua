@@ -59,6 +59,8 @@ return function(_ENV, M)
     return rawget(metaface, facename)
   end
 
+  _ENV.defineface = defineface
+
   --[[
   function face.new(metacelname, facename, t)
     if not facename then

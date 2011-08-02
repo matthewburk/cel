@@ -595,7 +595,7 @@ do --window
 
   do --window@handle
     local face = cel.face {
-      metacel = 'window@handle',
+      metacel = 'window.handle',
       fillcolor = newcolor(.1, .1, 1),
       textcolor = newcolor(.5, .5, 1),
     }
@@ -617,7 +617,7 @@ do --window
 
   do --window@border, window@corner
     local face = cel.face {
-      metacels = {'window@border', 'window@corner'},
+      metacels = {'window.border', 'window.corner'},
       grabcolor = newcolor(123, 231, 132),
 
       draw = function(self, t)
@@ -639,7 +639,7 @@ do --window
 
   do --window@client
     local face = cel.face { 
-      metacel = 'window@client',
+      metacel = 'window.client',
       fillcolor = newcolor(1, 1, 1),
     }
 
@@ -693,9 +693,10 @@ do --listbox
 
   do
     local face = cel.face {
-      metacel = 'listbox.items',
+      metacel = 'listbox.itemlist',
       fillcolor = false,
       linecolor = false,
+
     }
 
     function face:draw(t)
@@ -706,11 +707,13 @@ do --listbox
       end
       return drawlinks(self, t)
     end
+
+    
   end
 
   do
     local face = cel.face {
-      metacel = 'listbox.items.item',
+      metacel = 'listbox.itembox', --this metacel does not exist
       fillcolor = false,
       linecolor = false,
       selectedcolor = cel.color.encode(0, 0, .7, .1),

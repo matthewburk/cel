@@ -1,0 +1,762 @@
+      <html>
+      <head>
+        <link rel="stylesheet" type="text/css" href="cel.css" />
+      </head>
+      <body>
+        <div id="navigation">
+        <ul class="nav">
+  <li><a href="cel.html">cel</a> </li>
+  <li><a href="grip.html">cel.grip</a></li> 
+  <li><a href="button.html">cel.button</a></li> 
+  <li><a href="textbutton.html">cel.textbutton</a></li> 
+  <li><a href="label.html">cel.label</a></li> 
+  <li><a href="sequence.html">cel.sequence</a></li> 
+  <li><a href="scroll.html">cel.scroll</a></li> 
+  <li><a href="listbox.html">cel.listbox</a></li> 
+  <li><a href="window.html">cel.window</a></li> 
+</ul>
+
+        </div>
+        <div id="content">
+        <h1>cel.listbox<p class="factorydesc">(module)<br><br>Factory for the listbox metacel.</p></h1>
+        Factory for the listbox metacel.       <div class="metaceldef">
+      <p class="metaceldefheader">metacel</p>
+        <h3 class="metaceldefname">
+          listbox&nbsp;
+          <span class="metaceldefdesc"></span>
+        </h3>
+        <div class="metaceldeffulldesc">
+        <p></p>
+        <dl>
+                <div class="metacelcomposition">
+          <dt class="metacelcomposition">composition</dt>
+          <dd>
+          <div class="code"><pre><code>[portal] = cel</code>
+<code>    [list] = listbox.itemlist</code>
+<code>[xbar] = scroll.bar</code>
+<code>[ybar] = scroll.bar</code></pre></div>
+                      <div class="arguments">
+              <span class="arguments">cels</span>
+              <dl class="arguments">          <dt><code><span class="paramname">[portal]</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>listbox portal.</dd>
+                     <dt><code><span class="paramname">[list]</span>&nbsp;<span class="paramtype">listbox.itemlist</span></code></dt> 
+          <dd>a sequence contianing the items.</dd>
+                     <dt><code><span class="paramname">[xbar]</span>&nbsp;<span class="paramtype">scroll.bar</span></code></dt> 
+          <dd>horizontal scrollbar.</dd>
+                     <dt><code><span class="paramname">[ybar]</span>&nbsp;<span class="paramtype">scroll.bar</span></code></dt> 
+          <dd>vertical scrollbar.</dd>
+          </dl>
+            </div>
+          </dd>
+        </div>
+                <div class="metaceldescription">
+          <dt class="metaceldescription">description</dt>
+          <dd>
+          A scroll description. <div class="code"><pre><code>[portal] = cel,</code>
+<code>    [list] = listbox.itemlist,</code>
+<code>[xbar] = scroll.bar,</code>
+<code>[ybar] = scroll.bar,</code></pre></div>
+                      <div class="arguments">
+              <span class="arguments">entries</span>
+              <dl class="arguments">          <dt><code><span class="paramname">[portal]</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>scroll portal.</dd>
+                     <dt><code><span class="paramname">[list]</span>&nbsp;<span class="paramtype">listbox.itemlist</span></code></dt> 
+          <dd>a sequence contianing the items.</dd>
+                     <dt><code><span class="paramname">[xbar]</span>&nbsp;<span class="paramtype">scroll.bar</span></code></dt> 
+          <dd>horizontal scrollbar.</dd>
+                     <dt><code><span class="paramname">[ybar]</span>&nbsp;<span class="paramtype">scroll.bar</span></code></dt> 
+          <dd>vertical scrollbar.</dd>
+          </dl>
+            </div>
+          </dd>
+        </div>
+                <div class="metacellayout">
+          <dt class="metacellayout">layout</dt>
+          <dd>
+          A table defineing the internal layout of a listbox <div class="code"><pre><code>itemlist = {</code>
+<code>  face = face,</code>
+<code>  gap = integer,</code>
+<code>},</code>
+<code>itembox = {</code>
+<code>  face = face, </code>
+<code>},</code>
+<code>stepsize = integer, </code>
+<code>ybar = { </code>
+<code>  face = face,</code>
+<code>  autohide = boolean,</code>
+<code>  size = integer,</code>
+<code>  track = { </code>
+<code>    face = face,</code>
+<code>    size = integer,</code>
+<code>    link = {linker[, xval[, yval]]} or string,</code>
+<code>    slider = {</code>
+<code>      face = face,</code>
+<code>      size = integer,</code>
+<code>      minsize = integer,</code>
+<code>    },</code>
+<code>  },</code>
+<code>  decbutton = {</code>
+<code>    face = face,</code>
+<code>    size = integer,</code>
+<code>    link = {linker[, xval[, yval]]} or string,</code>
+<code>  },</code>
+<code>  incbutton = {</code>
+<code>    face = face,</code>
+<code>    size = integer,</code>
+<code>    link = {linker[, xval[, yval]]} or string,</code>
+<code>  },</code>
+<code>},</code>
+<code>xbar = {</code>
+<code>  face = face,</code>
+<code>  autohide = boolean,</code>
+<code>  size = integer,</code>
+<code>  track {</code>
+<code>    face = face,</code>
+<code>    size = integer,</code>
+<code>    link = {linker[, xval[, yval]]} or string,</code>
+<code>    slider = {</code>
+<code>      face = face,</code>
+<code>      size = integer,</code>
+<code>      minsize = integer, </code>
+<code>    },</code>
+<code>  },</code>
+<code>  decbutton = {</code>
+<code>    face = face,</code>
+<code>    size = integer,</code>
+<code>    link = {linker[, xval[, yval]]} or string,</code>
+<code>  },</code>
+<code>  incbutton = {</code>
+<code>    face = face,</code>
+<code>    size = integer,</code>
+<code>    link = {linker[, xval[, yval]]} or string,</code>
+<code>  },</code>
+<code>}</code></pre></div>
+                      <div class="arguments">
+              <span class="arguments">entries</span>
+              <dl class="arguments">          <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name</dd>
+                     <dt><code><span class="paramname">gap</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>amount of space between each item in the list.</dd>
+                     <dt><code><span class="paramname">stepsize</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>number of units to move the subject in a single step.</dd>
+          </dl>
+            </div>
+          </dd>
+        </div>
+        </dl>
+        </div>
+      </div>
+             <div class="metaceldef">
+      <p class="metaceldefheader">metacel</p>
+        <h3 class="metaceldefname">
+          listbox.itemlist&nbsp;
+          <span class="metaceldefdesc"></span>
+        </h3>
+        <div class="metaceldeffulldesc">
+        <p></p>
+        <dl>
+        
+                <div class="metaceldescription">
+          <dt class="metaceldescription">description</dt>
+          <dd>
+          Each description in listbox.itemlist is for a virtual cel that contains a list item. <div class="code"><pre><code>[n] = {</code>
+<code>  selected = boolean,</code>
+<code>  current = boolean,</code>
+<code>  [1] = cel,</code>
+<code>}</code></pre></div>
+                      <div class="arguments">
+              <span class="arguments">entries</span>
+              <dl class="arguments">          <dt><code><span class="paramname">[n]</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>index of a description in listbox.itemlist.</dd>
+                     <dt><code><span class="paramname">[n].selected</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>true if the item is selected.</dd>
+                     <dt><code><span class="paramname">[n].current</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>true if the item is the current item.</dd>
+                     <dt><code><span class="paramname">[n][1]</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a list item.</dd>
+          </dl>
+            </div>
+          </dd>
+        </div>
+        
+        </dl>
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.listbox(t)&nbsp;
+          <span class="functiondesc">Creates a new listbox</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new listbox <div class="code"><pre><code>cel.listbox {</code>
+<code>  w = number,</code>
+<code>  h = number,</code>
+<code>  onchange = function,</code>
+<code>}</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width, default is 0.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height, default is 0.</dd>
+                     <dt><code><span class="paramname">onchange</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>a new listbox.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.listbox.new([w[, h[, face]]])&nbsp;
+          <span class="functiondesc">Creates a new listbox</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new listbox</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width, default is 0.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height, default is 0.</dd>
+                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>a new listbox.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+       <div class="celdef">
+      <h1>listbox<p class="celdefdesc">(cel)<br><br>A listbox is a container cel with vertical and horizontal scrollbars.</p></h1>
+      A listbox is a container cel with vertical and horizontal scrollbars. A listbox is a scroll cel with the subject encapsulated.  The subject is an itemlist sequence,
+    when a cel is linked to the listbox it is put in the itemlist.       <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:len()&nbsp;
+          <span class="functiondesc">Returns the number of items in the list</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the number of items in the list</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>the number of items in the list</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:flux(callback, ...)&nbsp;
+          <span class="functiondesc">Puts the list into flux and calls the given function.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Puts the list into flux and calls the given function. Before the function is called the list is reconciled. After the callback function returns
+      the list is reconciled again.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">callback</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>a callback function, it will be called as callback(...).</dd>
+                     <dt><code><span class="paramname">...</span>&nbsp;<span class="paramtype">...</span></code></dt> 
+          <dd>parameters passed to the callback function.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:insert(index, link)&nbsp;
+          <span class="functiondesc">links the given cel to the list, inserting it at the given index.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>links the given cel to the list, inserting it at the given index. This is a shortcut for using link, when a linker is not required.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>An array index.  If not provided then link is appended to the end of the list</dd>
+                     <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>The cel (or string) to link.  If this is a string a label is created from the string.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:insertlist(index, t)&nbsp;
+          <span class="functiondesc">Adds all cels (or strings) in the array t to the list</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Adds all cels (or strings) in the array t to the list The list is in flux for the duration.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>An array index.  If not provided then t is appended to the end of the list</dd>
+                     <dt><code><span class="paramname">t</span>&nbsp;<span class="paramtype">array</span></code></dt> 
+          <dd>The array of cels (or strings) to link.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:step([x[, y]])&nbsp;
+          <span class="functiondesc">Scrolls the list x number of lines and, y number of items.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Scrolls the list x number of lines and, y number of items. The size of a line is defined by listbox.stepsize. <div class="code"><pre></pre></div> is called to scroll the list.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>the number of horizontal lines or pages to scroll, defaults to 0</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>the number of items to scroll, defaults to 0</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:scrollto([x[, y]])&nbsp;
+          <span class="functiondesc">Scrolls the list to x, y.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Scrolls the list to x, y. The coordinates x,y are a point in the list, this point will coincide with point 0, 0 of the portal 
+      in screen space.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>the x value of the list, clamped to (0, max) see getmaxvalues(), defaults to 0</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>the y value of the list, clamped to (0, max) see getmaxvalues(), defaults to 0</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:getvalues()&nbsp;
+          <span class="functiondesc">Returns the current x, y values of the itemlist.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the current x, y values of the itemlist.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>current x value, which is roughly -subject.x</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>current y value, which is roughly -subject.y</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:getmaxvalues()&nbsp;
+          <span class="functiondesc">Returns the maximum x, y values for the itemlist</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the maximum x, y values for the itemlist</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>max x value, which is math.max(0, subject.w - portal.w)</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>max y value, which is math.max(0, subject.h - portal.h)</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:getportalrect()&nbsp;
+          <span class="functiondesc">Returns the portal x, y, w, h</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the portal x, y, w, h</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>portal.x</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>portal.y</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>portal.w</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>portal.h</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:remove(index)&nbsp;
+          <span class="functiondesc">Removes the item at index from the list.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Removes the item at index from the list. If the index is invalid the listbox remains unmutated.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>An array index.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:next(item)&nbsp;
+          <span class="functiondesc">Returns the next item in the list.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the next item in the list.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>an item in the list, the item after this item is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the next item, or nil</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:prev(item)&nbsp;
+          <span class="functiondesc">Returns the previous item in the list.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the previous item in the list.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>an item in the list, the item before this item is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the previous item, or nil</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:items([selected])&nbsp;
+          <span class="functiondesc">Returns an iterator for the list.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns an iterator for the list.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">selected</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>if true the only selected items are returned in the iterator.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>iterator</code></dt> 
+          <dd>an iterator for the list</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:first()&nbsp;
+          <span class="functiondesc">Returns the first item in the list</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the first item in the list</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the first item in the list</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:last()&nbsp;
+          <span class="functiondesc">Returns the last item in the list</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the last item in the list</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the last item in the list</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:get(index)&nbsp;
+          <span class="functiondesc">Returns the item at index.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the item at index.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>an array index.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the item at the index or nil.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:indexof(item)&nbsp;
+          <span class="functiondesc">Returns the array index of the item.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the array index of the item.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a list time, if item is not in the list nil is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>the array index of the item, or nil.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:getcurrent()&nbsp;
+          <span class="functiondesc">Returns the current item in the list.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the current item in the list. The current item is set with listbox:setcurrent().  The current item is inteded to indicate 
+      the item the user is interacting with.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the current item or nil.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:setcurrent(index)&nbsp;
+          <span class="functiondesc">Sets the item at index to the current item.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Sets the item at index to the current item. The new current item will take focus.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>index of the list itme to set current</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:scrolltoitem(item)&nbsp;
+          <span class="functiondesc">Scrolls the listbox to the item</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Scrolls the listbox to the item</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>list item.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:clear()&nbsp;
+          <span class="functiondesc">Removes all items from the list.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Removes all items from the list.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:select(item[, mode])&nbsp;
+          <span class="functiondesc">selects, unselects or toggles selection the item (or item at index item)</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>selects, unselects or toggles selection the item (or item at index item)</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>an item in the list.</dd>
+                     <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>index of a list item.</dd>
+                     <dt><code><span class="paramname">mode</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If mode == true then the item is selected. If mode == false then the item is unselected.  
+          If mode is nil or any other value the item selection is reversed.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:selectall([mode])&nbsp;
+          <span class="functiondesc">selects, unselects or toggles selection for all items in the list.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>selects, unselects or toggles selection for all items in the list.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">mode</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If mode == true then then all items are selected. If mode == false then all items are unselected.  
+          If mode is nil or any other value then all items selection is reversed.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+      
+      
+      </div>
+        </div>
+      </body></html>

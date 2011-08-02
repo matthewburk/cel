@@ -725,11 +725,11 @@ do
   end
 end
 
-function metatable.getvalue(scroll)
+function metatable.getvalues(scroll)
   return scroll[_xdim].value, scroll[_ydim].value 
 end
 
-function metatable.getmaxvalue(scroll)
+function metatable.getmaxvalues(scroll)
   return scroll[_xdim].max, scroll[_ydim].max 
 end
 
@@ -747,29 +747,30 @@ function metatable.setsubject(scroll, subject, fillx, filly)
   return scroll
 end
 
+--THIS makes scroll a container, its item is getable and setable
 function metatable.getsubject(scroll, subject)
   return scroll[_subject]
 end
 
---return a rectangle (x,y,w,h) in subject coordinates which is the 
---region of the subject that is revealed by the portal
---important point is that w and h returned are not dependent on subject, but on _portal dimensions
-function metatable.getportal(scroll)
-  local x, y, w, h = 0, 0, scroll[_portal].w, scroll[_portal].h
-
-  if scroll[_subject] then
-    x = -scroll[_subject].x
-    y = -scroll[_subject].y
-  end
-
-  return x, y, w, h
+function metatable.getportalrect(scroll)
+  return scroll[_portal]:pget('x', 'y', 'w', 'h')
 end
 
 function metacel:__link(scroll, link, linker, xval, yval, option)
-  if scroll[_subject] and option ~= 'raw' then
+  if scroll[_subject] and not option then
+    return scroll[_subject], linker, xval, yval, option 
+  elseif option == 'portal' then
+    return scroll[_portal], linker, xval, yval
+  elseif option == 'ybar' then
+    return scroll[_ybar], linker, xval, yval
+  elseif option == 'xbar' then
+    return scroll[_xbar], linker, xval, yval
+  elseif option == 'raw' then
+    return scroll, linker, xval, yval
+  elseif scroll[_subject] then
     return scroll[_subject], linker, xval, yval, option 
   end
-  return scroll, linker, xval, yval, option
+  return scroll[_portal], linker, xval, yval
 end
 
 function metacel:onmousewheel(scroll, direction, x, y, intercepted)
@@ -827,7 +828,11 @@ do
   function metacel:compile(t, scroll)
     scroll = scroll or metacel:new(t.w, t.h, t.face)
     if t.subject then
-      scroll:setsubject(t.subject, not not t.subjectfillx, not not t.subjectfilly) 
+      if cel.iscel(t.subject) then
+        scroll:setsubject(t.subject, false, false) 
+      else
+        scroll:setsubject(t.subject[1], not not t.subject.fillwidth, not not t.subject.fillheight) 
+      end
     end
     return _compile(self, t, scroll)
   end
@@ -835,8 +840,8 @@ do
   local _newmetacel = metacel.newmetacel
   function metacel:newmetacel(name)
     local newmetacel, metatable = _newmetacel(self, name) 
-    newmetacel['.portal'] = metacel['.portal']:newmetacel(name .. '.portal')    
-    newmetacel['.bar'] = metacel['.bar']:newmetacel(name .. '.bar')    
+    --newmetacel['.portal'] = metacel['.portal']:newmetacel(name .. '.portal')    
+    --newmetacel['.bar'] = metacel['.bar']:newmetacel(name .. '.bar')    
     --TODO add in other metacels
     return newmetacel, metatable
   end

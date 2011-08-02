@@ -1,27 +1,34 @@
 local cel = require 'cel'
 
+--TODO do not extend scroll, contain it
 local metacel, metatable = cel.scroll.newmetacel('listbox')
-metacel['.items'] = cel.sequence.y.newmetacel('listbox.items')
+metacel['.itemlist'] = cel.sequence.y.newmetacel('listbox.itemlist')
 
 local _listbox = {}
 local _items = {}
 local _selected = {}
 local _current = {}
 local _changes = {}
-local _slotface = {}
-local slotface = cel.face { metacel='listbox.items.item' }
+local _boxface = {}
+local boxface = cel.face { metacel='listbox.itembox' }
+
+cel.face { metacel = 'listbox.itemlist' }
 
 local layout = {
-  scroll = nil,
-  items = {
+  itemlist = {
+    face = nil,
     gap = 0,
-    face = cel.face { metacel = 'listbox.items' },
-    slotface = slotface
+    
   },
+  itembox = {
+    --note that itembox is a virtual cel
+    face = boxface,  
+  };
 }
 
-function metatable.flux(listbox, callback, ...)
-  return listbox[_items]:flux(callback, ...)
+function metatable:flux(...)
+  self[_items]:flux(...)
+  return self 
 end
 
 function metatable:len()
@@ -38,7 +45,8 @@ function metatable:insert(index, item)
     item = cel.label.new(item)
   end
 
-  return item:link(self, nil, nil, nil, index)
+  item:link(self, nil, nil, nil, index)
+  return self
 end
 
 do
@@ -56,28 +64,9 @@ do
   end
 end
 
-function metatable:trim(size)
-  if size <= 0 then
-    return self:clear()
-  end
-
-  local len = self[_items]:len()
-  while len > size do
-    self[_items]:remove(len)
-    len = len - 1
-  end
-
-end
-
-function metatable:remove(index, endindex)
-
-  if endindex and endindex ~= index then
-    for i=endindex, index, -1 do 
-      self[_items]:remove(i)
-    end
-  else
-    self[_items]:remove(index)
-  end
+function metatable:remove(index)
+  self[_items]:remove(index)
+  return self
 end
 
 
@@ -134,15 +123,17 @@ local function changecurrent(listbox, item)
 end
 
 --TODO implement mode, for 'top', 'bottom', 'center', 'current postion of cursor'
-function metatable.scrolltoitem(listbox, item, mode)
-  local x, y, w, h = listbox:getportal()
+function metatable:scrolltoitem(item, mode)
+  local x, y, w, h = self:getportalrect()
+  x, y = self:getvalues();
 
   if y + h < item.y + item.h then
-    listbox:scrollto(nil, item.y + item.h - h)
+    self:scrollto(nil, item.y + item.h - h)
   elseif item.y < y then
-    listbox:scrollto(nil, item.y)
+    self:scrollto(nil, item.y)
   else
   end
+  return self
 end
 
 function metatable:setcurrent(index)
@@ -151,10 +142,12 @@ function metatable:setcurrent(index)
   if item then
     changecurrent(self, item)
   end
+  return self
 end
 
 function metatable:clear()
-  return self[_items]:clear()
+  self[_items]:clear()
+  return self
 end
 
 function metatable:selectall(mode)
@@ -162,6 +155,7 @@ function metatable:selectall(mode)
   for i = 1, self:len() do
     self:select(i, mode)
   end
+  return self
 end
 
 function metatable:select(v, mode)
@@ -214,6 +208,8 @@ function metatable:select(v, mode)
   if self.onchange then
     return self:onchange(item, index, selected[item] and 'selected' or 'unselected')
   end
+
+  return self
 end
 
 do
@@ -243,7 +239,7 @@ do
 
     items:endflow()
 
-    local x, y = listbox:getvalue()
+    local x, y = listbox:getvalues()
     if ystep and ystep ~= 0 then
       local item = items:pick(0, y)
 
@@ -278,10 +274,15 @@ do
   end
 end
 
-function metacel:__link(listbox, link, linker, xval, yval, option)
-  if option ~= 'raw' then
-    --TODO link must accept an option
-    return listbox[_items], linker, xval, yval, option
+do
+  local __link = metacel.__link
+  function metacel:__link(listbox, link, linker, xval, yval, option)
+    if not option or type(option) == 'number' then
+      --TODO link must accept an option
+      return listbox[_items], linker, xval, yval, option
+    else
+      return __link(self, listbox, link, linker, xval, yval, option)
+    end
   end
 end
 
@@ -305,7 +306,7 @@ function metacel:onkey(listbox, state, key, intercepted)
 end
 
 do -- items metacel
-local metacel = metacel['.items'] 
+local metacel = metacel['.itemlist'] 
 
 do --metacel.dispatchevents
   function metacel:dispatchevents(listbox)
@@ -370,14 +371,18 @@ do --metacel.__describeslot
   function metacel:__describeslot(items, item, index, t)
     local listbox = items[_listbox]
 
-    t.face = listbox[_slotface]
+    t.face = listbox[_boxface]
 
     if listbox[_selected] and listbox[_selected][item] then
       t.selected = true
+    else
+      t.selected = false
     end
 
     if listbox[_current] == item then
       t.current = true
+    else
+      t.current = false
     end
   end
 end
@@ -411,6 +416,7 @@ end
 do
   local _setsubject = metatable.setsubject
   metatable.setsubject = nil
+  metatable.getsubject = nil
 
   local _new = metacel.new
   function metacel:new(w, h, face)
@@ -418,9 +424,9 @@ do
     local layout = face.layout or layout
 
     local listbox = _new(self, w, h, face)
-    listbox[_slotface] = layout.slotface or slotface
+    listbox[_boxface] = layout.itembox.face or boxface
 
-    local items = metacel['.items']:new(layout.items.gap, layout.items.face)
+    local items = metacel['.itemlist']:new(layout.itemlist.gap, layout.itemlist.face)
 
     items[_listbox] = listbox
     listbox[_items] = items

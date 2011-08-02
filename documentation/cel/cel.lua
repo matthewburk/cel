@@ -1,6 +1,14 @@
 export['cel'] {
   [[This is the main module for the Cel libarary.]];
 
+  list {
+    header='TODO:';
+    [[document that a metacel defines the description, a cel cannot add to or remove from this (unless the metacel lets it, which would be considered bad.]];
+    [[document that factory.newfactory is useful for creating a specialized factory that controls the face, layout,
+    and other properties of the cel.  For example createing a fixed size window with a sepcifc layout, always the 
+    same title and event handlers that are injected by the factory.]];
+  };
+
 
   propertydef['cel.mouse'] {
     [[The mouse]];
@@ -281,8 +289,11 @@ export['cel'] {
     [[The functions and behavior defined by a cel are shared by all cels.]];
 
     functiondef['cel:link(host[, x[, y[, option]]])'] {
-      [[Links a cel to a host cel. This is a convenience function for]];
-      code[=[cel:link(host, nil, x, y, option)]=];
+      [[Links a cel to a host cel.]];
+      [[This is a convenience function for]];
+      code[=[
+      cel:link(host, nil, x, y, option)
+      ]=];
 
       params = {
         param.cel[[host - cel to link to]];
@@ -290,6 +301,31 @@ export['cel'] {
         param.number[[y - y position of the cel relative to host]];
         param.any[[option - Indicates to the host how the link should be made.
                             The meaning of this is dictated by the host.]];
+      };
+
+      returns = {
+        param.cel[[self]];
+      };
+    };
+
+    functiondef['cel:link(host[, linkertable[, option]])'] {
+      [[Links a cel to a host cel.]];
+      [[This is a convenience function for]];
+      code[=[
+      cel:link(host, linkertable[1], linkertable[2], linkertable[3], option)
+      ]=];
+
+      params = {
+        param.cel[[host - cel to link to]];
+        param.table {
+          name='linkertable';
+          [[an array that contains arguments passed to cel:link(host, linker, xval, yval, option).]];
+          tabledef {
+            param.linker[[[1] - linker function or name passed to cel:link(host, linker, xval, yval, option).]];
+            param.any[[[2] - xval param passed to cel:link(host, linker, xval, yval, option)]];
+            param.any[[[3] - yval param passed to cel:link(host, linker, xval, yval, option)]];
+          };
+        };
       };
 
       returns = {
@@ -1025,11 +1061,13 @@ export['cel'] {
     };
 
     functiondef['cel:reflow(flowfunction, x, y, w, h)'] {
-      [[If the cel is flowing using the specified flowfunction reflow will update the final destination to 
-      (x, y, w, h).  The next time the flowfunction runs it will see the new destination.]];
+      [[If the cel is flowing reflow will update the final destination to 
+      (x, y, w, h).]];
+      [[The next time the flowfunction runs it will see the new destination.]];
 
       params = {
-        param.flowfunction[[flowfunction - see cel:flow for description]];
+        param.flowfunction[[flowfunction - if not nil the cel reflows only if this is the current flowfunction
+        for the cel.]];
         param.number[[x - x position of self relative to host. Defaults to self.x if nil]];
         param.number[[y - y position of self relative to host. Defaults to self.y if nil]];
         param.number[[w - width of the cel. Defaults to self.w if nil]];
@@ -1461,7 +1499,7 @@ export['cel'] {
       code[=[
       {
         id = number,
-        host = table,
+        host = description,
         x = number,
         y = number,
         w = number,
@@ -1477,8 +1515,9 @@ export['cel'] {
         },
         face = face,
         metacel = string,
+        metacel = boolean,
         flowcontext = any,
-        [1,n] = table,
+        [1,n] = description,
       }
       ]=];
 
@@ -1486,7 +1525,7 @@ export['cel'] {
         param.number[[id - a unique id for the cel the cel that is described, 
                            this is 0 if the cel has no id (meaning its a virtual cel)]];
 
-        param.table[[host - refers to the host description.]];
+        param.description[[host - refers to the host description.]];
         param.number[[x - The absolute x coordinate of the cel. Absolute means not relative to its host cel.]];
         param.number[[y - The absolute y coordinate of the cel.]];
         param.number[[w - The width of the cel.]];
@@ -1513,8 +1552,11 @@ export['cel'] {
         param.face[[face - The cel face]];
         param.string[[metacel - This is the name of the metacel for the cel. The metacel is basically the
                       type of cel such as 'button', 'label', 'listbox', 'root']];
-        param['table'][[[1,n] - This is the array portion of the cels description, (it meets the requirements for the 
-        # operator to return its length). Any cel that is linked to the cel and is not entirely clipped will
+        param.boolean[[metacel - If metacel is false, the description is of a virtual cel, 
+        that was never actually created.]]; 
+        param['description'][[[1,n] - This is the array portion of the cels description, 
+        (it meets the requirements for the # operator to return its length).
+        Any cel that is linked to the cel and is not entirely clipped will
         be described in this array in z order. (The topmost link will be at index 1). For cels that define a layout,
         such as a sequence, the order is not based on z order]];
       };

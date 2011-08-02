@@ -14,6 +14,14 @@ local _texth = {}
 local layout = {
 }
 
+function metatable:getbaseline()
+  return self[_penx], self[_peny]
+end
+
+function metatable:getfont()
+  return self[_font]
+end
+
 function metatable.gettext(label)
   return label[_text]
 end

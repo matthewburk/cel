@@ -1,0 +1,2108 @@
+      <html>
+      <head>
+        <link rel="stylesheet" type="text/css" href="cel.css" />
+      </head>
+      <body>
+        <div id="navigation">
+        <ul class="nav">
+  <li><a href="cel.html">cel</a> </li>
+  <li><a href="grip.html">cel.grip</a></li> 
+  <li><a href="button.html">cel.button</a></li> 
+  <li><a href="textbutton.html">cel.textbutton</a></li> 
+  <li><a href="label.html">cel.label</a></li> 
+  <li><a href="sequence.html">cel.sequence</a></li> 
+  <li><a href="scroll.html">cel.scroll</a></li> 
+  <li><a href="listbox.html">cel.listbox</a></li> 
+  <li><a href="window.html">cel.window</a></li> 
+</ul>
+
+        </div>
+        <div id="content">
+        <h1>cel<p class="factorydesc">(module)<br><br>This is the main module for the Cel libarary.</p></h1>
+        This is the main module for the Cel libarary. <div class="list">
+      TODO:
+      <ul>
+      <li>document that a metacel defines the description, a cel cannot add to or remove from this (unless the metacel lets it, which would be considered bad.</li><li>document that factory.newfactory is useful for creating a specialized factory that controls the face, layout,
+    and other properties of the cel.  For example createing a fixed size window with a sepcifc layout, always the 
+    same title and event handlers that are injected by the factory.</li>
+      </ul>
+      </div>       <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.mouse&nbsp;
+          <span class="propertydefdesc">The mouse</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The mouse</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.keyboard&nbsp;
+          <span class="propertydefdesc">The keyboard</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The keyboard</p>
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel(t)&nbsp;
+          <span class="functiondesc">Creates a new cel</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new cel <div class="code"><pre><code>cel {</code>
+<code>  w = number,</code>
+<code>  h = number,</code>
+<code>  face = any,</code>
+<code>  onresize = function,</code>
+<code>  onmousein = function,</code>
+<code>  onmouseout = function,</code>
+<code>  onmousemove = function,</code>
+<code>  onmousedown = function,</code>
+<code>  onmouseup = function,</code>
+<code>  onfocus = function,</code>
+<code>  onkeydown = function,</code>
+<code>  onkeypress = function,</code>
+<code>  onkeyup = function,</code>
+<code>  onchar = function,</code>
+<code>  oncommand = function,</code>
+<code>  ontimer = function,</code>
+<code>  [1,n] = cel or function or string</code>
+<code>}</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width, default is 0.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height, default is 0.</dd>
+                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                     <dt><code><span class="paramname">onresize</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onmousein</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onmouseout</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onmousemove</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onmousedown</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onmouseup</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onfocus</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onkeydown</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onkeypress</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onkeyup</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onchar</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">ontimer</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">[1,n]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>      <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+          When the cel is created each entry from 1 to n is evaluated in order 
+          where n is #(table).  The entry is must be on of the following:<dt class="key">cel</dt><dd class="value">If the entry is a cel then it is linked to cel being created. cel:link is called
+            with cel.linker, cel.xval, cel.yval.</dd><dt class="key">string</dt><dd class="value">If the entry is a string a new cel.label is created with the string and then
+            linked to the cel being created.</dd><dt class="key">function</dt><dd class="value">If the entry is a function, it is called with the new cel as its only parameter.  
+            The return value from this function is ignored.</dd>
+        </dl>
+      </div></dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>a new cel.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.new([w[, h[, face]]])&nbsp;
+          <span class="functiondesc">Creates a new cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new cel.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">width</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>default is 0.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height, default is 0.</dd>
+                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>a new cel.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.installdriver(mouse, keyboard)&nbsp;
+          <span class="functiondesc">Installs the driver for the Cel libarary.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Installs the driver for the Cel libarary. Only one driver is allowed to be installed, installdriver will raise an error after the first call. See ??? for a detailed documentation of the driver interface.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">mouse</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>      <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+          a table that maps the platform mouse buttons and states to Cel names          <dt class="key">buttons</dt>
+          <dd class="value">
+            <dl class="innertabledef">
+              <dt class="key">left</dt><dd class="value">left mouse button</dd> <dt class="key">right</dt><dd class="value">right mouse button</dd> <dt class="key">middle</dt><dd class="value">middle mouse button</dd>
+            </dl>
+          </dd>          <dt class="key">states</dt>
+          <dd class="value">
+            <dl class="innertabledef">
+              <dt class="key">unknown</dt><dd class="value">indicates that Cel does not know if a mouse button is pressed</dd> <dt class="key">normal</dt><dd class="value">the mouse button is not pressed</dd> <dt class="key">pressed</dt><dd class="value">the mouse button is pressed</dd>
+            </dl>
+          </dd>          <dt class="key">wheeldirection</dt>
+          <dd class="value">
+            <dl class="innertabledef">
+              <dt class="key">up</dt><dd class="value">up wheel direction is away from the user.</dd> <dt class="key">down</dt><dd class="value">down wheel direction is towards the user.</dd>
+            </dl>
+          </dd>
+        </dl>
+      </div></dd>
+                     <dt><code><span class="paramname">keyboard</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>      <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+          a table that maps the platform key codes and states to Cel names          <dt class="key">keys</dt>
+          <dd class="value">
+            <dl class="innertabledef">
+              <dt class="key">A</dt><dd class="value">A key</dd>
+            </dl>
+          </dd>          <dt class="key">states</dt>
+          <dd class="value">
+            <dl class="innertabledef">
+              <dt class="key">unknown</dt><dd class="value">indicates that Cel does not know if a key is pressed</dd> <dt class="key">normal</dt><dd class="value">the key is not pressed</dd> <dt class="key">pressed</dt><dd class="value">the key is pressed</dd>
+            </dl>
+          </dd>
+        </dl>
+      </div></dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>table</code></dt> 
+          <dd>The interface between the Cel libarary and the driver.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.newmetacel(name)&nbsp;
+          <span class="functiondesc">Returns a new copy of the 'cel' metacel.  A metacel defines a new type of cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns a new copy of the 'cel' metacel.  A metacel defines a new type of cel. The metacel defines the behavior of a cel. The behavior can be changed by eclipsing(overriding) existing
+    metacel functions or defining new ones. The metatable at metacel.metatable defines the interface of a cel created by the metacel. When a new metacel is created a face is created for the metacel if one does not already exist.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">name</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>The name of the new metacel.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>metacel</code></dt> 
+          <dd>A new metacel with the specified name, with the same entries as the original metacel 
+        (excluding metacel.metatable). The metatable entry is a copy of orginal metacel.metatable with the same
+        entries (excluding __index which is redefined for the new metatable).</dd>
+                     <dt><code>table</code></dt> 
+          <dd>The metatable that is assigned to cels created with the metacel.  This is also an entry 
+        in metacel (metacel.metatable).</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.loadfont([name[, size]])&nbsp;
+          <span class="functiondesc">Returns a new or existing font.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns a new or existing font. If the font already exists it is returned, otherwise the driver.loadfont will
+    be invoked to load the font.  If the driver.loadfont() fails it is called again, with 'default' for the font
+    name. The driver may choose to not honor the requested name or size</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">name</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>A formatted string that specifies the facename, weight, and slant of the
+        font: 'facename:weight:slant'. weight and slant may be ommitted. <div class="list">
+      facename is interpreted by the driver, the driver must implement the following face names.
+      <ul>
+      <li><dt class="key">code</dt><dd class="value">A face suitable for displaying lua source code.</dd></li><li><dt class="key">monospace</dt><dd class="value">A monospace font, like courier</dd></li><li><dt class="key">serif</dt><dd class="value">A serif font, like times new roman</dd></li><li><dt class="key">sansserif</dt><dd class="value">A sansserif font, like arial</dd></li><li><dt class="key">default</dt><dd class="value">The driver defined defaul font face</dd></li>
+      </ul>
+      </div> <div class="list">
+      weight can be:
+      <ul>
+      <li><dt class="key">normal</dt><dd class="value">normal wieght</dd></li><li><dt class="key">bold</dt><dd class="value">bold weight</dd></li>
+      </ul>
+      </div> <div class="list">
+      slant can be:
+      <ul>
+      <li><dt class="key">normal</dt><dd class="value">no slant</dd></li><li><dt class="key">italic</dt><dd class="value">italic slant</dd></li>
+      </ul>
+      </div></dd>
+                     <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>the size in points(not pixels) of the font.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>font</code></dt> 
+          <dd>a new or existing font. If the name is nil, the default font is loaded(defined by driver),
+      if size is nil the default size is used(defined by driver)</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.getlinker(name)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.addlinker(name, function)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.composelinker(a, b)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.rcomposelinker(a, b)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.timer()&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.iscel(table)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.doafter(ms, function)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.translate(from, to, x, y)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.tocel(v, host)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.face(t)&nbsp;
+          <span class="functiondesc">Defines the contents of a face, t.metacel and t.name are the unique index of a face.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Defines the contents of a face, t.metacel and t.name are the unique index of a face. Even if the metacel's module has not been loaded the face is created.  
+    When the metacel is created the metacel face will __index the metacel face of the metacel it was created from. A named face will __index the unnamed metacel face. Note that this function only updates (or creates) a face, and cannot remove existing entries. <div class="code"><pre><code>cel.face {</code>
+<code>  metacel = string,</code>
+<code>  name = any,</code>
+<code>  ...</code>
+<code>}</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">metacel</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>name of the metacel for the face, if nil then the face is for 'cel'.</dd>
+                     <dt><code><span class="paramname">name</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>name of the face, if nil the face is unamed and is the default face for the metacel.</dd>
+                     <dt><code><span class="paramname">...</span>&nbsp;<span class="paramtype">...</span></code></dt> 
+          <dd>each additional entry in the table is set on the face.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>face</code></dt> 
+          <dd>the face</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.face.get(metacel, name)&nbsp;
+          <span class="functiondesc">Returns a face or nil if one does not exist</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns a face or nil if one does not exist</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">metacel</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>name of the metacel, if nil then 'cel' is used.</dd>
+                     <dt><code><span class="paramname">name</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>name of the face, if nil the unnamed face of the metacel is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>face</code></dt> 
+          <dd>face or nil if no face has been defined.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.rgb(r, g, b)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.flows.linear()&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+       <div class="celdef">
+      <h1>cel<p class="celdefdesc">(cel)<br><br>The primary building block of the cel library.</p></h1>
+      The primary building block of the cel library. The name cel is short for control element. The functions and behavior defined by a cel are shared by all cels.       <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:link(host[, x[, y[, option]]])&nbsp;
+          <span class="functiondesc">Links a cel to a host cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Links a cel to a host cel. This is a convenience function for <div class="code"><pre><code>cel:link(host, nil, x, y, option)</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">host</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>cel to link to</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position of the cel relative to host</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position of the cel relative to host</dd>
+                     <dt><code><span class="paramname">option</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>Indicates to the host how the link should be made.
+                            The meaning of this is dictated by the host.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:link(host[, linkertable[, option]])&nbsp;
+          <span class="functiondesc">Links a cel to a host cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Links a cel to a host cel. This is a convenience function for <div class="code"><pre><code>cel:link(host, linkertable[1], linkertable[2], linkertable[3], option)</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">host</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>cel to link to</dd>
+                     <dt><code><span class="paramname">linkertable</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>an array that contains arguments passed to cel:link(host, linker, xval, yval, option).       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">[1]</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name passed to cel:link(host, linker, xval, yval, option).</dd>
+                    <dt><code><span class="paramname">[2]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to cel:link(host, linker, xval, yval, option)</dd>
+                    <dt><code><span class="paramname">[3]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to cel:link(host, linker, xval, yval, option)</dd>
+          
+        </dl>
+      </div></dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:link(host[, linker[, xval[, yval[, option]]]])&nbsp;
+          <span class="functiondesc">Links a cel to a host cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Links a cel to a host cel. The linker function is applied before this function returns If the cel is already linked to a different host then the cel is unlinked before attempting to link to the
+      new host. When a cel is linked, the host metacel may retarget the host to another host cel and may also overrule any
+      of the other parameters via the __link metacel method.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">host</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>cel to link to</dd>
+                     <dt><code><span class="paramname">linker</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function, if nil xval and yval specify x,y position of cel.</dd>
+                     <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to linker</dd>
+                     <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to linker</dd>
+                     <dt><code><span class="paramname">option</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>Indicates to the host how the link should be made.
+                            The meaning of this is dictated by the host.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:relink([linker[, xval[, yval]]]&nbsp;
+          <span class="functiondesc">Changes the linker, xval and yval parameters of a linked cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Changes the linker, xval and yval parameters of a linked cel. The cel remains linked to the same host. When a cel is relinked the host metacel may
+      overrule the linker, xval and yval.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">host</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>cel to link to</dd>
+                     <dt><code><span class="paramname">linker</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name</dd>
+                     <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to linker</dd>
+                     <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to linker</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+                     <dt><code>boolean</code></dt> 
+          <dd>false if relink failed, otherwise true</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:unlink()&nbsp;
+          <span class="functiondesc">unlinks a cel from its host.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>unlinks a cel from its host. If the cel has focus (see cel.hasfocus) when it is unlinked then focus is given to its host via grabfocus. If the mouse is in the cel when it is unlinked then a new cel is picked. (see mouse.pick). If the cel has the mouse trapped (see cel.trapmouse and cel.hasmousetrapped) when it is 
+        unlinked then the mouse is released (see cel.releasemouse).</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:move(x[, y[, w[, h]]])&nbsp;
+          <span class="functiondesc">changes position(x, y) and dimensions(w, h) of a cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>changes position(x, y) and dimensions(w, h) of a cel. A cel's position and dimension cannot be modified directly.  For example acel.x = 10 will not change the x 
+      position of acel (acel.x will return 10 but acel:pget('x') will return acels true x position)</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position of self relative to host. Defaults to self.x if nil</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position of self relative to host. Defaults to self.y if nil</dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width of the cel. Defaults to self.w if nil</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height of the cel. Defautls to self.h if nil</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:moveby(x[, y[, w[, h]]])&nbsp;
+          <span class="functiondesc">changes position(x, y) and dimensions(w, h) of a cel relative to current values.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>changes position(x, y) and dimensions(w, h) of a cel relative to current values. acel:moveby(x, y, w, h) is a shortcut for move(acel.x + x, acel.y + y, acel.w + w, acel.h + h), and is 
+      slightly more effecient.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>add to self.x. Defaults to 0 if nil.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>add to self.y. Defaults to 0 if nil.</dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>add to self.w. Defaults to 0 if nil.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>add to self.h. Defaults to 0 if nil.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:resize(w[, h])&nbsp;
+          <span class="functiondesc">Changes dimensions(w, h) of a cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Changes dimensions(w, h) of a cel. resize(w, h) is a shortcut for move(nil, nil, w, h)</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width of the cel. Defaults to self.w if nil</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height of the cel. Defautls to self.h if nil</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:raise()&nbsp;
+          <span class="functiondesc">Moves the cel to the front(top of the stack).</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Moves the cel to the front(top of the stack). When a cel is linked it is put in front(top of the stack), unless the host metacel
+      changes that behavior via __link.  So acel:unlink():link(host) would put it at the
+      top, but unlinking has side-effects such as losing focus, whereas raise does not. The default formation of a cel is a stack, its links have a z-order in which the front
+      link is at the top of the stack and the back link is at the bottom. If the host cel does not use a stack formation, such as a sequence, then raise has no effect. raise has no effect if the cel is already in front or is not linked.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:sink&nbsp;
+          <span class="functiondesc">Moves the cel to the back(bottom of the stack).</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Moves the cel to the back(bottom of the stack). sink has no effect if the cel is already on bottom(the back) or is not linked. If the host cel does not use a stack formation, such as a sequence, then sink has no effect. See cel:raise</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:islinkedto(host)&nbsp;
+          <span class="functiondesc">Returns a number if host is (a) host of the cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns a number if host is (a) host of the cel.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">host</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>host cel.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>1 indicates that host is the direct host of the cel, > 1 indicates that
+          host is (a) host of the cel.  The value represents how far up the cel tree the host 
+          is relative to the cel.  nil if the cel is not linked to the host</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:islinkedtoroot()&nbsp;
+          <span class="functiondesc">Returns a number if the root cel is (a) host of the cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns a number if the root cel is (a) host of the cel. If a cel is linked to the root cel then it can receive mouse and keyboard events and be rendered.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>1 indicates that the root cel is the direct host of the cel, > 1 indicates that
+          host is (a) host of the cel.  The value represents how far up the cel tree the root cel 
+          is relative to the cel.  nil if the cel is not linked to the root cel.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:hasfocus([inputsource])&nbsp;
+          <span class="functiondesc">Check if a cel has focus.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Check if a cel has focus.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">inputsource</span>&nbsp;<span class="paramtype">inputsource</span></code></dt> 
+          <dd>Defaults to cel.keyboard if nil.  Can also be cel.mouse.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>An integer >= 1 if an event generated by the inputsource will be delivered to the cel.
+          nil if the cel does not have focus. The value indicates the order in which a cel will
+          receive events. 1 means the cel will receive events first.  If the inputsource is a mouse then
+          1 means the mouse cursor is touching the cel, >1 indicates the mouse cursor is in the cel.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:takefocus([inputsource])&nbsp;
+          <span class="functiondesc">Gives a cel the focus.  This has no effect for cel.mouse.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Gives a cel the focus.  This has no effect for cel.mouse. This has no effect if self:hasfocus(inputsource) == 1. The onfocus(inputsource, false) event is sent to all cels that lose focus followed by onfocus(inputsource, true)
+      for each cel that gains focus.  This means that there is opportunity for another cel to take focus before
+      takefoucs returns. The focus of the mouse is controlled by moving the mouse cursor, takefocus will have no effect on the mouse 
+      focus.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">inputsource</span>&nbsp;<span class="paramtype">inputsource</span></code></dt> 
+          <dd>Defaults to cel.keyboard if nil.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>self:hasfocus(inputsource)</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:trapmouse([onescape])&nbsp;
+          <span class="functiondesc">Ensures all mouse events will be delivered to the cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Ensures all mouse events will be delivered to the cel. When the mouse is not trapped by a cel it will get mouse events only if it has the mouse focus. Only one cel at a time can have the mouse trapped. The root cel always traps the mouse. <div class="list">
+      trapmouse will fail for the following reasons:
+      <ul>
+      <li>The cel does not have the focus of the mouse.</li><li>The mouse is already trapped by a cel that is linked to the cel.</li><li>The cel is unlinked from the root cel.</li><li>When self:freemouse() is called.</li>
+      </ul>
+      </div> Trapping the mouse changes how mouse focus is determined in the following way.  
+        Only the trapping cel and cels linked to it get and lose mouse focus.  
+        The hosts of the trapping cel will not lose mouse focus for the duration of the trap.
+        More precisely the picking algorithm (responsible for setting the mouse focus and raising onmousein
+        and onmouseout events for the mouse) begins at the cel that has the mouse trapped.  If the mouse is not
+        in the trapping cel then onmouseout will be raised (if it was in the cel previously) and picking stops. 
+        If the mouse is in the trapping cel the onmousein will be raised (if it was not in the cel previously)
+        and picking will continue recursively checking the links of the trapping cel.
+       A cel cannot gain focus of the mouse unless it is linked to a cel that has trapped the mouse. When the mouse is trapped it is not constrained to the cel that trapped it</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">self</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>self</dd>
+                     <dt><code><span class="paramname">onescape</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>If present this function is called when the mouse is no longer trapped by the cel.       <div class="callbackdef">
+        <h4 class="callbacksig">
+          onescape(cel, mouse, reason)&nbsp;
+          <span class="callbackdesc"></span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">cel</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>cel that had the mouse trapped.</dd>
+                     <dt><code><span class="paramname">mouse</span>&nbsp;<span class="paramtype">mouse</span></code></dt> 
+          <dd>cel.mouse.</dd>
+                     <dt><code><span class="paramname">reason</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>an explanatory string.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+      </dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>true if the cel has sucessfully trapped the mouse, false otherwise.
+          If false then onescape will be called with the reason prior to returning.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:freemouse([reason])&nbsp;
+          <span class="functiondesc">Releases the mouse if the cel has the mouse trapped. On return the root cel will have the mouse trapped
+      unless the onescape callback traps the mouse elsewhere.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Releases the mouse if the cel has the mouse trapped. On return the root cel will have the mouse trapped
+      unless the onescape callback traps the mouse elsewhere. When the mouse is freed onescape (given when the mouse was trapped by the cel) is called before returning.
+      onescape may retrap the mouse.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">reason</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>An explanatory string passed to the onescape callback given when the mouse 
+        was trapped.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:hasmousetrapped()&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>true if the cel has trapped the mouse, by calling trapmouse() false otherwise.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:disable()&nbsp;
+          <span class="functiondesc">Disables the cel preventing user input.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Disables the cel preventing user input. Any links will also be prevented from receiving user input. If the cel has focus (see cel.hasfocus) when it is unlinked then focus is given to its host via takefocus.
+        If the mouse is in the cel when it is disabled then a new cel is picked. (see mouse.pick). If the cel has the mouse trapped (see cel.trapmouse and cel.hasmousetrapped) when it is 
+        disabled then the mouse is released (see cel.releasemouse).</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:enable()&nbsp;
+          <span class="functiondesc">Enables the cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Enables the cel. A cel is enabled until cel:disable() is called.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:addlistener(event, listener)&nbsp;
+          <span class="functiondesc">Registers a callback function for the specified event.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Registers a callback function for the specified event. Any events that were queued before addlistener will not be seen passed to the listener. There can be any number of listeners for an event, order of seeing the events is not
+        specified between listeners. An event will be seen by the metacel and/or the cel event callback before the listener sees it. When creating a factory or metacel that needs to see events on other cels using a listener is the best choice,
+      becuase the event callback function is for use by the creator of a cel.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">event</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the name of the event.</dd>
+                     <dt><code><span class="paramname">listener</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>function to call when event happens.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:removelistener(event, listener)&nbsp;
+          <span class="functiondesc">Removes a listener from the cel.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Removes a listener from the cel. Does nothing is listener is not a listener that was added via addlistener. The listener will not see any events after removelistner returns.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">event</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the name of the event.</dd>
+                     <dt><code><span class="paramname">listener</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>function to call when event happens.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:pget(...)&nbsp;
+          <span class="functiondesc">Get multiple properties of a cel by name.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Get multiple properties of a cel by name. This can be more effecient when you need to get multiple properties, but less effecient for 1.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">'x'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.x</dd>
+                     <dt><code><span class="paramname">'y'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.y</dd>
+                     <dt><code><span class="paramname">'w'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.w</dd>
+                     <dt><code><span class="paramname">'h'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.h</dd>
+                     <dt><code><span class="paramname">'xval'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.xval</dd>
+                     <dt><code><span class="paramname">'yval'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.yval</dd>
+                     <dt><code><span class="paramname">'face'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.face</dd>
+                     <dt><code><span class="paramname">'minw'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.minw</dd>
+                     <dt><code><span class="paramname">'maxw'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.maxw</dd>
+                     <dt><code><span class="paramname">'minh'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.minh</dd>
+                     <dt><code><span class="paramname">'maxh'</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>cel.maxh</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>...</code></dt> 
+          <dd>... - the corresponding value for each property name passed in.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:dump&nbsp;
+          <span class="functiondesc">prints cel state for debuggin purposes.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>prints cel state for debuggin purposes.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:flow(flowfunction, x, y, w, h[, update[, finalize]])&nbsp;
+          <span class="functiondesc">moves the cel, but 1 or more intermediate states can be injected by the flow callback.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>moves the cel, but 1 or more intermediate states can be injected by the flow callback. If flowfunction is nil or not key to a flowfunction defined in the cel's face then update is called with the 
+      final position followed by a call to finalize.  So acel:flow(nil, x, y, w, h) has the same effect as 
+      acel:move(x, y, w, h).
+       When a flow starts the flowfunction is called to get its initial position which is passed to update().  
+      Thereafter flowfunction/update are called when the cel driver moves cel.timer() forward.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">flowfunction</span>&nbsp;<span class="paramtype">function,key</span></code></dt> 
+          <dd>The flow function can be either a function or key to a flowfunction defined in the cel's face.       <div class="callbackdef">
+        <h4 class="callbacksig">
+          flowfunction(context, ox, x, oy, y, ow, w, oh, h)&nbsp;
+          <span class="callbackdesc">a function that produces intermediate states</span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p>a function that produces intermediate states</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">context</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>      <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+          Storage for flow life-cycle data.  The context can also be used by the flowfunction to
+                  store data.  The context is included in the drawtable of a cel, until the flow is finalized.<dt class="key">iteration</dt><dd class="value">The number of times the flowfunction has been called, initially 1,
+                    incremented by 1 each time the flowfunction is called.</dd><dt class="key">duration</dt><dd class="value">The number of milliseconds since the flow was started, initially 0</dd><dt class="key">finalize</dt><dd class="value">initially -1, when the flow is about to be finalized this is set to
+                    context.iteration</dd>
+        </dl>
+      </div></dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position when flow started.</dd>
+                     <dt><code><span class="paramname">fx</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position when flow ends.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position when flow started.</dd>
+                     <dt><code><span class="paramname">fy</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position when flow ends.</dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>w dimension when flow started.</dd>
+                     <dt><code><span class="paramname">fw</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>w dimension when flow ends.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>h dimension when flow started.</dd>
+                     <dt><code><span class="paramname">fh</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>h dimension when flow is ends.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>intermediate x position.</dd>
+                     <dt><code>number</code></dt> 
+          <dd>intermediate y position.</dd>
+                     <dt><code>number</code></dt> 
+          <dd>intermediate width.</dd>
+                     <dt><code>number</code></dt> 
+          <dd>intermediate height.</dd>
+                     <dt><code>boolean</code></dt> 
+          <dd>true if the flow is incomplete, if not true this signals the end of the flow.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+      </dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position of self relative to host. Defaults to self.x if nil</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position of self relative to host. Defaults to self.y if nil</dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width of the cel. Defaults to self.w if nil</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height of the cel. Defautls to self.h if nil</dd>
+                     <dt><code><span class="paramname">update</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>called to move the cel to a new position.  Defaults to cel.move if nil.       <div class="callbackdef">
+        <h4 class="callbacksig">
+          update(cel, x, y, w, h)&nbsp;
+          <span class="callbackdesc"></span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">cel</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>the cel</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position of cel.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position of cel.</dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width of cel.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height of cel.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+      </dd>
+                     <dt><code><span class="paramname">finalize</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>called when the flow has completed.       <div class="callbackdef">
+        <h4 class="callbacksig">
+          finalize(cel)&nbsp;
+          <span class="callbackdesc"></span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">cel</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>the cel</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+      </dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:reflow(flowfunction, x, y, w, h)&nbsp;
+          <span class="functiondesc">If the cel is flowing reflow will update the final destination to 
+      (x, y, w, h).</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>If the cel is flowing reflow will update the final destination to 
+      (x, y, w, h). The next time the flowfunction runs it will see the new destination.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">flowfunction</span>&nbsp;<span class="paramtype">flowfunction</span></code></dt> 
+          <dd>if not nil the cel reflows only if this is the current flowfunction
+        for the cel.</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position of self relative to host. Defaults to self.x if nil</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position of self relative to host. Defaults to self.y if nil</dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width of the cel. Defaults to self.w if nil</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height of the cel. Defautls to self.h if nil</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:endflow([flowfunction])&nbsp;
+          <span class="functiondesc">If the cel is flowing, forces the flow to finalize.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>If the cel is flowing, forces the flow to finalize. The current flow function is called with context.finalize set to context.iteration, and the cel
+      is updated and the flow is finalized</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">flowfunction</span>&nbsp;<span class="paramtype">flowfunction</span></code></dt> 
+          <dd>If present the flow is finalized iff the current flow function matches
+                            this one.  see cel:flow for description</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:flowrelink(flowfunction, linker, xval, yval[, update[, finalize]])&nbsp;
+          <span class="functiondesc">relinks the cel at the end of the flow via cel:relink(linker, xval, yval).</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>relinks the cel at the end of the flow via cel:relink(linker, xval, yval). The current linker is removed before the flow begins. The final x, y, w, h is calculated before each iteration based on the x, y, w, h values if the linker
+      were applied at that point in the iteration If flowfunction is nil or not key to a flowfunction defined in the cel's face then update is called with the 
+      final position followed by a call to finalize.  So acel:flowrelink(nil, linker, xval, yal) has the same
+      effect as acel:relink(linker, xval, yval).
+       When a flow starts the flowfunction is called to get its initial position which is passed to update().  
+      Thereafter flowfunction/update are called when the cel driver moves cel.timer() forward.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">flowfunction</span>&nbsp;<span class="paramtype">flowfunction</span></code></dt> 
+          <dd>The flow function can be either a function or key to a flowfunction defined in the cel's face.       <div class="callbackdef">
+        <h4 class="callbacksig">
+          flowfunction(context, ox, x, oy, y, ow, w, oh, h)&nbsp;
+          <span class="callbackdesc">a function that produces intermediate states</span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p>a function that produces intermediate states</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">context</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>      <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+          Storage for flow life-cycle data.  The context can also be used by the flowfunction to
+                  store data.  The context is included in the drawtable of a cel, until the flow is finalized.<dt class="key">iteration</dt><dd class="value">The number of times the flowfunction has been called, initially 1,
+                    incremented by 1 each time the flowfunction is called.</dd><dt class="key">duration</dt><dd class="value">The number of milliseconds since the flow was started, initially 0</dd><dt class="key">finalize</dt><dd class="value">initially -1, when the flow is about to be finalized this is set to
+                    context.iteration</dd>
+        </dl>
+      </div></dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position when flow started.</dd>
+                     <dt><code><span class="paramname">fx</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position when flow ends.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position when flow started.</dd>
+                     <dt><code><span class="paramname">fy</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position when flow ends.</dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>w dimension when flow started.</dd>
+                     <dt><code><span class="paramname">fw</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>w dimension when flow ends.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>h dimension when flow started.</dd>
+                     <dt><code><span class="paramname">fh</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>h dimension when flow is ends.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>intermediate x position.</dd>
+                     <dt><code>number</code></dt> 
+          <dd>intermediate y position.</dd>
+                     <dt><code>number</code></dt> 
+          <dd>intermediate width.</dd>
+                     <dt><code>number</code></dt> 
+          <dd>intermediate height.</dd>
+                     <dt><code>boolean</code></dt> 
+          <dd>true if the flow is incomplete, if not true this signals the end of the flow.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+      </dd>
+                     <dt><code><span class="paramname">linker</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name</dd>
+                     <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to linker</dd>
+                     <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to linker</dd>
+                     <dt><code><span class="paramname">update</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>called to move the cel to a new position.  Defaults to cel.move if nil.       <div class="callbackdef">
+        <h4 class="callbacksig">
+          update(cel, x, y, w, h)&nbsp;
+          <span class="callbackdesc"></span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">cel</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>the cel</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>x position of cel.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>y position of cel.</dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width of cel.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height of cel.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+      </dd>
+                     <dt><code><span class="paramname">finalize</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>called when the flow has completed.       <div class="callbackdef">
+        <h4 class="callbacksig">
+          finalize(cel)&nbsp;
+          <span class="callbackdesc"></span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">cel</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>the cel</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+      </dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:getflow(key)&nbsp;
+          <span class="functiondesc">Returns the flow function defined in the cel's face.flow table with specified key.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the flow function defined in the cel's face.flow table with specified key.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">name</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the key name in face.flow</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>function</code></dt> 
+          <dd>If a function was found in face.flow[key] otherwise nil.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:isflowing([flow])&nbsp;
+          <span class="functiondesc">Returns true if the cel has begun to flow and not finished.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns true if the cel has begun to flow and not finished.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">flow</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>if present returns true only if this flow function is used.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>true if the cel is flowing, if the cel is flowing but is not using the specified
+        flow function the false, if the cel is not flowing then false.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel:flowvalue(flowfunction, a, b, update, finalize)&nbsp;
+          <span class="functiondesc">TODO, probably will be removed when overhauling flows</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>TODO, probably will be removed when overhauling flows</p>
+        
+        
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.x&nbsp;
+          <span class="propertydefdesc">The x coordinate of the topleft of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The x coordinate of the topleft of the cel.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.y&nbsp;
+          <span class="propertydefdesc">The y coordinate of the topleft of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The y coordinate of the topleft of the cel.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.w&nbsp;
+          <span class="propertydefdesc">The width of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The width of the cel.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.h&nbsp;
+          <span class="propertydefdesc">The height of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The height of the cel.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.minw&nbsp;
+          <span class="propertydefdesc">The minimum width of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The minimum width of the cel.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.maxw&nbsp;
+          <span class="propertydefdesc">The maximum width of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The maximum width of the cel.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.minh&nbsp;
+          <span class="propertydefdesc">The minimum height of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The minimum height of the cel.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.maxh&nbsp;
+          <span class="propertydefdesc">The maximum height of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The maximum height of the cel.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.linker&nbsp;
+          <span class="propertydefdesc">The linker function of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The linker function of the cel.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.xval&nbsp;
+          <span class="propertydefdesc">The linker function xval.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The linker function xval.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.yval&nbsp;
+          <span class="propertydefdesc">The linker function yval.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The linker function yval.</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.l&nbsp;
+          <span class="propertydefdesc">The left of the cel (same as cel.x).</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The left of the cel (same as cel.x).</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.r&nbsp;
+          <span class="propertydefdesc">The right of the cel (cel.x + cel.w).</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The right of the cel (cel.x + cel.w).</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.t&nbsp;
+          <span class="propertydefdesc">The top of the cel (same as cel.y).</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The top of the cel (same as cel.y).</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.b&nbsp;
+          <span class="propertydefdesc">The bottom of the cel (cel.y + cel.h).</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The bottom of the cel (cel.y + cel.h).</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.X&nbsp;
+          <span class="propertydefdesc">The absolute x coordinate of the topleft of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The absolute x coordinate of the topleft of the cel. If cel:islinkedtoroot() is false this is cel.x</p>
+        </div>
+      </div>
+             <div class="propertydef">
+      <p class="propertydefheader">property</p>
+        <h3 class="propertydefname">
+          cel.Y&nbsp;
+          <span class="propertydefdesc">The absolute y coordinate of the topleft of the cel.</span>
+        </h3>
+        <div class="propertydeffulldesc">
+        <p>The absolute y coordinate of the topleft of the cel. If cel:islinkedtoroot() is false this is cel.y</p>
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onresize(ow, oh)&nbsp;
+          <span class="eventdesc">Triggered by cel width or height changing.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered by cel width or height changing.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">ow</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The width of the cel before it was resized.</dd>
+                     <dt><code><span class="paramname">oh</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The height of the cel before it was resize.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onresize(ow, oh)&nbsp;
+          <span class="eventdesc">Triggered by cel width or height changing.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered by cel width or height changing.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">ow</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The width of the cel before it was resized.</dd>
+                     <dt><code><span class="paramname">oh</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The height of the cel before it was resize.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onmousemove(x, y)&nbsp;
+          <span class="eventdesc">Triggered by mouse cursor moving when the mouse is in the cel, or trapped by the cel.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered by mouse cursor moving when the mouse is in the cel, or trapped by the cel.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">self</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>self</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The x position of the mouse relative to the cel when the event was created.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The y position of the mouse relative to the cel when the event was created.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onmousedown(button, x, y, intercepted)&nbsp;
+          <span class="eventdesc">Triggered when a mouse button is pressed when the mouse is in the cel, or trapped by the cel.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when a mouse button is pressed when the mouse is in the cel, or trapped by the cel.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">button</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>The mouse button that was pressed down.  A value in cel.mouse.buttons.</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The x position of the mouse relative to the cel when the event was created.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The y position of the mouse relative to the cel when the event was created.</dd>
+                     <dt><code><span class="paramname">intercepted</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If a link of the cel saw this event and intercepted it this will be true.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>return true to intercept the event.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onmouseup(button, x, y, intercepted)&nbsp;
+          <span class="eventdesc">Triggered when a mouse button is released when the mouse is in the cel, or trapped by the cel.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when a mouse button is released when the mouse is in the cel, or trapped by the cel.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">button</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>The mouse button that was released.  A value in cel.mouse.buttons.</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The x position of the mouse relative to the cel when the event was created.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The y position of the mouse relative to the cel when the event was created.</dd>
+                     <dt><code><span class="paramname">intercepted</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If a link of the cel saw this event and intercepted it this will be true.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>return true to intercept the event.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onmousewheel(direction, x, y, intercepted)&nbsp;
+          <span class="eventdesc">Triggered when the mouse wheel is moved when the mouse is in the cel, or trapped by the cel.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when the mouse wheel is moved when the mouse is in the cel, or trapped by the cel.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">direction</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>cel.mouse.wheeldirection.up or cel.mouse.wheeldirection.down.</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The x position of the mouse relative to the cel when the event was created.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The y position of the mouse relative to the cel when the event was created.</dd>
+                     <dt><code><span class="paramname">intercepted</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If a link of the cel saw this event and intercepted it this will be true.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>return true to intercept the event.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onmousein()&nbsp;
+          <span class="eventdesc">Triggered when the cel gains mouse focus.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when the cel gains mouse focus. If cel:hasfocus(cel.mouse) == 1 then the mouse cursor touches the cel.</p>
+        
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onmouseout()&nbsp;
+          <span class="eventdesc">Triggered when the cel loses mouse focus.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when the cel loses mouse focus. onmousein will always precede by onmouseout.</p>
+        
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onkeydown(key, intercepted)&nbsp;
+          <span class="eventdesc">Triggered when a keyboard key is pressed down while the cel has the keyboard focus</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when a keyboard key is pressed down while the cel has the keyboard focus</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">key</span>&nbsp;<span class="paramtype">key</span></code></dt> 
+          <dd>The keyboard key that was pressed down.  A value in cel.keyboard.keys.</dd>
+                     <dt><code><span class="paramname">intercepted</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If a link of the cel saw this event and intercepted it this will be true.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>return true to intercept the event.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onkeypress(key, intercepted)&nbsp;
+          <span class="eventdesc">Triggered when a keyboard key is pressed down while the cel has the keyboard focus, also triggered
+        periodically when a keyboard key is held down while the cel has the keyboard focus</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when a keyboard key is pressed down while the cel has the keyboard focus, also triggered
+        periodically when a keyboard key is held down while the cel has the keyboard focus</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">key</span>&nbsp;<span class="paramtype">key</span></code></dt> 
+          <dd>The keyboard key that was pressed down.  A value in cel.keyboard.keys.</dd>
+                     <dt><code><span class="paramname">intercepted</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If a link of the cel saw this event and intercepted it this will be true.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>return true to intercept the event.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onkeyup(key, intercepted)&nbsp;
+          <span class="eventdesc">Triggered when a keyboard key is released while the cel has the keyboard focus</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when a keyboard key is released while the cel has the keyboard focus</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">key</span>&nbsp;<span class="paramtype">key</span></code></dt> 
+          <dd>The keyboard key that was released.  A value in cel.keyboard.keys.</dd>
+                     <dt><code><span class="paramname">intercepted</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If a link of the cel saw this event and intercepted it this will be true.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>return true to intercept the event.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onchar(char, intercepted)&nbsp;
+          <span class="eventdesc">Triggered when a character is generated by the keyboard while the cel has the keyboard focus</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when a character is generated by the keyboard while the cel has the keyboard focus</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">char</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>The string representation of the character.</dd>
+                     <dt><code><span class="paramname">intercepted</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If a link of the cel saw this event and intercepted it this will be true.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>return true to intercept the event.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onfocus(inputsource)&nbsp;
+          <span class="eventdesc">Triggered when a cel gains focus.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when a cel gains focus. If cel:hasfocus(inputsource) == 1 the the cel is the first cel with focus.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">inputsource</span>&nbsp;<span class="paramtype">inputsource</span></code></dt> 
+          <dd>always cel.keyboard (for now).</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:onblur(inputsource)&nbsp;
+          <span class="eventdesc">Triggered when a cel loses focus.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when a cel loses focus. Do not call self:takefocus() in response to onblur. That would be a good way to create an infinite loop.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">inputsource</span>&nbsp;<span class="paramtype">inputsource</span></code></dt> 
+          <dd>always cel.keyboard (for now).</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:ontimer(value, inputsource)&nbsp;
+          <span class="eventdesc">Triggered when the Cel timer is updated.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when the Cel timer is updated. The cel will recieve the event if it has the focus of any inputsource.  The event
+      is triggered for each inputsource focused on the cel.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">value</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The value of cel.timer() when the event was triggered.</dd>
+                     <dt><code><span class="paramname">inputsource</span>&nbsp;<span class="paramtype">inputsource</span></code></dt> 
+          <dd>The inputsource that is focused on the cel.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          cel:oncommand(comand, data, intercepted)&nbsp;
+          <span class="eventdesc">Triggered when a command is generated by the driver</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>Triggered when a command is generated by the driver This event is routed to the cels with keyboard focus Three commands are defined and have no data associated to them:  'cut', 'copy', 'paste'. 
+      Each indicates that the corresponding clipboard action should be taken. For any other command the driver determines what commands to send and assigns meaning to them.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">command</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>identifies the command.</dd>
+                     <dt><code><span class="paramname">data</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>data associated to the command.</dd>
+                     <dt><code><span class="paramname">intercepted</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If a link of the cel saw this event and intercepted it this will be true.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>return true to intercept the event.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="descriptiondef">
+        <p class="descriptiondefheader">description</p>
+        <h3 class="descriptiondefsig">
+          cel&nbsp;
+          <span class="descriptiondefdesc">This table is the description of a cel intended to be used to render the cel.</span>
+        </h3>
+        <div class="descriptiondeffulldesc">
+        <p>This table is the description of a cel intended to be used to render the cel. <div class="code"><pre><code>{</code>
+<code>  id = number,</code>
+<code>  host = description,</code>
+<code>  x = number,</code>
+<code>  y = number,</code>
+<code>  w = number,</code>
+<code>  h = number,</code>
+<code>  mousein = boolean,</code>
+<code>  mousetouch = boolean,</code>
+<code>  focus = (keyboard)boolean,</code>
+<code>  clip = {</code>
+<code>    l = number,</code>
+<code>    r = number,</code>
+<code>    t = number,</code>
+<code>    b = number,</code>
+<code>  },</code>
+<code>  face = face,</code>
+<code>  metacel = string,</code>
+<code>  metacel = boolean,</code>
+<code>  flowcontext = any,</code>
+<code>  [1,n] = description,</code>
+<code>}</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">entries</span>
+          <dl class="arguments">          <dt><code><span class="paramname">id</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>a unique id for the cel the cel that is described, 
+                           this is 0 if the cel has no id (meaning its a virtual cel)</dd>
+                     <dt><code><span class="paramname">host</span>&nbsp;<span class="paramtype">description</span></code></dt> 
+          <dd>refers to the host description.</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The absolute x coordinate of the cel. Absolute means not relative to its host cel.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The absolute y coordinate of the cel.</dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The width of the cel.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The height of the cel.</dd>
+                     <dt><code><span class="paramname">mousein</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>if true then the mouse cursor is in the cel</dd>
+                     <dt><code><span class="paramname">mousetouch</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>if true then the mouse cursor is touching the cel.</dd>
+                     <dt><code><span class="paramname">focus</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>if true the cel has focus.</dd>
+                     <dt><code><span class="paramname">clip</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>defines a rectangle in absolute coordinates, that the cel is cliped to. 
+            This will always be as or more restrictive than the clipping recatangle for the host.
+            If the area defined by clip is <= 0 for a cel then that cel is not described.
+            Which means that clip.l < clip.r is always true and clip.t < clip.b is always true.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">l</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The left of the clipping rectangle, this is always less than the right</dd>
+                    <dt><code><span class="paramname">r</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The right of the clipping rectangle this is always greater than the left side</dd>
+                    <dt><code><span class="paramname">t</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The top of the clipping rectangle, this is always less than the bottom.</dd>
+                    <dt><code><span class="paramname">b</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>the bottom of the clipping rectangle, this is always greater than the top.</dd>
+          
+        </dl>
+      </div></dd>
+                     <dt><code><span class="paramname">flowcontext</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>This is nil by default, if present this cel is 'flowing' and
+                   this is the context passed to the flow function. The flow function can put additional
+                   information in the context, the suggested usage is event based animations.</dd>
+                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>The cel face</dd>
+                     <dt><code><span class="paramname">metacel</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>This is the name of the metacel for the cel. The metacel is basically the
+                      type of cel such as 'button', 'label', 'listbox', 'root'</dd>
+                     <dt><code><span class="paramname">metacel</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If metacel is false, the description is of a virtual cel, 
+        that was never actually created.</dd>
+                     <dt><code><span class="paramname">[1,n]</span>&nbsp;<span class="paramtype">description</span></code></dt> 
+          <dd>This is the array portion of the cels description, 
+        (it meets the requirements for the # operator to return its length).
+        Any cel that is linked to the cel and is not entirely clipped will
+        be described in this array in z order. (The topmost link will be at index 1). For cels that define a layout,
+        such as a sequence, the order is not based on z order</dd>
+          </dl>
+        </div>
+        </div>
+      </div>
+      
+      
+      </div>
+        </div>
+      </body></html>

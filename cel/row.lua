@@ -7,7 +7,7 @@ local _weight = {}
 local _minw = {}
 local _row = {}
 
-local row_items = rowmt.items
+local row_items = rowmt.links
 local row_get = rowmt.get
 
 rowmt.next = nil

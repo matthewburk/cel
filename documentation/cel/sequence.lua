@@ -144,10 +144,10 @@ export['cel.sequence'] {
       };
     };
     functiondef['sequence:len()'] {
-      [[returns array length of the sequence.]];
+      [[returns number of cels in the sequence.]];
 
       returns = {
-        param.integer[[The lenght of the sequence]];
+        param.integer[[The number of cels in the sequence.]];
       };
     };
     functiondef['sequence:next(link)'] {
