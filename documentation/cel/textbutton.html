@@ -18,30 +18,36 @@
 
         </div>
         <div id="content">
-        <h1>cel.label<p class="factorydesc">(module)<br><br>Factory for the label metacel</p></h1>
-        Factory for the label metacel       <div title="function" class="functiondef">
+        <h1>cel.textbutton<p class="factorydesc">(module)<br><br>Factory for the textbutton metacel</p></h1>
+        Factory for the textbutton metacel       <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          cel.label(t)&nbsp;
-          <span class="functiondesc">Creates a new label</span>
+          cel.textbutton(t)&nbsp;
+          <span class="functiondesc">Creates a new textbutton</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Creates a new label <div class="code"><pre><code>cel.label {</code>
+        <p>Creates a new textbutton The w and h of the textbutton will be initialized to its minw and minh <div class="code"><pre><code>cel.textbutton {</code>
 <code>  text = string,</code>
-<code>  onchange(self) = function, --TODO implement this</code>
+<code>  onclick = function,</code>
+<code>  onpress = function,</code>
+<code>  onhold = function,</code>
 <code>}</code></pre></div></p>
                 <div class="arguments">
           <span class="arguments">arguments</span>
-          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
-          <dd>text.</dd>
-                     <dt><code><span class="paramname">onchange</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>text to display</dd>
+                     <dt><code><span class="paramname">onclick</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onpress</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onhold</span>&nbsp;<span class="paramtype">function</span></code></dt> 
           <dd>event callback.</dd>
           </dl>
         </div>
                 <div class="returns">
           <span class="returns">returns</span>
-          <dl class="returns">          <dt><code>label</code></dt> 
-          <dd>a new label.</dd>
+          <dl class="returns">          <dt><code>textbutton</code></dt> 
+          <dd>a new textbutton.</dd>
           </dl>
           </div>
         
@@ -50,42 +56,40 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          cel.label.new(text[, face])&nbsp;
-          <span class="functiondesc">Creates a new label.</span>
+          cel.textbutton.new(text[, face])&nbsp;
+          <span class="functiondesc">Creates a new textbutton.</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Creates a new label.</p>
+        <p>Creates a new textbutton. The w and h of the textbutton will be initialized to its minw and minh</p>
                 <div class="arguments">
           <span class="arguments">arguments</span>
           <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
-          <dd>text.</dd>
+          <dd>The text to display.</dd>
                      <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
-          <dd>face or face name. After resolving the face, the 
-      label looks for a font at face.font(required) and a layout at 
-      face.layout(optional).</dd>
+          <dd>face or face name.</dd>
           </dl>
         </div>
                 <div class="returns">
           <span class="returns">returns</span>
-          <dl class="returns">          <dt><code>label</code></dt> 
-          <dd>a new label.</dd>
+          <dl class="returns">          <dt><code>textbutton</code></dt> 
+          <dd>a new textbutton</dd>
           </dl>
           </div>
         
         </div>
       </div>
              <div class="tabledef">
-        <p class="tabledefname">cel.label.layout</p>
+        <p class="tabledefname">cel.textbutton.layout</p>
         <dl class="tabledef">
           <dt class="key">padding</dt><dd class="value">A table defining how to layout space around the text.
     see font:pad() for definition.</dd>
         </dl>
       </div> <div class="celdef">
-      <h1>label<p class="celdefdesc">(cel)<br><br>A label is a cel for displaying a single line of text.</p></h1>
-      A label is a cel for displaying a single line of text. A label in non-interactive and will never have mouse foucs. (label.touch = false) A label has a fixed size which is determined by its text and layout       <div title="function" class="functiondef">
+      <h1>textbutton<p class="celdefdesc">(cel)<br><br>A textbutton is a button for displaying a single line of text.</p></h1>
+      A textbutton is a button for displaying a single line of text. A textbutton has a minimum width and height which is determined by its text and layout       <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          label:getfont()&nbsp;
+          textbutton:getfont()&nbsp;
           <span class="functiondesc">Returns the font</span>
         </h3>
         <div class="functionfulldesc">
@@ -94,7 +98,7 @@
                 <div class="returns">
           <span class="returns">returns</span>
           <dl class="returns">          <dt><code>font</code></dt> 
-          <dd>font used by the label</dd>
+          <dd>font used by the textbutton</dd>
           </dl>
           </div>
         
@@ -103,7 +107,7 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          label:getbaseline()&nbsp;
+          textbutton:getbaseline()&nbsp;
           <span class="functiondesc">Returns the pen origin</span>
         </h3>
         <div class="functionfulldesc">
@@ -123,7 +127,7 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          label:settext(text)&nbsp;
+          textbutton:settext(text)&nbsp;
           <span class="functiondesc">Changes the text displayed.</span>
         </h3>
         <div class="functionfulldesc">
@@ -136,7 +140,7 @@
         </div>
                 <div class="returns">
           <span class="returns">returns</span>
-          <dl class="returns">          <dt><code>label</code></dt> 
+          <dl class="returns">          <dt><code>textbutton</code></dt> 
           <dd>self</dd>
           </dl>
           </div>
@@ -146,7 +150,7 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          label:gettext()&nbsp;
+          textbutton:gettext()&nbsp;
           <span class="functiondesc">Gets the displayed text.</span>
         </h3>
         <div class="functionfulldesc">
@@ -164,13 +168,13 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          label:printf(format, ...)&nbsp;
+          textbutton:printf(format, ...)&nbsp;
           <span class="functiondesc">Changes the text displayed. Shortcut for
-      label:settext(string.format(format, ...))</span>
+      textbutton:settext(string.format(format, ...))</span>
         </h3>
         <div class="functionfulldesc">
         <p>Changes the text displayed. Shortcut for
-      label:settext(string.format(format, ...))</p>
+      textbutton:settext(string.format(format, ...))</p>
                 <div class="arguments">
           <span class="arguments">arguments</span>
           <dl class="arguments">          <dt><code><span class="paramname">format</span>&nbsp;<span class="paramtype">string</span></code></dt> 
@@ -181,21 +185,69 @@
         </div>
                 <div class="returns">
           <span class="returns">returns</span>
-          <dl class="returns">          <dt><code>label</code></dt> 
+          <dl class="returns">          <dt><code>textbutton</code></dt> 
           <dd>self</dd>
           </dl>
           </div>
         
         </div>
       </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          textbutton:ispressed()&nbsp;
+          <span class="functiondesc">inherited from button</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>inherited from button</p>
+        
+        
+        </div>
+      </div>
              <div class="eventdef">
         <p class="eventdefheader">event</p>
         <h3 class="eventsig">
-          label:onchange()&nbsp;
-          <span class="eventdesc">called when the label text is changed.</span>
+          textbutton:onchange()&nbsp;
+          <span class="eventdesc">called when the textbutton text is changed.</span>
         </h3>
         <div class="eventfulldesc">
-        <p>called when the label text is changed.</p>
+        <p>called when the textbutton text is changed.</p>
+        
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          textbutton:onclick(mousebutton, x, y)&nbsp;
+          <span class="eventdesc">inherited from button</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>inherited from button</p>
+        
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          textbutton:onhold()&nbsp;
+          <span class="eventdesc">inherited from button</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>inherited from button</p>
+        
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          textbutton:onpress(mousebutton, x, y)&nbsp;
+          <span class="eventdesc">inherited from button</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>inherited from button</p>
         
         
         </div>
@@ -205,11 +257,11 @@
       </div>       <div class="descriptiondef">
         <p class="descriptiondefheader">description</p>
         <h3 class="descriptiondefsig">
-          label&nbsp;
-          <span class="descriptiondefdesc"></span>
+          textbutton&nbsp;
+          <span class="descriptiondefdesc">Adds to the a button description</span>
         </h3>
         <div class="descriptiondeffulldesc">
-        <p><div class="code"><pre><code>{</code>
+        <p>Adds to the a button description <div class="code"><pre><code>{</code>
 <code>  font = font,</code>
 <code>  text = string,</code>
 <code>  penx = integer,</code>

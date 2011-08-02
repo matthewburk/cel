@@ -175,8 +175,8 @@ export {
       };
 
       returns = {
-        param.integer[[penx coordinate of pen origin to use when drawing the text]];
-        param.integer[[peny coordinate of pen origin to use when drawing the text]];
+        param.integer[[x coordinate of pen origin to use when drawing the text]];
+        param.integer[[y coordinate of pen origin to use when drawing the text]];
         param.integer[[width of the bounding box with left and right padding applied]];
         param.integer[[height of the bounding box with top and bottom padding applied]];
         param.integer[[the amount of left padding added to bounding box.]];

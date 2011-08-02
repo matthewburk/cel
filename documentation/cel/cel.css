@@ -1,3 +1,138 @@
+#navigation {
+  position:absolute;
+  /*position:fixed;*/
+  left:0;
+  width:10em;
+}
+
+#content {
+  margin-left:10em;
+  max-width:900;
+}
+
+ul.nav
+{
+list-style-type:none;
+margin:0;
+padding:0;
+}
+/*
+a:link,a:visited
+{
+display:block;
+font-weight:bold;
+color:#3366FF;
+background-color:#D6E0FF;
+width:14em;
+padding:4px;
+}
+  */
+/*
+a:hover,a:active
+{
+background-color:#3366FF;
+color:#ffffff;
+}
+  */
+
+
+ul
+{
+list-style-type:none;
+margin-top:0;
+}
+ul.tabledef
+{
+    margin-top:0;
+padding-left:1.5em; 
+}
+
+li
+{
+}
+
+
+div.tabledef {
+  /*background-color:#ececec;*/
+  font-family:"arial", verdana, sans-serif;
+}
+  .tabledefname {
+    /*color:#ffffff;*/
+    /*background-color:#000000;*/
+    /*font-family:"courier new", monospace;*/
+    margin-bottom:0;
+    margin-top:0;
+    font-weight:bold;
+  }
+
+    .tabledefdesc {
+      font-family:"arial", verdana, sans-serif;
+    font-weight:normal;
+      color:#111111;
+    }
+
+div.metaceldef {
+  background-color:#ececec;
+  font-family:"arial", verdana, sans-serif;
+}
+
+  .metaceldefheader {
+    background-color:#ffffff;
+    margin-bottom:0;
+    color:#3366FF;
+    font-weight:bold;
+    font-variant:small-caps;
+  }
+
+  .metaceldefname {
+    color:#ffffff;
+    background-color:#000000;
+    font-family:"courier new", monospace;
+    margin-bottom:.3em;
+    padding-left:.5em;
+    margin-top:0;
+  }
+
+    .metaceldefdesc {
+      text-transform:lowercase;
+      color:#cccccc;
+      font-size:.7em;
+    }
+
+  .metaceldeffulldesc {
+    padding-left:.5em;
+    padding-right:.5em;
+    color:#000000;
+    background-color:#ececec;
+    border-bottom-color:#000000;
+    border-bottom-style:solid;
+    border-bottom-width:thin
+  }
+
+  dt.metacellayout{
+    color:#3366FF;
+    font-weight:bold;
+    margin-bottom:.3em;
+    font-variant:small-caps;
+    background-color:#ffffff;
+  }
+  dt.metaceldescription{
+    color:#3366FF;
+    font-weight:bold;
+    margin-bottom:.3em;
+    font-variant:small-caps;
+    background-color:#ffffff;
+  }
+  dt.metacelcomposition{
+    color:#3366FF;
+    font-weight:bold;
+    margin-bottom:.3em;
+    font-variant:small-caps;
+    background-color:#ffffff;
+  }
+
+
+
 div.descriptiondef {
   background-color:#ececec;
   font-family:"arial", verdana, sans-serif;
@@ -186,6 +321,24 @@ dl.returns {
   margin-top:.3em;
 }
 
+dl.tabledef {
+  margin-top:0;
+  /*border-left-color:#000000;
+  border-left-style:dashed;
+  border-left-width:thin*/
+}
+
+dl.innertabledef {
+  margin-top:0;
+/*  border-left-color:#000000;
+  border-left-style:dashed;
+  border-left-width:thin*/
+}
+
+dt.key {
+  font-weight:bold;
+}
+
 span.arguments {
   color:#3366FF;
   font-weight:bold;
@@ -231,10 +384,6 @@ border-style:solid;
 border-width:medium
 }*/
 
-body {
-  /*margin-left:20%;*/
-  max-width:900;
-  position:absolute;
-  left:10%;
-  right:10%;
-}
+
+
+
