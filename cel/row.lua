@@ -165,18 +165,25 @@ do
     return _compile(self, t, row or rowmetacel:new(t.face))
   end
 
-  local _up = rowmetacel.compilelistentry
-  function rowmetacel:compilelistentry(t, row, index, entry, typ)
-    if 'table' == typ then
-      local minw = entry.minw or 0
-      local weight = entry.weight or 0
-
+  function rowmetacel:compileentry(row, entry, entrytype)
+    if 'table' == entrytype then
       local link = cel.tocel(entry[1], row)
-      
       if link then
-        local linker, xval, yval = link:pget('linker', 'xval', 'yval')
+        local minw = entry.minw or 0
+        local weight = entry.weight or 0
+        local linker, xval, yval, option
+
+        if entry.link then
+          if type(entry.link) == 'table' then
+            linker, xval, yval = unpack(entry.link, 1, 3)
+          else
+            linker = entry.link
+          end
+        else
+          linker, xval, yval = link:pget('linker', 'xval', 'yval')
+        end
+
         link:link(row, linker, xval, yval, slotlayout(minw, weight))
-      else
       end
     end
   end

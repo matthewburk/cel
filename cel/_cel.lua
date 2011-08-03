@@ -152,17 +152,13 @@ end
 
 
 do --ENV.linkall
-  local linkparams = {
-    link = setmetatable({}, {__mode = 'k'}),
-    onlink = setmetatable({}, {__mode = 'k'}),
-  }
+  local linkparams = setmetatable({}, {__mode = 'k'})
 
   function linkall(host, t)
     linkall = function(host, t)
       event:wait()
 
-      linkparams.link[host] = t.link
-      linkparams.onlink[host] = t.onlink
+      linkparams[host] = t.link
 
       for i=1, #t do
         local link = t[i]
@@ -172,25 +168,16 @@ do --ENV.linkall
           link(host, t)
         elseif linktype == 'string' then
           host[_metacel]:__celfromstring(host, link):link(host)
-        elseif linktype == 'table' and link[_metacel] then
-          if linkparams.link[link] then
-            link:link(host, linkparams.link[link]) --TODO change to values that are already on the cel
-            linkparams.link[link] = nil
+        elseif linktype == 'table' and link[_metacel] then --if link is a cel
+          if linkparams[link] then
+            local p = linkparams[link]
+            link:link(host, p[1], p[2], p[3], p[4]) --TODO change to values that are already on the cel
+            linkparams[link] = nil
           else
             link:link(host)
           end
-
-          --TODO what is onlink for???
-          local onlink = linkparams.onlink[link]
-
-          if onlink then
-            onlink(link, t)
-            linkparams.onlink[link] = nil
-          end
         else
-          if host[_metacel].compilelistentry then
-            host[_metacel]:compilelistentry(t, host, i, link, linktype)
-          end
+          host[_metacel]:compileentry(host, link, linktype)
         end
       end
 
@@ -532,10 +519,18 @@ do --metacel.compile
     cel.onkeydown = t.onkeydown
     cel.onkeyup = t.onkeyup
     if t.link then
-      local linker, xval, yval = unpack(t.link, 1, 3)
+      local linker, xval, yval
+
+      if type(t.link) == 'table' then
+        linker, xval, yval = t.link[1], t.link[2], t.link[3]
+      else
+        linker = t.link
+      end
+
       if type(linker) ~= 'function' then
         linker = M.getlinker(linker)
       end
+
       cel[_linker] = linker
       cel[_xval] = xval
       cel[_yval] = yval
@@ -710,6 +705,32 @@ do --metacel.getface
     end
 
     return metaface
+  end
+end
+
+function M.unpacklink(t, i, j)
+
+end
+do --metacel.compileentry 
+  function metacel:compileentry(host, entry, entrytype)
+    if 'table' == entrytype then
+      local linker, xval, yval, option
+
+      if entry.link then
+        if type(entry.link) == 'table' then
+          linker, xval, yval, option = unpack(entry.link, 1, 4)
+        else
+          linker = entry.link
+        end
+      end
+
+      for i, v in ipairs(entry) do
+        local link = M.tocel(v, host)
+        if link then
+          link:link(host, linker, xval, yval, option)
+        end
+      end
+    end
   end
 end
 
