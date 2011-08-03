@@ -311,15 +311,3 @@ There is another order to events that is important to understand.  When an event
 up the cel tree to its host (known as event bubbling).  Cel does not allow a host cel to prevent its links from receiving events (known as event capturing), this is prevented to ensure that any type of cel can be linked to any other type of cel and still function.  Likewise a cel cannot terminate an event.  For events that bubble up the cel tree a flag is sent to the event hander indicating if the event was intercepted,  the handler may want to alter its behavior if the event was already intercepted.  To intercept an event, the event handler should return true.
 
 
-Why Lua
-
-This is where I say how ridiculously awesome Lua is, coming soon
-
-Areas for improvement
-
-Creating a new type of cel (called a metacel) should be easy. Its not as easy as I wanted it to be.
-Extending a cel (other than a basic cel) pretty much requires knowledge of what the original cel is doing, meaning reading the source. I think this is a universal problem with implementation inheritance though, and I don't think I can do anything to really make it better.
-Cel has some global state (not global variables). An example is Cel tracks all cel faces and does not enable strong encapsulation. There is no reason it has to be this way and it will be fixed. This also applies to the list of predefined linker functions. It's not a huge problem, mainly it makes sandboxing too hard.
-Cel is missing some type of controls, some of this will probably never be added because they are too trivial (a progress bar) or are a barrier to embedding (image support).
-Speed, overall profiling and optimization.
-
