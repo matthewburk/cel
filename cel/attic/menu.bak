@@ -1,0 +1,428 @@
+local cel = require 'cel'
+
+local print = function() end
+local _interceptedmousebutton = {}
+local _mousebuttonlistener = {}
+local _setmenu = {}
+local _text = {} 
+local _font = {} 
+local _penx = {}
+local _peny = {}
+local _menu = {}
+local _submenu = {}
+local _parentmenu = {}
+local _hidetask = {}
+local _showtask = {}
+
+local metacel, metatable = cel.sequence.y.newmetacel('menu')
+metacel['@item'] = cel.newmetacel('menu@item')
+
+local showdelay = 200
+local hidedelay = 200
+
+
+local function onmousebutton(menu)
+  print('checking for click in menu', menu)
+  if not menu[_interceptedmousebutton] then
+     print('not intercepted', menu)
+    menu:unlink()
+  else
+     print('interceptedmouse = nil reset', menu)
+    menu[_interceptedmousebutton] = nil
+  end
+end
+
+local _link = metatable.link
+function metatable.link(menu, ...)
+  print('linking menu', menu)
+  --TODO canel hidetask and showtask
+     print('interceptedmouse = nil link', menu)
+  menu[_interceptedmousebutton] = nil
+  menu[_mousebuttonlistener] = function() return onmousebutton(menu) end
+  cel.root:addlistener('onmousedown', menu[_mousebuttonlistener])
+  --cel.root:addlistener('onmouseup', menu[_mousebuttonlistener])
+  return _link(menu, ...)
+end
+
+local _unlink = metatable.unlink
+function metatable.unlink(menu, ...)
+  print('unlinking menu', menu)
+  --TODO canel hidetask and showtask
+
+  if menu[_hidetask] then
+    menu[_hidetask]:cancel()
+    menu[_hidetask] = nil
+  end
+  if menu[_showtask] then
+    menu[_showtask]:cancel()
+    menu[_showtask] = nil
+  end
+
+  if menu[_submenu] then
+    menu[_submenu]:unlink()
+  end
+
+  if menu[_parentmenu] then
+    menu[_parentmenu][_submenu] = nil
+    menu[_parentmenu] = nil
+  end
+
+  if menu[_mousebuttonlistener] then
+    cel.root:removelistener('onmousedown', menu[_mousebuttonlistener])
+    --cel.root:removelistener('onmouseup', menu[_mousebuttonlistener])
+    menu[_mousebuttonlistener] = nil
+  end
+
+  return _unlink(menu, ...)
+end
+
+function metatable.showat(menu, x, y)
+  print('showing menu', menu)
+
+  local hw, hh = cel.root.w, cel.root.h
+  local w, h = menu.w, menu.h
+
+  if x + w > hw then
+    x = x - w
+    if x < 0 then x = 0 end
+  end
+
+  if y + h > hh then
+    y = y - h
+    if y < 0 then y = 0 end
+  end
+
+  if menu[_mousebuttonlistener] then
+    menu:move(x, y)
+  else
+    menu:link(cel.root, x, y)
+  end
+end
+
+function metatable.hide(menu)
+  menu:unlink()
+end
+
+function metatable.additem(menu, item)
+  if type(item) == 'string' then
+    item = cel.menu.item.new(item)
+  end
+  item:link(menu)
+end
+
+local function showat(menu, x, y, parent)
+  --TODO enform a single showing menu for the parent
+  menu[_parentmenu] = parent
+
+  if parent[_submenu] and parent[_submenu] ~= menu then
+    parent[_submenu]:unlink()
+  end
+
+  parent[_submenu] = menu 
+
+  x = parent.x
+  local hw, hh = cel.root.w, cel.root.h
+  local w, h = menu.w, menu.h
+  local pw = parent.w
+
+  if x + w + pw > hw then
+    x = x - w + 4
+  else
+    x = x + pw - 4
+  end
+
+  if y + h > hh then
+    y = y - (y + h - hh)
+  end
+
+  if menu.showat then
+    menu:showat(x, y)
+  else
+    metatable.showat(menu, x, y)
+  end
+end
+
+function metacel:onmousedown(menu, state, button, x, y, intercepted)
+  print('clikc in menu')
+  
+  while menu do
+    menu[_interceptedmousebutton] = true
+    menu = menu[_parentmenu] 
+  end
+  return true
+end
+
+---[[
+function metacel:onmouseup(menu, button, x, y, intercepted)
+  print('clikc in menu')
+  
+  while menu do
+    menu[_interceptedmousebutton] = true
+    menu = menu[_parentmenu] 
+  end
+  return true
+end
+--]]
+
+do
+  function metacel:__link(menu, link, linker, xval, yval, option)
+    if linker == nil then 
+      linker = 'width' 
+      xval = 0
+      yval = 0
+    end
+
+    if link[_menu] ~= nil then --TODO remove this when item is unlinked
+      link[_menu] = menu
+    end
+
+    return menu, linker, xval, yval, option
+  end
+end
+
+function metacel:onmousein(menu)
+  local parentmenu = menu[_parentmenu]
+
+  if parentmenu and parentmenu[_hidetask] then
+    parentmenu[_hidetask]:cancel()
+    parentmenu[_hidetask] = nil
+  end
+end
+
+do
+  local _new = metacel.new
+  function metacel:new(face)
+    local face = self:getface(face)
+    local menu = _new(self, 0, face)
+    return menu
+  end
+
+  local _construct = metacel.construct
+  function metacel:construct(menu, t)
+    menu.onchoose = t.onchoose
+    return _construct(self, menu, t)
+  end
+end
+
+cel.menu = setmetatable(
+  {
+    new = function(face) return metacel:new(face) end,
+    newmetacel = function(name) return metacel:newmetacel(name) end,
+    layout = nil,
+  },
+  {__call = 
+    function(self, t)
+      local menu = metacel:new(t.face)
+      return metacel:construct(menu, t)
+    end
+  })
+
+
+
+
+
+
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--
+--cel.menu.item
+do
+  local _metacel = metacel
+  local metacel = metacel['@item']
+
+  local layout = {
+    padding = {
+      l = 40,
+      r = 40,
+      t = function(h) return h*.25 end; 
+      b = function(h) return h*.25 end;
+    },
+    fit = 'default',
+  }
+
+  function metacel:__describe(item, t)
+    t.text = item[_text]
+    t.font = item[_font]
+    t.penx = item[_penx]
+    t.peny = item[_peny]
+    t.submenu = item[_submenu]
+
+    if t.submenu then
+      if t.submenu:islinkedto(cel.root) then
+        t.submenu = 'active'
+      else
+        t.submenu = 'inactive'
+      end
+    end
+  end
+
+  function metacel:onmouseout(item)
+    local menu = item[_menu]
+
+    if not menu then
+      return
+    end
+
+    local item_submenu = item[_submenu]
+    local menu_submenu = menu[_submenu]
+
+    if item_submenu then
+      if menu[_showtask] then 
+        menu[_showtask]:cancel()
+        menu[_showtask] = nil
+      end
+
+      if item_submenu == menu_submenu then
+        --TODO cancel hidetask when item_submenu.onmousein
+        --TODO start hidetask when item_submenu.onmouseout
+        menu[_hidetask] = cel.doafter(hidedelay, function()
+          item_submenu:unlink()
+          menu[_hidetask] = nil
+        end)
+      end
+    end
+  end
+
+  function metacel:onmousein(item)
+    local menu = item[_menu]
+
+    if not menu then
+      return
+    end
+
+    --[[
+    print('mousein menu/item ', menu, '/', item, 'currentsubmenu = ', menu[_submenu])
+
+    if menu[_showtask] then
+      menu[_showtask]:cancel()
+      menu[_showtask] = nil
+    end
+    --]]
+
+    local item_submenu = item[_submenu]
+    local menu_submenu = menu[_submenu]
+
+    if item_submenu then
+      if item_submenu == menu_submenu then
+        if menu[_hidetask] then
+          menu[_hidetask]:cancel()
+          menu[_hidetask] = nil
+        end
+      else
+        if menu_submenu then
+          menu[_hidetask] = cel.doafter(hidedelay, function()
+            menu_submenu:unlink()
+            menu[_hidetask] = nil
+          end)
+        end
+
+        menu[_showtask] = cel.doafter(showdelay, function() 
+          showat(item_submenu, item.X + item.w, item.Y, menu) 
+          menu[_showtask] = nil
+        end)
+      end
+    else
+      if menu_submenu and not menu[_hidetask] then
+        menu[_hidetask] = cel.doafter(hidedelay, function()
+          menu_submenu:unlink()
+          menu[_hidetask] = nil
+        end)
+      end
+    end
+  end
+
+  function metacel:onmousedown(item)
+    local menu = item[_menu]
+
+    if not menu then 
+      return true
+    end
+
+    if item[_submenu] and menu[_submenu] == item[_submenu] then
+      menu = menu[_submenu]
+
+      while menu do
+        menu[_interceptedmousebutton] = true
+        menu = menu[_submenu]
+      end
+    end
+
+  ---[[
+    if state == 0 then
+      local menu = item[_menu]
+
+      if item[_submenu] then
+        if menu[_showtask] then
+          menu[_showtask]:cancel()
+          menu[_showtask] = nil
+        end
+        showat(item[_submenu], item.X + item.w, item.Y, menu)
+      else 
+        if menu.onchoose then
+          menu:onchoose(item[_text], item)
+        else
+          if item.action then
+            item:action()
+          end
+        end
+        menu:unlink()
+      end
+    end
+  --]]
+
+    return true
+  end
+  --metacel.onmouseup = metacel.onmousedown
+  
+  do
+    local pad = cel.text.pad
+    local _new = metacel.new
+    function metacel:new(text, face)
+      face = self:getface(face)
+
+      local layout = face.layout or layout
+      local font = face.font
+      local textw, texth, xmin, xmax, ymin, ymax = cel.text.measure(font, text)
+      local penx, peny, w, h = pad(font, layout, textw, texth, xmin, xmax, ymin, ymax)
+
+      local item = _new(self, w, h, face, w, nil, h, h)
+      item[_font] = font
+      item[_text] = text
+      item[_penx] = math.floor(penx)
+      item[_peny] = math.floor(peny)
+      item[_menu] = false
+      return item
+    end
+
+    local _construct = metacel.construct
+    function metacel:construct(item, t)
+      item.action = t.action
+      item[_submenu] = t.menu
+      return _construct(self, item, t)
+    end
+  end
+
+  cel.menu.item = setmetatable(
+    {
+      new = function(text, face) return metacel:new(text, face) end,
+    },
+    {__call =
+      function(self, t)
+        local item = metacel:new(t.text, t.face)
+        return metacel:construct(item, t)
+      end
+    })
+end
+
+metacel.stringcel = cel.menu.item
+
+return cel.menu
