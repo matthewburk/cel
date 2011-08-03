@@ -1,0 +1,691 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><title>About Cel</title></head><body>
+<h1>Introduction</h1>
+
+<p>A cel ([c]ontrol [el]ement) is the basic unit or building block of
+the Cel library. To use the libarry effectively you must understand
+what a cel is as well as what it can and can't do. A cel is the
+equivalent of a widget. A cel aggregates user input events, and will
+normally be rendered to the screen.</p>
+
+<h2>the cel rectangle</h2>
+
+<p>A cel is a rectangle cel.x is the left of the rectangle, cel.y is
+the top, cel.w is the width and cel.h is the height. The orgin of a
+cels coordinate system is at the top left corner of the cel, x
+increases to the right and y increases down. The right of a cel is
+cel.x + cel.w, and the bottom is cel.y + cel.h. A cel contains all
+points where <code>x &gt;= 0</code> and <code>x &lt; cel.w</code> and
+<code>y &gt;=0</code> and <code>y &lt; cel.h</code>. This set can be
+restricted but not increased.</p>
+
+<h2>hosts and links</h2>
+
+<p><em>All</em> cels are containers. This means that any cel (with the
+exception of the root cel) can be put into any other cel. Furthermore
+the contaier/containee relationship is fully dynamic and can be changed
+easily. This heirarchy or cel tree starts with the root cel (obvious, i
+know). Often this root cel would be called a parent, and the cels that
+it contains would be called its children. This is not the terminology
+used by Cel because parent/child implies that the parent creates the
+child and that the relationship is fixed. To highlight that the
+relationship is mutable the parent is called the host and the child a
+link (because it is linked to the host). When reading the
+documentation, up the cel tree means towards the root of the tree. From
+here on out the terms host and link will be used.</p>
+
+
+<h2>composite cels</h2>
+
+<p>A composite cel is a cel that is composed from other cels. The host
+cel is called the composite cel and any cels that are <em>created</em>
+by it are called component cels. The created distinction is important,
+a cel that is linked to the composite cel is not considered a component
+cel if it was not created by the composite cel. Typically a composite
+cel will encapsulate its component cels.</p>
+
+<h2>Goals - the requirements that shaped the Cel library</h2>
+
+<p>Cels design is influenced by these requirements: </p>
+
+<h3>Embeddability</h3>
+
+The prime requirement of Cel is it should be embeddable. Meaning
+embedding Cel in a host process that uses it and controls it. This
+implies that the requirements for a suitable host should be minimal.
+This requirement is why Cel is passive, the host process always tells
+Cel when and how to act. Cel also does not render anything, nor does it
+define a pattern for rendering, rendering is the job of the host
+process.
+<h3>Easy to use</h3>
+
+This is just a bit less important than the prime requirement. Easy to
+use is the whole point of an api in the first place (well at least for
+a high-level api like Cel). My view is that there are endless ways to
+achieve the same result, an api is a path to that result. Adding
+features can make an api easier to use or harder to use, most of the
+time a feature will make some things easier and some harder. Makeing
+those decisions is the art of api programming, there is no formula.
+<p>Easy to use means different things depending on the type of user.
+Cel is targeted to three types of users: </p>
+
+<ol>
+
+  <li> The platform(like Love) programmer who has all the basic
+ingredients for a gui, such as mouse and keyboard input, and rendering
+capabilites. There are literrally hundreds of these platforms, each
+custom made and lovingly crafted. Many of them have primitive gui
+support (becuase its more work than it seems). I want them all to use
+Cel, and I want Cel to be a natural fit for their platform so that they
+want to use it. This means providing what they don't have, and not what
+they do, which is why Cel does not render. </li>
+  <li> The gui programmer. This could be a programmer using a platform
+or the platform programmer. If these guys don't like Cel, then the
+platform programmer will not want to offer it. This programmer is the
+true test of the api, and most of the api design favors making this
+user happy, sometimes at the cost of the platform programmer. </li>
+  <li>The user interacting with gui. This means full featured controls,
+for example a scrollbar that works as expected, not a watered down
+shell of what we are all familiar with using. </li>
+</ol>
+
+
+<h2>Speed</h2>
+
+<p>All of the requirements have priority over speed. I'm not saying
+speed is not important, it is very important but a high-level api is
+the antithesis of speed. Speed is the easiest goal to achieve, simply
+reduce features and/or write it in assembly. The job of an api is to
+make good tradeoffs between execution speed and ease of use. Obviously
+what ends up on the screen can be done another way with a different set
+of tradeoffs. </p>
+
+<h2>Sandboxing</h2>
+
+<p>TODO</p>
+
+<h2>Derived Requirements</h2>
+
+<p>These requirements are aimed at making Cel easy to use without
+breaking the prime requirement of embedability.</p>
+
+<h3>No special cases</h3>
+
+<p>There should be no special cases or special cels that are allowed to
+break the rules. Special cases really just leads to special cases gone
+wild, which leads to ???, which leads to suffering. This is an ideal,
+but alas the root cel is special becuase it cannot link or be unlinked.</p>
+
+<h3>Text metrics and display</h3>
+
+<p>Cel should have halfway decent text output, meaning support for
+basic font metrics. Ideally it would just give you beautiful font
+rendering (becuase its not fun or easy to roll your own). Unfortunately
+I could not achieve this becuase it would be a large hurdle to
+embedability. Cel, instead, attempts to ease the burden of dealing with
+text.</p>
+
+<h3>Automatic layout</h3>
+
+<p>Automatic layout is a requirement, that I originally assumed would
+not be. After all, what could be easier that settting x,y,width,height
+for a rectangle, right? Well I tried that, then I tried to make a demo,
+and the simplest things (like a list of textbuttons equal width and
+height) were just too hard to do. I had to make sure i knew the longest
+string I wanted to display and if those strings changed, i had to react
+someway. This was all part of the demo, I was adding automatic layout
+in the demo app itself to work around these problems. This was one of
+those times I had to admit defeat and admit automatic layout is a
+requirement for 'easy to use'.</p>
+
+<p>I was not thrilled with automatic layout in any gui library I had
+used before, if the layout was flexible it wasn't easy, if it was easy
+it was not flexible. Cel has automatic layout built into every cel, and
+you will use it without even realizeing it.</p>
+
+<h3>A mutable cel tree</h3>
+
+<p>The primary functions to enable this are cel:link() and
+cel:unlink(). If you have a cel, linking it to another cel is <em>always</em>
+ok, and 'just works', and the same goes for unlinking. Having to manage
+when you can and cannot do this and what cels go with what other cels
+would be a nightmare, worse than memory management. So Cel doesn't
+require that you do, and to enable this encapsulation is necessary.</p>
+
+<h3>Encapsulation</h3>
+
+<p>A cel has many properties that are not exposed outside of the core
+library, these are considered implementation details in some cases, but
+it is mostly done so that things 'just work'. Any derived cel can use
+the same techniques that Cel uses to achieve encapsulation. </p>
+
+<p>The cel tree cannot be queried or walked. This means there is no way
+to get the host of a cel or get the links of a cel. <em>There is no
+method that exposes a cel that the application did not create.</em>
+This means there is no way to get the cel with focus, or under the
+mouse etc. You may think that it is too restrictive, but the effect is
+the opposite. Putting a window in a listbox, or an editbox in a listbox
+or a label in a listbox are all identical operations, and this is
+largely enabled by encapsulation.</p>
+
+<p>Cel doesn't actively enforce encapsulation, but it does enable it by
+not exposing cels. Cel does not expose cels is becuase the cel tree is
+mutable (which is highly desireable). Here is an partial list of
+intentionally ommited functionality:</p>
+
+<ul>
+
+  <li><code>cel:gethost()</code></li>
+  <li><code>cel:getlinks()</code></li>
+  <li><code>cel.getcelwithfocus()</code></li>
+  <li><code>cel.getcelatxy(x,y)</code></li>
+  <li><code>cel.getbyid(id)</code></li>
+</ul>
+
+<p> <em>A composite cel should be able to assert full control of the
+layout and lifecycle of its component cels.</em> The ability to peek
+into or walk the cel tree means creating a composite cel is too hard,
+and the end result will be too fragile. To illustrate the problem I'll
+use the window cel. A window has a handle to drag the window around
+with, this handle is actually another cel that the window encapsulates.
+What can a window do to ensure that this cel is not unlinked? One
+option would be to set a property on the cel and prevent unlinking if
+this property is set, but that solution is a hack and would lead to
+uncertainty and an endless number of special cases. If I as the gui
+programmer unlink a cel, I expect it to happen, period. Cel enables
+encapsulation so that you can hide cels you need full control of. The
+functionality lost by this encapsulation is regained through the link()
+and relink() functions. For example how does one add a button to the
+window handle, if you can't link to it? Enabling that type of
+functionality is what guided the desing of the link(), relink() and
+__link(). How does one alter the properties of the handle, for instance
+its size, appearance, etc? Enabling that type of functionality is what <em>initially</em>
+guided the design of cel faces.</p>
+
+<h3>Separation of concerns</h3>
+
+<p>When creating a gui the look is very important. Specifying the
+functionality of a cel, and how the app reacts to events is a concern
+that is largely orthogonal to how the cel looks. Defining this
+separation is especially important to Cel because it has no rendering
+capabilites. Cel enables this separation through cel faces. A face is
+the context available to the renderer and is associated to a cel at
+creation. Besides seperating functionality from appearance this has
+several other advantages. </p>
+
+<p>To illustrate I will show the bad, but not uncommon way this is done
+in many gui libraries. This is the bad way: </p>
+
+<pre><code><br>    button = cel.button.new(10, 10)<br>    button.setcolor('blue')<br>    button.setbordersize(2)<br>    button.setactivatecolor('green')<br>  </code></pre>
+
+Identifying a cel semantically is better:
+<pre><code><br>    button = cel.button.new(10, 10, 'invetory button')<br>  </code></pre>
+
+
+<ul>
+
+Why is the bad way bad?
+  <li>The most common scenario is a bunch of buttons will look the
+same, they will have the same colors or images etc. Repeating this for
+each identical looking button is just noise. This puts the burden on
+the app programmer to create specialized generators, or overly long
+constructors to prevent repeating themselves. </li>
+  <li>Its an unecessary waste of space, storing the same information
+for each button. There is no workaround to fix this issue. </li>
+  <li>It ends up being too hard to change, and enforcing a common theme
+is an added task for the app programmer.</li>
+  <li>It presents a barrier to simultaneous work, as in
+artist/programmer working independently</li>
+</ul>
+
+<p> The better way addresses all of these problems. One recently
+popular way to do this is to copy html/css type of functionality. There
+is certainly wisdom and good design happening there, but a gui does not
+occupy the same space as html, it doesn't have an abundance of content,
+and layout is often an integral part of the functionality of the gui.
+Cel faces have some similarity to this model, but is targeted to the
+needs of a typical gui, not a document. </p>
+
+<h3>Reuse through inheritance</h3>
+
+<p>Composition inheritance has already been discussed, that is what a
+composite cel is. Composition inheritance is best, but sometimes
+implementation inheritance is useful. Cel does support implementation
+inheritance, but it should not be your first choice when creating a new
+type of cel. The main reason is that implementation inheritance is too
+fragile and some people view it as an is-a relationship which is only
+sometimes true. A hallmark of implementation inheritance is overriding
+existing methods, this is also where you will get into trouble if you
+are not <em>very</em> careful. Adding to the implementation without
+overriding is much less fragile, but you can get that through
+composition. So implementation inheritance is really only useful for
+overriding or indicating the is-a relationship (but overriding can turn
+the is-a relationship off imo). To override a function or property(in a
+way the parent did not anticipate) using implementation inheritance
+requires knowledge of the internal workings of the parent. It works
+well in a cohesive pacakge, or when you already have a full
+understanding of the parent implementation details.</p>
+
+<p>How can overriding change the is-a relationship you ask? Well
+changing a defining characteristic will do it imo. A Cel label has the
+characteristic that it can't be touched, as if it is etched into its
+host cel. If I overrode that behavior, and let it be touched the new
+cel is no longer a label, becuase it is not a drop in replacement for a
+label in every circumstance. The built-in Cel controls do exactly this
+kind of overriding, do not make the assumption that the is-a
+relationship is true just because implementation inheritance is used.
+The relationship will be stated in the documentation. By convention
+is-a cel will be true for any type of cel.</p>
+
+<p>If implementation inheritance is so bad what does Cel use it? The
+reason is because its useful, the code reuse is real, <em>and you can
+expose a private interface to the inheriting cel.</em> Through
+alternate interface you can enable more dangerous but useful functions.
+They can be more dangerous becuase there use can be segregated. A cel
+could be created that does something wrong, that has erratic behavior,
+or crashes, etc. Simple solution don't use it, or maybe even fix it in
+that one place. If these useful but dangerous functions were exposed to
+any instance of any cel the problem becomes much bigger. What makes a
+function dangerous? Well there is no formula for that, sorry. </p>
+
+<p>Cel takes a pragmatic approach to this. Use the public interface and
+its easy going, use the private interface and you are trusted and take
+on a higher level of responsibility. The private interface is a part of
+the metacel. The Cel documentation will instruct you on how it expects
+this interface to be used. Deviating from those expectaions is not
+advised.</p>
+
+<h2>metacels</h2>
+
+A metacel is used to define a new type of cel.&nbsp; A metacel defines
+a function to create a cel, and has a more privledged position in the
+Cel library than a cel.&nbsp; 
+A new metacel is created with cel.newmetacel('name') where name is the
+name of the new metacel.&nbsp; A new metacel is a copy of an existing
+metacel.&nbsp; The cel metacel defines these functions:<br>
+
+<ul>
+
+  <li>metacel:new(...) to create a new cel.</li>
+  <li>metacel:compile() to create a new cel from a table definition.</li>
+  <li>metacel:newmetacel() to copy this metacel.</li>
+  <li>metacel:newfactory() to create a factory for the metacel, which
+allows cel to be created without exposing the metacel.</li>
+  <li>metacel:getface() to resolve a face for this metacel.</li>
+  <li>metacel:setlimits() to set the minimum and maximum dimensions of
+a cel.</li>
+</ul>
+The cel metacel defines these behavior
+altering methods<br>
+
+<ul>
+
+<li>metacel:__link() to react when a link is made and change how or
+where the link is made.<br>
+</li>
+<li>metacel:__relink() to react when a link is relinked.<br>
+</li>
+<li>metacel:__unlink() to react when a link is unlinked<br>
+</li>
+<li>metacel:__resize() to react when a cel is resized<br>
+</li>
+  <li>metacel:__linkmove() to react when a link moves.</li>
+  <li>metacel:__describe() to describe the cel for rendering.<br>
+  </li>
+
+</ul>
+A metacel can define an event callback function for all of the standard events, and will always receive events before the cel.<br>
+<br>
+A new metacel aslo has a new copy of a metatable stored at
+metacel.metatable.&nbsp; This metatable is the metatable shared by all
+cels created though metacel:new().&nbsp; The metatable is the public
+interface of the cel. The cel metatable defines these functions:<br>
+
+<ul>
+
+  <li><code>cel:link()</code> to link the cel to a host cel.</li>
+  <li><code>cel:relink()</code> to change the link relationship.</li>
+  <li><code>cel:unlink()</code> to unlink from a host cel.</li>
+  <li><code>cel:raise(), cel:sink()</code> to change cels z order.<br>
+  </li>
+  <li><code>cel:disable()</code> to make the cel unresponsive to user
+input.</li>
+  <li><code>cel:enable()</code> to make the cel responsive to user
+input.</li>
+  <li><code>cel:pget()</code> to get properties of the cel by name.</li>
+  <li><code>cel:getface()</code> to get the face of the cel.</li>
+  <li><code>cel:move(), cel:moveby(), cel:resize() </code>to mutate
+the cel rectangle.</li>
+  <li><code>cel:takefocus(), cel:hasfocus()</code> to manage user focus.<br>
+  </li>
+  <li><code>cel:islinkedto(), cel:islinkedtoroot()</code>.</li>
+  <li><code>cel:trapmouse(), cel:hasmousetrapped(), cel:freemouse()</code>.</li>
+  <li><code>cel:flow*()</code> to animate the cel.</li>
+</ul>
+
+These functions should not be overridden, and in a future release this
+may be enforced through a proxy or userdata.<br>
+<br>
+
+The metacel should be kept private, the recommended way to do this
+is with a module.&nbsp; The dominate pattern used in Cel to define a new metacel is this:<br>
+<br>
+<div style="margin-left: 40px;"><code>local cel = require 'cel'</code><br>
+<code>local metacel, metatable = cel.newmetacel('foo')</code><br>
+<code></code><br>
+<code>--do this for each new public function</code><br>
+<code>function metatable:myfunc(a, b, c)</code><br>
+<code>&nbsp;&nbsp;&nbsp; --self is the cel</code><br>
+<code>end</code><br>
+<code></code><br>
+<code>--define event callbacks on the metacel</code><br>
+<code>function metacel:onmousedown(foo, button, x, y, intercepted)</code><br>
+<code>&nbsp;&nbsp;&nbsp; --do somthing</code><br>
+<code>&nbsp;&nbsp;&nbsp; return true</code><br>
+<code>end</code><br>
+<code></code><br>
+<code>--add to description</code><br>
+<code>function metacel:__describe(t)</code><br>
+<code>&nbsp;&nbsp;&nbsp; t.fooproperty = 'a foo property'</code><br>
+<code>end</code><br>
+<code></code><br>
+<code>do</code><br>
+<code>&nbsp; local _new = metacel.new</code><br>
+<code>&nbsp; function metacel:new(w, h, face)</code><br>
+<code>&nbsp;&nbsp;&nbsp; --ensure we have a valid face for the metacel</code><br>
+<code>&nbsp;&nbsp;&nbsp; face = self:getface(face)&nbsp; </code><br>
+<code>&nbsp;&nbsp;&nbsp; local foo = _new(self, w, h, face)</code><br>
+<code>&nbsp;&nbsp;&nbsp; --do foo setup</code><br>
+<code>&nbsp;&nbsp;&nbsp; return foo</code><br>
+<code>&nbsp; end</code><br>
+<code></code><br>
+<code>&nbsp; local _compile = metacel.compile</code><br>
+<code>&nbsp; function metacel:compile(t, foo)</code><br>
+<code>&nbsp;&nbsp;&nbsp; foo = foo or metacel:new(t.w, t.h, t.face)&nbsp;&nbsp;  </code><br>
+<code>&nbsp;&nbsp;&nbsp; return _compile(self, t, foo)</code><br>
+<code>&nbsp; end</code><br>
+<code>end</code><br>
+<code></code><br>
+<code>return metacel:newfactory()</code><br>
+<code></code></div>
+<code><br>
+</code>When Cel is put on a new platform, it may be convenient to define a metcel that is platform specific, such as an image cel.<br>
+
+<h2>faces</h2>
+A cel face is a context for the renderer to store information that it
+needs to render a cel. A single face can be shared by multiple cels or
+a cel can have its own unique face. In most cases though you would have
+a face that is used for buttons, another for listboxes, another for
+labels and so on.<br>
+<br>
+This is how you create a face:<br>
+<code>local blueface = cel.face {<br>
+&nbsp; metacel = 'cel',<br>
+&nbsp; name = 'blue',<br>
+}</code><br>
+<br>
+Cel associates a face to a metacel based on the name of the
+metacel.&nbsp; The face in the example is for the 'cel' metacel, which
+all other metacels are derived from.&nbsp; Calling cel.face with a
+table definition will first look for a face with the metacel and name
+specified.&nbsp; If an existing face is not found then it is created.
+&nbsp; All other entries in the table definition copied to the
+face.&nbsp; The face is a table with a protected metatable managed by
+Cel.&nbsp; What goes in the face is determined by the platform Cel is
+embedded in, I am going to use colors for illustrative purposes.&nbsp;
+Adding a color to a face is easy.<br>
+<br>
+This method finds the existinng face and add the new field to it:<br>
+<code>cel.face {<br>
+&nbsp; metacel = 'cel',<br>
+&nbsp; name = 'blue',<br>
+&nbsp; color = cel.color.rgb(0, 0, 1),<br>
+}</code><br>
+<br>
+This method writes to the face directly:<br>
+<code>blueface.linecolor = cel.color.rgb(0, 0, 0)</code><br>
+<br>
+At this point blueface has an entry for fillcolor and linecolor. <br>
+<br>
+If you want to remove any entry from a face, this will not work:<br>
+<code>cel.face {<br>
+
+&nbsp; metacel = 'cel',<br>
+
+&nbsp; name = 'blue',<br>
+
+&nbsp; </code><code>color</code><code> = cel.color.rgb(0, 0, 1),<br>
+&nbsp; linecolor = nil,<br>
+
+}<br>
+<br>
+</code>To remove it you must do this:<br>
+<code>blueface.linecolor = nil.</code><br>
+<br>
+Now when we see a face in the description our renderer can get the
+color from the face and use that when rendering the cel. An important
+point is that Cel does not care what the color is, nor does it
+understand the meaning of the color entry in the face, this definition
+is something that your renderer and app understand. There are some
+entries that cel does understand, and defines the meaning of. These
+entries are reserved by Cel:<br>
+<ul>
+  <li>
+
+font - if present this should be a font returned from cel.loadfont()</li>
+  <li>
+
+layout - if present this should be a table describing the layout of the cel, each metacel will define its own layout if any.</li>
+  <li>
+
+flow - if present this should be a table of flow functions, the metacel will define the names to use and what they mean.</li>
+</ul>
+
+An face name is not required, an unamed face is identified only by the
+metacel, and is called the metacel face.&nbsp; The metacel face can be
+accessed like this:<br>
+<code>local celface = cel.face {<br>
+&nbsp; metacel = 'cel',<br>
+&nbsp; --notice a name is not specified<br>
+&nbsp; draw = function(face, description) <br>
+&nbsp;&nbsp;&nbsp; local color = face.color or cel.color.rgb(1, 1, 1)&nbsp;&nbsp;  <br>
+&nbsp;&nbsp;&nbsp; fillrect(description.x, description.y, description.w, description.h, color)<br>
+&nbsp; end<br>
+}</code><br>
+<br>
+We just a defined draw function in the cel metacel face (fillrect is a
+hypothetical function).&nbsp; It looks for a color in the face and uses
+that color when drawing the cel rectangle.<br>
+If a named face does not have an entry then the metacel face is
+checked. In other words any entries in the metacel face are also
+availabe to named faces (via __index metamethod). <br>
+<br>
+This defines a face for a button. The metacel = 'button' entry is what makes it a button face.<br>
+<code>local buttonface = cel.face {<br>
+
+&nbsp; metacel = 'button',<br>
+
+&nbsp; bordercolor = cel.color.rgb(1, 1, 1),<br>
+
+}<br>
+<br>
+</code>Because a button is a cel, the button metacel face will also
+inherit from the cel metacel face, and a named button face will inherit
+from the button metacel.&nbsp; This means that buttonface.draw ==
+celface.draw.<br>
+Of course a button will not normally look like a flat cel, so you
+should give the button metacel its own draw function, this draw
+function can use the extra information a button provides in its
+description and<br>
+any extra information from a button face.<br>
+<br>
+<code>function buttonface:draw(t)<br>
+&nbsp; --self is the face, t is the button description<br>
+&nbsp; </code><code>local color = self.color<br>&nbsp; fillrect(t.x, t.y, t.w, t.h, color)<br>
+&nbsp; local bordercolor = self.bordercolor<br>
+&nbsp; strokerect(t.x, t.y, t.w, t.h, bordercolor)  <br>
+end</code><br>
+<br>
+If a button is created like this: local button = cel.button.new(100,
+100) then it will use the unnamed face for the button metacel. To
+create a button with an alternate face, you can pass it in as the last
+parameter like this:local button = cel.button.new(100, 100,
+'purplebutton'). When the button is created it will lookup a face with
+the name purplebutton. You can also pass a reference to the face
+directly like this:local button = cel.button.new(100, 100,
+purplebuttonface). In addition the name of a face is not restricted to
+a string, which is useful for creating private faces. TODO explain when
+face inheritance happens, not when it is created but wehn the metacel
+is created.<br>
+<br>
+A cel is assigned a face when it is created.&nbsp; A metacel will locate a suitable face using the metacel:getface(face)
+function, the face parameter can be either a face or its name.&nbsp; In the following example both cels have the same face:<br>
+
+<br>
+<code>
+a = cel.new(20, 20, blueface)<br>
+
+b = cel.new(20, 20, 'blue')</code><br>
+
+<br>
+Cel keeps a seperate index of faces per metacel.&nbsp; For each face
+that is created it is indexed by itself and by its name, this is what
+allows you to specify either the name or the face itself when creating
+a cel. These are the steps in resolving the face when a cel is created:<br>
+<ol>
+  <li>If no face is specified the face of the creating metacel is used.<br>
+  </li>
+  <li>The face is looked up in the face index of the creating metacel, if found this is used.<br>
+  </li>
+  <li>The face is looked up in the face index of the cel metacel, if found this is used.&nbsp; <br>
+  </li>
+  <li>The face is not a valid face for the creating metacel nor is it a
+named face for teh cel metacel.&nbsp; In this case the face of the
+creating metacel is used.<br>
+  </li>
+</ol>
+Notice that named faces for the cel metacel are available to all types
+of cels, this is allowed because an every cel description will contain
+all the conent needed to render a normal cel.<br>
+
+<h2>events</h2>
+
+<p>How any gui library defines and implements events is probably the
+single most important feature it provides. If they are not well defined
+reacting to them reliably can be a challenge. One of the pimary design
+goals of Cel was to make event handling effortless and natural. This is
+harder than it sounds, (especially when balanced against encapsulation
+and sandboxing).&nbsp; There are two types of events in Cel,
+synchronous and asynchonous.&nbsp; An event is considered synchonous if
+the event handler is called when the event is generated, an
+asynchronous event is put in a fifo queue and the event handler is
+called when the event is taken off of the queue.&nbsp; <br>
+</p>
+<p>The primary reason Cel uses asynchronous events is to allow the
+event handler to be unrestricted.&nbsp; The onmousein event is a good
+example.&nbsp; If onmousein were synchornous then there would have to
+be these restrictions on the hadler:</p>
+<ul>
+  <li>Do not mutate the cel tree - don't link, unlink, relink, move, resize, raise, sink etc.</li>
+  <li>Do not trap the mouse or change focus etc.</li>
+</ul>
+The reason for the restrictions is becuase the cel tree is walked as
+these events are generated.&nbsp; These complications are all neatly
+solved by using asynchrnous events.&nbsp; These basic cel events are
+asynchronous:<br>
+<ul>
+  <li>onresize</li>
+  <li>onmousemove</li>
+  <li>onmousein</li>
+  <li>oumouseout</li>
+  <li>onmousedown</li>
+  <li>onmouseup</li>
+  <li>onmousewheel</li>
+  <li>onkeydown</li>
+  <li>onkeypress</li>
+  <li>onkeyup</li>
+  <li>onchar</li>
+  <li>oncommand<br>
+  </li>
+  <li>ontimer</li>
+  <li>onfocus</li>
+</ul>
+There are other pros/cons for syncrounous vs asynchrnous events which I
+will not go into here.&nbsp; A normal cel has no synchronous events, an
+event that is triggered by an asynchronous event should be synchronous
+in most cases.&nbsp; A button defines these events which are all
+syncrhonous<br>
+<ul>
+  <li>onpress - triggered by onmousedown</li>
+  <li>onhold - triggered by ontimer</li>
+  <li>onclick - triggered by onmouseup</li>
+</ul>
+An event handler is just a normal function, the parameters to the
+function vary by event.&nbsp; Define the function on the cel to act on
+the event:<br>
+<div style="margin-left: 40px;"><code>local button = cel.button.new(20, 20)</code><br>
+<code></code><br>
+<code>function button:onresize(ow, oh)</code><br>
+<code>&nbsp; print('button resized', self, ow, oh)</code><br>
+<code>end</code><br>
+</div>
+When the button is resized the onresize function will be called when
+the event is taken off the event queue.&nbsp; This approach is simple
+and the most common scenario.&nbsp; Using the event listener approach
+is useful when multiple (decoupled) listeners need to recieve the
+event.&nbsp; <br>
+<div style="margin-left: 40px;"><code>local function acelresized(self, ow, oh)</code><br>
+<code>&nbsp; print('cel', self, 'resized', ow, oh, self.w, self.h)</code><br>
+<code>end</code><br>
+<code></code><br>
+<code>button:addlistener('onresize', acelresized)</code><br>
+</div>
+The listener approach is more cumbersome, and often unecessary, but it
+can be useful.&nbsp; Both techniques can be used together, for a single
+event the event handlers are called in this order:<br>
+<ol>
+  <li>The metacels on[event] function</li>
+  <li>The cels on[event] function</li>
+  <li>The listener functions for on[event], the order in which these are called is not defined.</li>
+</ol>
+There is another order to events that is important to understand.&nbsp;
+When an event applies to a cel and its host, for example onmousedown,
+it is always sent to the cel furthest down the cel tree first, then<br>
+up the cel tree to its host (known as event bubbling).&nbsp; Cel does
+not allow a host cel to prevent its links from receiving events (known
+as event capturing), this is prevented to ensure that any type of cel
+can be linked to any other type of cel and still function.&nbsp;
+Likewise a cel cannot terminate an event.&nbsp; For events that bubble
+up the cel tree a flag is sent to the event hander indicating if the
+event was intercepted,&nbsp; the handler may want to alter its behavior
+if the event was already intercepted.&nbsp; To intercept an event, the
+event handler should return true.<br>
+<br>
+<br>
+<h2>Why Lua</h2>
+
+<p>This is where I say how ridiculously awesome Lua is, coming soon</p>
+
+<h2>Areas for improvement</h2>
+
+<ul>
+
+  <li> Creating a new type of cel (called a metacel) should be easy.
+Its not as easy as I wanted it to be. </li>
+  <li> Extending a cel (other than a basic cel) pretty much requires
+knowledge of what the original cel is doing, meaning reading the
+source. I think this is a universal problem with implementation
+inheritance though, and I don't think I can do anything to really make
+it better. </li>
+  <li> Cel has some global state (not global variables). An example is
+Cel tracks all cel faces and does not enable strong encapsulation.
+There is no reason it has to be this way and it will be fixed. This
+also applies to the list of predefined linker functions. It's not a
+huge problem, mainly it makes sandboxing too hard. </li>
+  <li> Cel is missing some type of controls, some of this will probably
+never be added because they are too trivial (a progress bar) or are a
+barrier to embedding (image support). </li>
+  <li> Speed, overall profiling and optimization. </li>
+</ul>
+
+</body></html>
