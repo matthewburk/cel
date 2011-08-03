@@ -165,7 +165,6 @@ do
     return _compile(self, t, col or colmetacel:new(t.face))
   end
 
-  local _up = colmetacel.compilelistentry
   function colmetacel:compileentry(col, entry, entrytype)
     if 'table' == entrytype then
       local link = cel.tocel(entry[1], col)
