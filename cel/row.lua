@@ -73,8 +73,8 @@ end
 do
   local _setlimits = slotmetacel.setlimits
   function slotmetacel:setlimits(slot, minw, maxw, minh, maxh) 
-    slot[_row][_minw] = slot[_row][_minw] - slot.minw + math.max(minw, slot[_minw])
-    return _setlimits(self, slot, math.max(minw, slot[_minw]), maxw, minh, maxh)
+    slot[_row][_minw] = slot[_row][_minw] - slot.minw + math.max(minw or 0, slot[_minw])
+    return _setlimits(self, slot, math.max(minw or 0, slot[_minw]), maxw, minh, maxh)
   end
 end
 
