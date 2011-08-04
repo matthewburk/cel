@@ -72,6 +72,12 @@ function metatable:insert(index, item)
   return self
 end
 
+--returns item, index
+function metatable:pick(x, y)
+  local list = self[_items]
+  return list:pick(x + list.x, y + list.y)
+end
+
 do
   local function insertall(listbox, index, t)
     for i=1, #t do
@@ -103,15 +109,28 @@ end
 
 do
   local dummy = {}
+
+  local function selectediterator(listbox, prev)
+    return (next(listbox[_selected], prev))
+  end
+
+  local function iterator(listbox, prev)
+    if prev then
+      return listbox[_items]:next(prev)
+    else
+      return listbox:first()
+    end
+  end
+
   function metatable:items(subset)
     if subset == 'selected' then
       if not self[_selected] then
         return pairs(dummy)
       end
 
-      return pairs(self[_selected])
+      return selectediterator, self
     end
-    return self[_items]:links()
+    return iterator, self
   end
 end
 
@@ -207,10 +226,10 @@ function metatable:select(v, mode)
 
   local op
   if mode == true then
-    if selected[item] then return end
+    if selected[item] then return self end
     op = 'select' 
   elseif mode == false then
-    if not selected[item] then return end
+    if not selected[item] then return self end
     op = 'unselect'  
   else
     if selected[item] then
@@ -465,7 +484,7 @@ do
     listbox.onchange = t.onchange
     --listbox[_items]:flux( function()
         _compile(self, t, listbox)
-    --  end)
+      --end)
     return listbox
   end
 end

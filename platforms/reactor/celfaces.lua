@@ -717,8 +717,8 @@ do --listbox
       fillcolor = false,
       linecolor = false,
       selectedcolor = cel.color.encode(0, 0, .7, .1),
-      currentcolor = false,
-      hovercolor = false,
+      currentcolor = cel.color.encode(0, 0, .7, .1),
+      hovercolor = cel.color.encode(0, 0, .7, .1),
     }
 
     function face:draw(t)

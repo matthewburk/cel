@@ -312,6 +312,26 @@ do --colformation.testlinker
   end
 end
 
+--[[
+do --colformation.testlinker
+  local math = math
+  local selflinker = colformation.linker
+  function colformation:testlinker(host, link, linker, xval, yval)
+    assert(linker)
+    local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
+    local minw, maxw, minh, maxh = link[_minw] or 0, link[_maxw] or maxdim, link[_minh] or 0, link[_maxh] or maxdim
+
+    local x, _, w, _ = selflinker(self, host, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
+
+    --enforce min/max
+    if w < minw then w = minw end
+    if w > maxw then w = maxw end
+
+    return math.modf(x), oy, math.floor(w), oh
+  end
+end
+--]]
+
 do --colformation.dolinker
   --called anytime the link[_linker] needs to be enforced
   local celmoved = celmoved

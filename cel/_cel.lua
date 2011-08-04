@@ -158,8 +158,6 @@ do --ENV.linkall
     linkall = function(host, t)
       event:wait()
 
-      linkparams[host] = t.link
-
       for i=1, #t do
         local link = t[i]
         local linktype = type(link)
@@ -169,13 +167,7 @@ do --ENV.linkall
         elseif linktype == 'string' then
           host[_metacel]:__celfromstring(host, link):link(host)
         elseif linktype == 'table' and link[_metacel] then --if link is a cel
-          if linkparams[link] then
-            local p = linkparams[link]
-            link:link(host, p[1], p[2], p[3], p[4]) --TODO change to values that are already on the cel
-            linkparams[link] = nil
-          else
-            link:link(host)
-          end
+          link:link(host, link[_linker], link[_xval], link[_yval])
         else
           host[_metacel]:compileentry(host, link, linktype)
         end
@@ -887,12 +879,6 @@ do --metatable.link
     event:wait()
 
     if rawget(cel, _host) then cel:unlink() end
-
-    --TODO experimental
-    if rawget(cel, '__name') then
-      cel.__host = host
-    end
-    --END experimental
 
     while host[_metacel].__link do
       if linker and type(linker) ~= 'function' then linker = linkers[linker] end

@@ -364,4 +364,8 @@ do
   end
 end
 
-return driver.root:newroot():link(driver.root, 'edges')
+reactor.celroot = driver.root:newroot():link(driver.root, 'edges')
+
+require 'celfaces'
+
+return cel
