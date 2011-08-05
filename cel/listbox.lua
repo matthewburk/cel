@@ -75,7 +75,10 @@ end
 --returns item, index
 function metatable:pick(x, y)
   local list = self[_items]
-  return list:pick(x + list.x, y + list.y)
+  local px, py, pw, ph = self:getportalrect()
+  if x >= px and x < px + pw and y >= py and y < py + ph then
+    return list:pick(x - list.x, y - list.y)
+  end
 end
 
 do

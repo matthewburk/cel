@@ -278,6 +278,8 @@ do --ENV.celmoved
     if host then --and not rawget(host, _formation) then
       if host[_metacel].__linkmove then
         host[_metacel]:__linkmove(host, link, ox, oy, ow, oh)
+      end
+      if host[_metacel].onlinkmove then
         event:onlinkmove(host, link, ox, oy, ow, oh)
       end
     end
