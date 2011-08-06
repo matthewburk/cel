@@ -723,24 +723,27 @@ do
   local math_floor = math.floor
   local string_char = string.char
   local string_byte = string.byte
+  
   function M.color.encode(r, g, b, a)
-    r = r and math_min(255, math_max(255 * r, 0)) or 0
-    g = g and math_min(255, math_max(255 * g, 0)) or 0
-    b = b and math_min(255, math_max(255 * b, 0)) or 0
-    a = a and math_min(255, math_max(255 * a, 0)) or 255
-    return string_char(r, g, b, a)
-  end
-  function M.color.rgb(r, g, b)
-    return string_char(r, g, b, 255)
-  end
-  function M.color.rgba(r, g, b, a)
-    return string_char(r, g, b, a)
+    return string_char(r, g, b, a or 255)
   end
 
   function M.color.decode(color)
     return string_byte(color, 1, 4)
   end
 
+  function M.color.encodef(r, g, b, a)
+    r = r and math_min(255, math_max(255 * r, 0)) or 0
+    g = g and math_min(255, math_max(255 * g, 0)) or 0
+    b = b and math_min(255, math_max(255 * b, 0)) or 0
+    a = a and math_min(255, math_max(255 * a, 0)) or 255
+    return string_char(r, g, b, a)
+  end
+
+  function M.color.decodef(color)
+    local r, g, b, a = string_byte(color, 1, 4)
+    return r/255, g/255, b/255, a/255
+  end
 end
 
 do
