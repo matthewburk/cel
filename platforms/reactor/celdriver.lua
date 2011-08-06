@@ -114,11 +114,11 @@ do
   end
 
   function reactor.cel.update(fps)
-    driver.timer(reactor.timermillis());
-    if _G.showfps and fps ~= lastfps then
-      lastfps = fps
-      _G.showfps(string.format('fps %d', fps))
-    end
+    --driver.timer(reactor.timermillis());
+    --if _G.showfps and fps ~= lastfps then
+      --lastfps = fps
+      --_G.showfps(string.format('fps %d', fps))
+    --end
   end
 
   function reactor.cel.draw(cr)

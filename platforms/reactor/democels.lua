@@ -69,6 +69,23 @@ function reactor.load(...)
         end
       }
     };
+    {link = 'width';
+      cel.textbutton {
+        text = 'FULL GC';
+        onclick = function()
+          collectgarbage('collect')
+          print( tostring(collectgarbage('count') / 1000))
+        end
+      }
+    };
+    {link = 'width';
+      cel.textbutton {
+        text = 'MEM USAGE';
+        onclick = function()
+          print( tostring(collectgarbage('count') / 1000))
+        end
+      }
+    };
   }
 
   root {
