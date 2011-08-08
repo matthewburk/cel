@@ -131,9 +131,9 @@ export['cel.window'] {
               name='link';
               [[If link is a table, it contains arguments passed to cel:link().]];
               tabledef {
-                param.linker[[linker - linker function or name passed to cel:link().]];
-                param.any[[xval - xval param passed to cel:link()]];
-                param.any[[yval - yval param passed to cel:link()]];
+                param.linker[[[1] - linker function or name passed to cel:link().]];
+                param.any[[[2] - xval param passed to cel:link()]];
+                param.any[[[3] - yval param passed to cel:link()]];
               };
             };
             param.string[[link - linker name passed to cel:link()]];
@@ -150,9 +150,9 @@ export['cel.window'] {
               name='link';
               [[If link is a table, it contains arguments passed to cel:link().]];
               tabledef {
-                param.linker[[linker - linker function or name passed to cel:link().]];
-                param.any[[xval - xval param passed to cel:link()]];
-                param.any[[yval - yval param passed to cel:link()]];
+                param.linker[[[1] - linker function or name passed to cel:link().]];
+                param.any[[[2] - xval param passed to cel:link()]];
+                param.any[[[3] - yval param passed to cel:link()]];
               };
             };
             param.string[[link - linker name passed to cel:link()]];

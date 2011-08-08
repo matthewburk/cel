@@ -14,6 +14,14 @@
   <li><a href="scroll.html">cel.scroll</a></li> 
   <li><a href="listbox.html">cel.listbox</a></li> 
   <li><a href="window.html">cel.window</a></li> 
+  <li><a href="panel.html">cel.panel</a></li> 
+  <li><a href="mutexpanel.html">cel.mutexpanel</a></li> 
+  <li><a href="tabpanel.html">cel.tabpanel</a></li> 
+  <li><a href="text.html">cel.text</a></li> 
+  <li><a href="menu.html">cel.menu</a></li> 
+  <li><a href="row.html">cel.row</a></li> 
+  <li><a href="col.html">cel.col</a></li> 
+  <li><a href="grid.html">cel.grid</a></li> 
 </ul>
 
         </div>
@@ -73,72 +81,47 @@
                 <div class="metacellayout">
           <dt class="metacellayout">layout</dt>
           <dd>
-          A table defineing the internal layout of a listbox <div class="code"><pre><code>itemlist = {</code>
-<code>  face = face,</code>
-<code>  gap = integer,</code>
-<code>},</code>
-<code>itembox = {</code>
-<code>  face = face, </code>
-<code>},</code>
-<code>stepsize = integer, </code>
-<code>ybar = { </code>
-<code>  face = face,</code>
-<code>  autohide = boolean,</code>
-<code>  size = integer,</code>
-<code>  track = { </code>
+          A table defineing the internal layout of a listbox <div class="code"><pre><code>layout = {</code>
+<code>  itemlist = {</code>
 <code>    face = face,</code>
-<code>    size = integer,</code>
-<code>    link = {linker[, xval[, yval]]} or string,</code>
-<code>    slider = {</code>
-<code>      face = face,</code>
-<code>      size = integer,</code>
-<code>      minsize = integer,</code>
-<code>    },</code>
+<code>    gap = integer,</code>
 <code>  },</code>
-<code>  decbutton = {</code>
-<code>    face = face,</code>
-<code>    size = integer,</code>
-<code>    link = {linker[, xval[, yval]]} or string,</code>
+<code>  itembox = {</code>
+<code>    face = face, </code>
 <code>  },</code>
-<code>  incbutton = {</code>
-<code>    face = face,</code>
-<code>    size = integer,</code>
-<code>    link = {linker[, xval[, yval]]} or string,</code>
-<code>  },</code>
-<code>},</code>
-<code>xbar = {</code>
-<code>  face = face,</code>
-<code>  autohide = boolean,</code>
-<code>  size = integer,</code>
-<code>  track {</code>
-<code>    face = face,</code>
-<code>    size = integer,</code>
-<code>    link = {linker[, xval[, yval]]} or string,</code>
-<code>    slider = {</code>
-<code>      face = face,</code>
-<code>      size = integer,</code>
-<code>      minsize = integer, </code>
-<code>    },</code>
-<code>  },</code>
-<code>  decbutton = {</code>
-<code>    face = face,</code>
-<code>    size = integer,</code>
-<code>    link = {linker[, xval[, yval]]} or string,</code>
-<code>  },</code>
-<code>  incbutton = {</code>
-<code>    face = face,</code>
-<code>    size = integer,</code>
-<code>    link = {linker[, xval[, yval]]} or string,</code>
-<code>  },</code>
+<code>  stepsize = integer, </code>
+<code>  xbar = table,</code>
+<code>  ybar = table,</code>
 <code>}</code></pre></div>
                       <div class="arguments">
               <span class="arguments">entries</span>
-              <dl class="arguments">          <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+              <dl class="arguments">          <dt><code><span class="paramname">itemlist</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>      <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
           <dd>face or face name</dd>
-                     <dt><code><span class="paramname">gap</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+                    <dt><code><span class="paramname">gap</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
           <dd>amount of space between each item in the list.</dd>
+          
+        </dl>
+      </div></dd>
+                     <dt><code><span class="paramname">itembox</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>      <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name</dd>
+          
+        </dl>
+      </div></dd>
                      <dt><code><span class="paramname">stepsize</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>number of units to move the subject in a single step.</dd>
+          <dd>number of units to move the itemlist in a single step.
+        This only applies to horizontal steps.</dd>
+                     <dt><code><span class="paramname">xbar</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>see cel.scroll for layout.</dd>
+                     <dt><code><span class="paramname">ybar</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>see cel.scroll for layout.</dd>
           </dl>
             </div>
           </dd>
@@ -290,23 +273,50 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          listbox:insert(index, link)&nbsp;
+          listbox:insert(link[, index])&nbsp;
           <span class="functiondesc">links the given cel to the list, inserting it at the given index.</span>
         </h3>
         <div class="functionfulldesc">
         <p>links the given cel to the list, inserting it at the given index. This is a shortcut for using link, when a linker is not required.</p>
                 <div class="arguments">
           <span class="arguments">arguments</span>
-          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>An array index.  If not provided then link is appended to the end of the list</dd>
-                     <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dl class="arguments">          <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
           <dd>The cel (or string) to link.  If this is a string a label is created from the string.</dd>
+                     <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>An array index.  If not provided then link is appended to the end of the list</dd>
           </dl>
         </div>
                 <div class="returns">
           <span class="returns">returns</span>
           <dl class="returns">          <dt><code>listbox</code></dt> 
           <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:pick(x, y)&nbsp;
+          <span class="functiondesc">Returns the item and the index of the item at coordinate x, y in the listbox.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the item and the index of the item at coordinate x, y in the listbox. If the x,y coordinate falls outside the portal rect then nothing is returned. If no item it at (x,y) then nothing is returned.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>x coordinate.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>y coordinate.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the listbox item which contains point(x,y).</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>the index of the listbox item.</dd>
           </dl>
           </div>
         
@@ -525,20 +535,22 @@
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
           listbox:items([selected])&nbsp;
-          <span class="functiondesc">Returns an iterator for the list.</span>
+          <span class="functiondesc">Returns an iterator function and the listbox.</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Returns an iterator for the list.</p>
+        <p>Returns an iterator function and the listbox. <div class="code"><pre><code>for item, index in listbox:items() do end</code></pre></div> will iterate over each item in the listbox starting a the first item. <div class="code"><pre><code>for item in listbox:items('selected') do end</code></pre></div> will iterate over each selected item in no particular order.</p>
                 <div class="arguments">
           <span class="arguments">arguments</span>
-          <dl class="arguments">          <dt><code><span class="paramname">selected</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
-          <dd>if true the only selected items are returned in the iterator.</dd>
+          <dl class="arguments">          <dt><code><span class="paramname">selected</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>iff this is 'selected' the iterator function iterates only selected items.</dd>
           </dl>
         </div>
                 <div class="returns">
           <span class="returns">returns</span>
           <dl class="returns">          <dt><code>iterator</code></dt> 
-          <dd>an iterator for the list</dd>
+          <dd>an iterator function</dd>
+                     <dt><code>listbox</code></dt> 
+          <dd>this listbox, iterator function invariant state</dd>
           </dl>
           </div>
         
@@ -633,7 +645,7 @@
           <span class="functiondesc">Returns the current item in the list.</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Returns the current item in the list. The current item is set with listbox:setcurrent().  The current item is inteded to indicate 
+        <p>Returns the current item in the list. The current item is set with listbox:setcurrent().  The current item is intended to indicate 
       the item the user is interacting with.</p>
         
                 <div class="returns">
@@ -648,15 +660,17 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          listbox:setcurrent(index)&nbsp;
-          <span class="functiondesc">Sets the item at index to the current item.</span>
+          listbox:setcurrent(item)&nbsp;
+          <span class="functiondesc">Makes item (or the item at index item) the current item.</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Sets the item at index to the current item. The new current item will take focus.</p>
+        <p>Makes item (or the item at index item) the current item. The item will take focus.</p>
                 <div class="arguments">
           <span class="arguments">arguments</span>
-          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>index of the list itme to set current</dd>
+          <dl class="arguments">          <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a listbox item.</dd>
+                     <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>index of an item in the listbox.</dd>
           </dl>
         </div>
                 <div class="returns">
@@ -672,14 +686,16 @@
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
           listbox:scrolltoitem(item)&nbsp;
-          <span class="functiondesc">Scrolls the listbox to the item</span>
+          <span class="functiondesc">Scrolls the listbox to the item (or the item at index item)</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Scrolls the listbox to the item</p>
+        <p>Scrolls the listbox to the item (or the item at index item)</p>
                 <div class="arguments">
           <span class="arguments">arguments</span>
           <dl class="arguments">          <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
-          <dd>list item.</dd>
+          <dd>a listbox item.</dd>
+                     <dt><code><span class="paramname">item</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>index of an item in the listbox.</dd>
           </dl>
         </div>
                 <div class="returns">
@@ -728,6 +744,12 @@
           If mode is nil or any other value the item selection is reversed.</dd>
           </dl>
         </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>listbox</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
         
         </div>
       </div>

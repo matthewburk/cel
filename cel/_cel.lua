@@ -366,11 +366,11 @@ do --ENV.testlinker
 end
 
 do --stackformation.describelinks
-  function stackformation:describelinks(cel, host, ...)
+  function stackformation:describelinks(cel, host, gx, gy, gl, gt, gr, gb)
     local i = 1
     local link = rawget(cel, _links)
     while link do
-      host[i] = describe(link, host, ...)
+      host[i] = describe(link, host, gx, gy, gl, gt, gr, gb)
       i = host[i] and i + 1 or i
       link = link[_next]
     end
@@ -554,12 +554,18 @@ do --metacel.asyncall
 end
 
 do --metacel.newfactory
+  local factories = {}
+
+  function M.isfactory(v)
+    return factories[v] == true
+  end
   function metacel:newfactory(metatable)
     local metacel = self
 
     assert(not rawget(M, metacel[_name]))
 
     local factory = {}
+
     M[metacel[_name]] = factory 
 
     if metatable then
@@ -576,11 +582,10 @@ do --metacel.newfactory
       return metacel:newmetacel(name) 
     end
 
-    metatable = {__call = false}
-
-    function metatable.__call(factory, t)
+    metatable = {__call = function (factory, t)
       return metacel:compile(t)
-    end
+      --TODO protect metatable
+    end}
 
     setmetatable(factory, metatable)
 
@@ -603,6 +608,7 @@ do --metacel.newfactory
       )
     end
 
+    factories[factory] = true
     return factory
   end
 end
@@ -654,51 +660,22 @@ do --metacel.newmetacel
 
     metacel[_name] = name
     metacel.metatable = metatable
-    do
-      local celface = M.face[_metafaces][name] --TODO local Face[_metafaces]
-
-      celface = celface or {}
-
-      setmetatable(celface, {__index = self[_face]})
-
-      metacel[_face] = celface
-      M.face[_metafaces][name] = celface
-      M.face[_metafaces][self[_name]][celface] = celface
-    end
+    
+    metacel[_face] = setmetatable(defineface(name), {__index = self[_face]})
 
     return metacel, metatable
   end
 end
 
 do --metacel.getface
-  local colorface = {color = 'AAAA'}
-  local _metafaces = _metafaces
   local _face = _face
-
   function metacel:getface(face)
-    local facename = face
-    local metaface = self[_face]
-    assert(metaface)
-
     if face then
-      local rawface = rawget(metaface, face)
-      if rawface then
-        return rawface
-      else
-        face = M.face[_metafaces]['cel'][face] --this makes 'cel' faces available to every cel
-        if face then
-          return face
-        end
-        if type(facename) == 'string' and #facename == 4 then
-          colorface.color = facename
-          face = defineface('cel', facename, colorface)
-          assert(face)
-          return face
-        end
-      end
+      local rawface = rawget(self[_face], face) or rawget(metacel[_face], face)
+      return rawface or self[_face]
+    else
+      return self[_face]
     end
-
-    return metaface
   end
 end
 

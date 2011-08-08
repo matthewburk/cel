@@ -1,6 +1,5 @@
-
-Cel is free software: it may be used for any purpose, including commercial purposes, at absolutely no cost.
-Cel is licensed under the terms of the MIT license
+--[[
+cel is licensed under the terms of the MIT license
 
 Copyright (C) 2011 by Matthew W. Burk
 
@@ -21,41 +20,51 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-------------------------------------------------------------------------------------------------------------------------
+--]]
+local cel = require 'cel'
 
-Features:
-  Embeddable
-  Dynamic layout
-  Automatic layout
-  Custom rendering
-  Component oriented
+local _links = {}
+local meta, metatable = cel.newmetacel('panel')
 
-  Contols:
-    button
-    label
-    text
-    window
-    tree
-    panel
-    mutexpanel
-    tabpanel
-    scroll
-    listbox
-    menu
-    grip
-    border
-    document
-    editbox
+do
+  local function it(panel, prev)
+    return next(panel[_links], prev)
+  end
 
-  Layouts:
-    sequence (vertical and horizontal)
-    col
-    row
-    grid
-    slot
-    
+  function metatable:links()
+    return it, self 
+  end
+end
 
+function metatable:clear()
+  for link in pairs(self[_links]) do
+    link:unlink()
+  end
+  return self
+end
 
+function meta:__link(panel, link, linker, xval, yval, option)
+  panel[_links][link] = option or link
+end
 
+function meta:__unlink(panel, link)
+  panel[_links][link] = nil
+end
 
+do
+  local _new = meta.new
+  function meta:new(w, h, face)
+    face = self:getface(face)
+    local panel = _new(self, w, h, face)
+    panel[_links] = {}
+    return panel
+  end
 
+  local _compile = meta.compile
+  function meta:compile(t, panel)
+    panel = panel or meta:new(t.w, t.h, t.face)
+    return _compile(self, t, panel)
+  end
+end
+
+return meta:newfactory()

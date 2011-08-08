@@ -14,21 +14,20 @@
   <li><a href="scroll.html">cel.scroll</a></li> 
   <li><a href="listbox.html">cel.listbox</a></li> 
   <li><a href="window.html">cel.window</a></li> 
+  <li><a href="panel.html">cel.panel</a></li> 
+  <li><a href="mutexpanel.html">cel.mutexpanel</a></li> 
+  <li><a href="tabpanel.html">cel.tabpanel</a></li> 
+  <li><a href="text.html">cel.text</a></li> 
+  <li><a href="menu.html">cel.menu</a></li> 
+  <li><a href="row.html">cel.row</a></li> 
+  <li><a href="col.html">cel.col</a></li> 
+  <li><a href="grid.html">cel.grid</a></li> 
 </ul>
 
         </div>
         <div id="content">
         <h1>cel.scroll<p class="factorydesc">(module)<br><br>Factory for the scroll metacel.</p></h1>
-        Factory for the scroll metacel. <div class="list">
-      TODO:
-      <ul>
-      <li>a nice feature would be if the layout could define additional cels to be included in the scrollbars.
-    Maybe by calling a function or just linking cels directly embedded in the layout.  Would probably want
-    it to be a function that could return a cel, so a unique instance could be generated for each scroll cel.</li><li>Should scroll generate events when it is scrolled, or the subject changed, etc?  Can't think of a use case
-    for this, so leaving it out for now.</li><li>ybar and xbar are not optional in layout, the bars are the value added part of a scroll cel, the rest
-    is just a linker</li>
-      </ul>
-      </div>       <div class="metaceldef">
+        Factory for the scroll metacel.       <div class="metaceldef">
       <p class="metaceldefheader">metacel</p>
         <h3 class="metaceldefname">
           scroll&nbsp;
@@ -79,58 +78,273 @@
                 <div class="metacellayout">
           <dt class="metacellayout">layout</dt>
           <dd>
-          A table defining the internal layout of a scroll cel <div class="code"><pre><code>stepsize --number of units to move the subject in a single step</code>
-<code>ybar = { --vertical scrollbar</code>
-<code>  face --face or facename</code>
-<code>  autohide --if true the scrollbar will hide when the portal.h >= subject.h</code>
-<code>  size --width of the scrollbar </code>
-<code>  track = { </code>
-<code>    face --face or facename</code>
-<code>    size --width of the track </code>
-<code>    link --linker, xval, yval</code>
-<code>    slider = {</code>
-<code>      face --face or facename</code>
-<code>      size --width of the slider</code>
-<code>      minsize --minimum height of the slider</code>
-<code>    }</code>
-<code>  }</code>
-<code>  decbutton = {</code>
-<code>    face --face or facename;</code>
-<code>    size --width and height;</code>
-<code>    link --linker, xval, yval;</code>
-<code>  }</code>
-<code>  incbutton = {</code>
-<code>    face --face or facename;</code>
-<code>    size --width and height;</code>
-<code>    link --linker, xval, yval;</code>
-<code>  }</code>
-<code>}</code>
-<code>xbar = { --horizontal scrollbar</code>
-<code>  face --face or facename</code>
-<code>  autohide --if true the scrollbar will hide when the portal.w >= subject.w</code>
-<code>  size --height of the scrollbar </code>
-<code>  track {</code>
-<code>    face --face or facename</code>
-<code>    size --height of the track</code>
-<code>    link --linker, xval, yval</code>
-<code>    slider = {</code>
-<code>      face --face or facename</code>
-<code>      size --height of the slider</code>
-<code>      minsize --minimum width of the slider</code>
-<code>    }</code>
-<code>  }</code>
-<code>  decbutton = {</code>
-<code>    face --face or facename;</code>
-<code>    size --width and height;</code>
-<code>    link --linker, xval, yval;</code>
-<code>  }</code>
-<code>  incbutton = {</code>
-<code>    face --face or facename;</code>
-<code>    size --width and height;</code>
-<code>    link --linker, xval, yval;</code>
-<code>  }</code>
+          A table defining the internal layout of a scroll cel <div class="code"><pre><code>layout = {</code>
+<code>  stepsize = integer, </code>
+<code>  xbar = { </code>
+<code>    face = face,</code>
+<code>    autohide = boolean,</code>
+<code>    size = integer,</code>
+<code>    track = { </code>
+<code>      face = face,</code>
+<code>      size = integer,</code>
+<code>      link = {linker[, xval[, yval]]} or string,</code>
+<code>      slider = {</code>
+<code>        face = face,</code>
+<code>        size = integer,</code>
+<code>        minsize = integer,</code>
+<code>      },</code>
+<code>    },</code>
+<code>    decbutton = {</code>
+<code>      face = face,</code>
+<code>      size = integer,</code>
+<code>      link = {linker[, xval[, yval]]} or string,</code>
+<code>    },</code>
+<code>    incbutton = {</code>
+<code>      face = face,</code>
+<code>      size = integer,</code>
+<code>      link = {linker[, xval[, yval]]} or string,</code>
+<code>    },</code>
+<code>  },</code>
+<code>  ybar = {</code>
+<code>    face = face,</code>
+<code>    autohide = boolean,</code>
+<code>    size = integer,</code>
+<code>    track {</code>
+<code>      face = face,</code>
+<code>      size = integer,</code>
+<code>      link = {linker[, xval[, yval]]} or string,</code>
+<code>      slider = {</code>
+<code>        face = face,</code>
+<code>        size = integer,</code>
+<code>        minsize = integer, </code>
+<code>      },</code>
+<code>    },</code>
+<code>    decbutton = {</code>
+<code>      face = face,</code>
+<code>      size = integer,</code>
+<code>      link = {linker[, xval[, yval]]} or string,</code>
+<code>    },</code>
+<code>    incbutton = {</code>
+<code>      face = face,</code>
+<code>      size = integer,</code>
+<code>      link = {linker[, xval[, yval]]} or string,</code>
+<code>    },</code>
+<code>  },</code>
 <code>}</code></pre></div>
+                      <div class="arguments">
+              <span class="arguments">entries</span>
+              <dl class="arguments">          <dt><code><span class="paramname">stepsize</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>number of units to move the itemlist in a single step.</dd>
+                     <dt><code><span class="paramname">xbar</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>horizontal scrollbar layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">autohide</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>if true the scrollbar will hide when the portal.w >= subject.w.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>height of the scrollbar.</dd>
+                    <dt><code><span class="paramname">track</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar track layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>height of the track.</dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>If link is a table, it contains arguments passed to cel:link().       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">[1]</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name passed to cel:link().</dd>
+                    <dt><code><span class="paramname">[2]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to cel:link()</dd>
+                    <dt><code><span class="paramname">[3]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to cel:link()</dd>
           
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>linker name passed to cel:link()</dd>
+                    <dt><code><span class="paramname">slider</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar slider layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>height of the slider.</dd>
+                    <dt><code><span class="paramname">minsize</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>minimum width of the slider.</dd>
+          
+        </dl>
+      </div></dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">decbutton</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar decbutton layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width and height of the button.</dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>If link is a table, it contains arguments passed to cel:link().       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">[1]</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name passed to cel:link().</dd>
+                    <dt><code><span class="paramname">[2]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to cel:link()</dd>
+                    <dt><code><span class="paramname">[3]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>linker name passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">incbutton</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar incbutton layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width and height of the button.</dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>If link is a table, it contains arguments passed to cel:link().       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">[1]</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name passed to cel:link().</dd>
+                    <dt><code><span class="paramname">[2]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to cel:link()</dd>
+                    <dt><code><span class="paramname">[3]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>linker name passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+          
+        </dl>
+      </div></dd>
+                     <dt><code><span class="paramname">ybar</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>vertical scrollbar layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">autohide</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>if true the scrollbar will hide when the portal.h >= subject.h.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width of the scrollbar.</dd>
+                    <dt><code><span class="paramname">track</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar track layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width of the track.</dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>If link is a table, it contains arguments passed to cel:link().       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">[1]</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name passed to cel:link().</dd>
+                    <dt><code><span class="paramname">[2]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to cel:link()</dd>
+                    <dt><code><span class="paramname">[3]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>linker name passed to cel:link()</dd>
+                    <dt><code><span class="paramname">slider</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar slider layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width of the slider.</dd>
+                    <dt><code><span class="paramname">minsize</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>minimum height of the slider.</dd>
+          
+        </dl>
+      </div></dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">decbutton</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar decbutton layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width and height of the button.</dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>If link is a table, it contains arguments passed to cel:link().       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">[1]</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name passed to cel:link().</dd>
+                    <dt><code><span class="paramname">[2]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to cel:link()</dd>
+                    <dt><code><span class="paramname">[3]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>linker name passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">incbutton</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar incbutton layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width and height of the button.</dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>If link is a table, it contains arguments passed to cel:link().       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">[1]</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name passed to cel:link().</dd>
+                    <dt><code><span class="paramname">[2]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to cel:link()</dd>
+                    <dt><code><span class="paramname">[3]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>linker name passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+          
+        </dl>
+      </div></dd>
+          </dl>
+            </div>
           </dd>
         </div>
         </dl>

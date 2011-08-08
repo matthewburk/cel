@@ -23,7 +23,6 @@ THE SOFTWARE.
 --]]
 local cel = require 'cel'
 
---TODO do not extend scroll, contain it
 local metacel, metatable = cel.scroll.newmetacel('listbox')
 metacel['.itemlist'] = cel.sequence.y.newmetacel('listbox.itemlist')
 
@@ -58,14 +57,9 @@ function metatable:len()
   return self[_items]:len()
 end
 
-function metatable:insert(index, item)
-  if not item then
-    item = index
-    index = nil
-  end
-
+function metatable:insert(item, index)
   if type(item) == 'string' then
-    item = cel.label.new(item)
+    item = cel.tocel(item, self)
   end
 
   item:link(self, nil, nil, nil, index)
@@ -113,15 +107,18 @@ end
 do
   local dummy = {}
 
-  local function selectediterator(listbox, prev)
-    return (next(listbox[_selected], prev))
+  local function selectedit(listbox, prev)
+    return (next(listbox[_selected], prev)) --TODO need an index
   end
 
-  local function iterator(listbox, prev)
-    if prev then
-      return listbox[_items]:next(prev)
+  local function it(listbox, item)
+    if item then
+      local index = self[_items]:indexof(item)
+      if index then
+        return listbox[_items]:get(index+1), index+1
+      end
     else
-      return listbox:first()
+      return listbox[_items]:get(1), 1
     end
   end
 
@@ -131,9 +128,9 @@ do
         return pairs(dummy)
       end
 
-      return selectediterator, self
+      return selectedit, self
     end
-    return iterator, self
+    return it, self
   end
 end
 
@@ -169,6 +166,14 @@ end
 
 --TODO implement mode, for 'top', 'bottom', 'center', 'current postion of cursor'
 function metatable:scrolltoitem(item, mode)
+  if type(item) == 'number' then
+    item = self:get(item)
+  end
+
+  if not item then
+    return self
+  end
+
   local x, y, w, h = self:getportalrect()
   x, y = self:getvalues();
 
@@ -181,9 +186,10 @@ function metatable:scrolltoitem(item, mode)
   return self
 end
 
-function metatable:setcurrent(index)
-  local item = self:get(index)
-
+function metatable:setcurrent(item)
+  if type(item) == 'number' then
+    item = self:get(item)
+  end
   if item then
     changecurrent(self, item)
   end
@@ -195,8 +201,8 @@ function metatable:clear()
   return self
 end
 
+--TODO optimize this could be done outside the module with same efficiency
 function metatable:selectall(mode)
-  --TODO optimize this could be done outside the module with same efficiency
   for i = 1, self:len() do
     self:select(i, mode)
   end
@@ -351,111 +357,110 @@ function metacel:onkey(listbox, state, key, intercepted)
 end
 
 do -- items metacel
-local metacel = metacel['.itemlist'] 
+  local metacel = metacel['.itemlist'] 
 
-do --metacel.dispatchevents
-  function metacel:dispatchevents(listbox)
-    local changes = listbox[_changes]
-    listbox[_changes] = nil
+  do --metacel.dispatchevents
+    function metacel:dispatchevents(listbox)
+      local changes = listbox[_changes]
+      listbox[_changes] = nil
 
-    for i=1, #changes do
-      local item, index, value, sink = changes[i][1], changes[i][2], changes[i][3], changes[i][4]
-      if false == value then
+      for i=1, #changes do
+        local item, index, value, sink = changes[i][1], changes[i][2], changes[i][3], changes[i][4]
+        if false == value then
+          if listbox[_selected] and listbox[_selected][item] then
+            listbox:select(item, false)
+          end
+          if listbox[_current] == item then
+            changecurrent(listbox, listbox[_items]:get(index - 1) or listbox[_items]:get(1))
+          end
+        end
+
+        if sink then
+          sink(listbox, item, index, value)
+        end
+      end
+    end
+  end
+
+  do --metacel.__qchange
+    function metacel:__qchange(listbox, link, index, value, sink)
+      local changes = listbox[_changes]
+      if changes then
+        changes[#changes+1] = {link, index, value, sink}
+      else
+        listbox[_changes] = {{link, index, value, sink}}
+        self:asyncall('dispatchevents', listbox)
+      end
+    end
+  end
+
+  do --metacel.__link
+    function metacel:__link(items, item, linker, xval, yval, index)
+      local listbox = items[_listbox]
+      if listbox.onchange then
+        self:__qchange(listbox, item, index or items:len(), true, listbox.onchange)
+      end
+    end
+  end
+
+  do --metacel.__unlink
+    function metacel:__unlink(items, item, index)
+      local listbox = items[_listbox]
+      if listbox.onchange then
+        self:__qchange(listbox, item, index, false, listbox.onchange)
+      else
         if listbox[_selected] and listbox[_selected][item] then
-          listbox:select(item, false)
+          self:__qchange(listbox, item, index, false, nil)
+        elseif listbox[_current] == item then
+          self:__qchange(listbox, item, index, false, nil)
         end
-        if listbox[_current] == item then
-          changecurrent(listbox, listbox[_items]:get(index - 1) or listbox[_items]:get(1))
-        end
-      end
-
-      if sink then
-        sink(listbox, item, index, value)
       end
     end
   end
-end
 
-do --metacel.__qchange
-  function metacel:__qchange(listbox, link, index, value, sink)
-    local changes = listbox[_changes]
-    if changes then
-      changes[#changes+1] = {link, index, value, sink}
-    else
-      listbox[_changes] = {{link, index, value, sink}}
-      self:asyncall('dispatchevents', listbox)
-    end
-  end
-end
+  do --metacel.__describeslot
+    function metacel:__describeslot(items, item, index, t)
+      local listbox = items[_listbox]
 
-do --metacel.__link
-  function metacel:__link(items, item, linker, xval, yval, index)
-    local listbox = items[_listbox]
-    if listbox.onchange then
-      self:__qchange(listbox, item, index or items:len(), true, listbox.onchange)
-    end
-  end
-end
+      t.face = listbox[_boxface]
 
-do --metacel.__unlink
-  function metacel:__unlink(items, item, index)
-    local listbox = items[_listbox]
-    if listbox.onchange then
-      self:__qchange(listbox, item, index, false, listbox.onchange)
-    else
       if listbox[_selected] and listbox[_selected][item] then
-        self:__qchange(listbox, item, index, false, nil)
-      elseif listbox[_current] == item then
-        self:__qchange(listbox, item, index, false, nil)
+        t.selected = true
+      else
+        t.selected = false
+      end
+
+      if listbox[_current] == item then
+        t.current = true
+      else
+        t.current = false
       end
     end
   end
-end
 
-do --metacel.__describeslot
-  function metacel:__describeslot(items, item, index, t)
-    local listbox = items[_listbox]
-
-    t.face = listbox[_boxface]
-
-    if listbox[_selected] and listbox[_selected][item] then
-      t.selected = true
-    else
-      t.selected = false
-    end
-
-    if listbox[_current] == item then
-      t.current = true
-    else
-      t.current = false
-    end
-  end
-end
-
-do --metacel.onmousedown
-  function metacel:onmousedown(items, button, x, y, intercepted)
-    local listbox = items[_listbox]
-    if listbox.rowevent and listbox.rowevent.onmousedown then
-      local item, row = items[_listbox], items:pick(x, y)
-      if item then
-        return listbox.rowevent.onmousedown(listbox, row, item, button, x, y, intercepted)
+  do --metacel.onmousedown
+    function metacel:onmousedown(items, button, x, y, intercepted)
+      local listbox = items[_listbox]
+      if listbox.rowevent and listbox.rowevent.onmousedown then
+        local item, row = items[_listbox], items:pick(x, y)
+        if item then
+          return listbox.rowevent.onmousedown(listbox, row, item, button, x, y, intercepted)
+        end
       end
     end
   end
-end
 
-do --metacel.onmouseup
-  function metacel:onmouseup(items, button, x, y, intercepted)
-    local listbox = items[_listbox]
-    if listbox.rowevent and listbox.rowevent.onmouseup then
-      local item, row = items[_listbox], items:pick(x, y)
-      if item then
-        return listbox.rowevent.onmouseup(listbox, row, item, button, x, y, intercepted)
+  do --metacel.onmouseup
+    function metacel:onmouseup(items, button, x, y, intercepted)
+      local listbox = items[_listbox]
+      if listbox.rowevent and listbox.rowevent.onmouseup then
+        local item, row = items[_listbox], items:pick(x, y)
+        if item then
+          return listbox.rowevent.onmouseup(listbox, row, item, button, x, y, intercepted)
+        end
       end
     end
   end
-end
-
 end
 
 do
@@ -485,11 +490,10 @@ do
   function metacel:compile(t, listbox)
     listbox = listbox or metacel:new(t.w, t.h, t.face)
     listbox.onchange = t.onchange
-    --listbox[_items]:flux( function()
-        _compile(self, t, listbox)
-      --end)
+    _compile(self, t, listbox)
     return listbox
   end
 end
 
-return metacel:newfactory()
+return metacel:newfactory({layout = layout})
+

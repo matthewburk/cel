@@ -1,17 +1,6 @@
 export['cel.scroll'] {
   [[Factory for the scroll metacel.]];
-  list {
-    header='TODO:';
-    [[a nice feature would be if the layout could define additional cels to be included in the scrollbars.
-    Maybe by calling a function or just linking cels directly embedded in the layout.  Would probably want
-    it to be a function that could return a cel, so a unique instance could be generated for each scroll cel.]];
-    [[Should scroll generate events when it is scrolled, or the subject changed, etc?  Can't think of a use case
-    for this, so leaving it out for now.]];
-    [[ybar and xbar are not optional in layout, the bars are the value added part of a scroll cel, the rest
-    is just a linker]];
-
-  };
-
+  
   metaceldef['scroll'] {
     source = 'cel';
     factory = 'cel.scroll';
@@ -56,58 +45,208 @@ export['cel.scroll'] {
     layout = {
       [[A table defining the internal layout of a scroll cel]];
       code[=[
-      stepsize --number of units to move the subject in a single step
-      ybar = { --vertical scrollbar
-        face --face or facename
-        autohide --if true the scrollbar will hide when the portal.h >= subject.h
-        size --width of the scrollbar 
-        track = { 
-          face --face or facename
-          size --width of the track 
-          link --linker, xval, yval
-          slider = {
-            face --face or facename
-            size --width of the slider
-            minsize --minimum height of the slider
-          }
-        }
-        decbutton = {
-          face --face or facename;
-          size --width and height;
-          link --linker, xval, yval;
-        }
-        incbutton = {
-          face --face or facename;
-          size --width and height;
-          link --linker, xval, yval;
-        }
-      }
-      xbar = { --horizontal scrollbar
-        face --face or facename
-        autohide --if true the scrollbar will hide when the portal.w >= subject.w
-        size --height of the scrollbar 
-        track {
-          face --face or facename
-          size --height of the track
-          link --linker, xval, yval
-          slider = {
-            face --face or facename
-            size --height of the slider
-            minsize --minimum width of the slider
-          }
-        }
-        decbutton = {
-          face --face or facename;
-          size --width and height;
-          link --linker, xval, yval;
-        }
-        incbutton = {
-          face --face or facename;
-          size --width and height;
-          link --linker, xval, yval;
-        }
+      layout = {
+        stepsize = integer, 
+        xbar = { 
+          face = face,
+          autohide = boolean,
+          size = integer,
+          track = { 
+            face = face,
+            size = integer,
+            link = {linker[, xval[, yval]]} or string,
+            slider = {
+              face = face,
+              size = integer,
+              minsize = integer,
+            },
+          },
+          decbutton = {
+            face = face,
+            size = integer,
+            link = {linker[, xval[, yval]]} or string,
+          },
+          incbutton = {
+            face = face,
+            size = integer,
+            link = {linker[, xval[, yval]]} or string,
+          },
+        },
+        ybar = {
+          face = face,
+          autohide = boolean,
+          size = integer,
+          track {
+            face = face,
+            size = integer,
+            link = {linker[, xval[, yval]]} or string,
+            slider = {
+              face = face,
+              size = integer,
+              minsize = integer, 
+            },
+          },
+          decbutton = {
+            face = face,
+            size = integer,
+            link = {linker[, xval[, yval]]} or string,
+          },
+          incbutton = {
+            face = face,
+            size = integer,
+            link = {linker[, xval[, yval]]} or string,
+          },
+        },
       }
       ]=];
+
+      params = {
+        param.integer[[stepsize - number of units to move the itemlist in a single step.]];
+        param.table {
+          name='xbar';
+          [[horizontal scrollbar layout.]];
+          tabledef {
+            param.face[[face - face or face name.]];
+            param.boolean[[autohide - if true the scrollbar will hide when the portal.w >= subject.w.]];
+            param.integer[[size - height of the scrollbar.]];
+            param.table {
+              name='track';
+              [[scrollbar track layout.]];
+              tabledef {
+                param.face[[face - face or face name.]];
+                param.integer[[size - height of the track.]];
+                param.table {
+                  name='link';
+                  [[If link is a table, it contains arguments passed to cel:link().]];
+                  tabledef {
+                    param.linker[[[1] - linker function or name passed to cel:link().]];
+                    param.any[[[2] - xval param passed to cel:link()]];
+                    param.any[[[3] - yval param passed to cel:link()]];
+                  };
+                };
+                param.string[[link - linker name passed to cel:link()]];
+                param.table {
+                  name='slider';
+                  [[scrollbar slider layout.]];
+                  tabledef {
+                    param.face[[face - face or face name.]];
+                    param.integer[[size - height of the slider.]];
+                    param.integer[[minsize - minimum width of the slider.]];
+                  };
+                };
+              };
+            };
+            param.table {
+              name='decbutton';
+              [[scrollbar decbutton layout.]];
+              tabledef {
+                param.face[[face - face or face name.]];
+                param.integer[[size - width and height of the button.]];
+                param.table {
+                  name='link';
+                  [[If link is a table, it contains arguments passed to cel:link().]];
+                  tabledef {
+                    param.linker[[[1] - linker function or name passed to cel:link().]];
+                    param.any[[[2] - xval param passed to cel:link()]];
+                    param.any[[[3] - yval param passed to cel:link()]];
+                  };
+                };
+                param.string[[link - linker name passed to cel:link()]];
+              };
+            };
+            param.table {
+              name='incbutton';
+              [[scrollbar incbutton layout.]];
+              tabledef {
+                param.face[[face - face or face name.]];
+                param.integer[[size - width and height of the button.]];
+                param.table {
+                  name='link';
+                  [[If link is a table, it contains arguments passed to cel:link().]];
+                  tabledef {
+                    param.linker[[[1] - linker function or name passed to cel:link().]];
+                    param.any[[[2] - xval param passed to cel:link()]];
+                    param.any[[[3] - yval param passed to cel:link()]];
+                  };
+                };
+                param.string[[link - linker name passed to cel:link()]];
+              };
+            };
+          };
+        };
+        param.table {
+          name='ybar';
+          [[vertical scrollbar layout.]];
+          tabledef {
+            param.face[[face - face or face name.]];
+            param.boolean[[autohide - if true the scrollbar will hide when the portal.h >= subject.h.]];
+            param.integer[[size - width of the scrollbar.]];
+            param.table {
+              name='track';
+              [[scrollbar track layout.]];
+              tabledef {
+                param.face[[face - face or face name.]];
+                param.integer[[size - width of the track.]];
+                param.table {
+                  name='link';
+                  [[If link is a table, it contains arguments passed to cel:link().]];
+                  tabledef {
+                    param.linker[[[1] - linker function or name passed to cel:link().]];
+                    param.any[[[2] - xval param passed to cel:link()]];
+                    param.any[[[3] - yval param passed to cel:link()]];
+                  };
+                };
+                param.string[[link - linker name passed to cel:link()]];
+                param.table {
+                  name='slider';
+                  [[scrollbar slider layout.]];
+                  tabledef {
+                    param.face[[face - face or face name.]];
+                    param.integer[[size - width of the slider.]];
+                    param.integer[[minsize - minimum height of the slider.]];
+                  };
+                };
+              };
+            };
+            param.table {
+              name='decbutton';
+              [[scrollbar decbutton layout.]];
+              tabledef {
+                param.face[[face - face or face name.]];
+                param.integer[[size - width and height of the button.]];
+                param.table {
+                  name='link';
+                  [[If link is a table, it contains arguments passed to cel:link().]];
+                  tabledef {
+                    param.linker[[[1] - linker function or name passed to cel:link().]];
+                    param.any[[[2] - xval param passed to cel:link()]];
+                    param.any[[[3] - yval param passed to cel:link()]];
+                  };
+                };
+                param.string[[link - linker name passed to cel:link()]];
+              };
+            };
+            param.table {
+              name='incbutton';
+              [[scrollbar incbutton layout.]];
+              tabledef {
+                param.face[[face - face or face name.]];
+                param.integer[[size - width and height of the button.]];
+                param.table {
+                  name='link';
+                  [[If link is a table, it contains arguments passed to cel:link().]];
+                  tabledef {
+                    param.linker[[[1] - linker function or name passed to cel:link().]];
+                    param.any[[[2] - xval param passed to cel:link()]];
+                    param.any[[[3] - yval param passed to cel:link()]];
+                  };
+                };
+                param.string[[link - linker name passed to cel:link()]];
+              };
+            };
+          };
+        };
+      };
     };
 
     __link = {
@@ -291,31 +430,6 @@ export['cel.scroll'] {
   
   celdef['scroll'] {
     [[A scroll is a container cel with vertical and horizontal scrollbars]];
-    --[==[
-    [[Compostion of a scroll:]];
-    tabledef {
-      key['scroll.portal'] { 
-        'The client cel for a scroll, cels linked to a scroll are linked to the portal';
-      };
-      key['scroll.bar'] { 
-        [[A scrollbar can be horizontal or vertical.  
-        A scrollbar is composed of buttons and track which contains a slider]];
-        key['scroll.bar.inc'] { 
-          [[A button used to increase the value of the scrollbar]];
-        };
-        key['scroll.bar.dec'] { 
-          [[A button used to decrease the value of the scrollbar]];
-        };
-        key['scroll.bar.track'] {
-          [[A button that hosts the slider]];
-          key['scroll.bar.slider'] { 
-            [[A grip used to change the value of the scrollbar]];
-            [[The sliders size will change in proportion to the size of the portal to the subjet.]];
-          };
-        };
-      };
-    };
-    --]==]
 
     [[A scroll contains a subject cel, which is shown in the portal and whose position is controlled by the scroll cel
     functions, or user input.  Important metrics from a scroll cel are minvalue, value and maxvalue.  The minvalue is
@@ -397,26 +511,10 @@ export['cel.scroll'] {
         param.integer[[portal.h]];
       };
     };
-
-    
-
-    
   };
-
-  
 
   descriptiondef['scroll.portal'] {
     [[A cel description.]];
     [[host is not always a scroll description because the scroll metacel can be extended.]];
   };
-
-  
-
-  
-
-  
-
-  
-
-  
 }

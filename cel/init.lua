@@ -770,6 +770,49 @@ function M.string.link(s, host, ...)
   return host[_metacel]:__celfromstring(host, s):link(host, ...)
 end
 
+function M.newnamespace(out)
+  local N = {}
+
+  N.cel = setmetatable({}, {
+    __call=function(_, t)
+      return out.compile('cel', t)      
+    end})
+
+  N.cel.new = function(...)
+    return out.new('cel', ...)
+  end
+
+  local __index = function(namespace, k)
+    print('namespace __index', namespace, k)
+    local v = M[k]
+    if M.isfactory(v) then
+      namespace[k] = setmetatable({}, {
+        __index = v,
+        __call = function(_, t)
+          return out.compile(k, t)
+        end,
+      })
+
+      namespace[k].new = function(...)
+        return out.new(k, ...)
+      end
+
+      return namespace[k]
+    else
+      --TODO can't capture sequence.x and sequence.y this way
+      namespace[k] = v
+      return namespace[k]
+    end
+  end
+
+  
+  --face
+  --linkers
+  --root
+
+  return setmetatable(N, {__index=__index})
+end
+
 do
   local proxyM = newproxy(true)
   getmetatable(proxyM).__index = M 

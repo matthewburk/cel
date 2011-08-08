@@ -18,10 +18,6 @@ do --string interpolation via % operator
   end
 end
 
-local fname = (...) .. '.html'
-print(fname) io.flush()
-
-local fout = io.open(fname, 'w')
 
 local navigation
 do
@@ -62,8 +58,7 @@ do
       </body></html>]] % {content=tconcat(t, 'factory', 2), name=name, brief=brief,
       navigation = navigation,
       }
-      fout:write(html)
-      fout:close()
+      _writefile(html)
   end
 
   local function newpage(t)
@@ -75,8 +70,7 @@ do
       <body>
         ${content}
       </body></html>]] % {content=tconcat(t, 'page')}
-      fout:write(html)
-      fout:close()
+      _writefile(html)
   end
 
   export = setmetatable({}, {
@@ -729,5 +723,19 @@ do
   })
 end
 
+do
+  local _inputs = require '_inputs'
+  local fout
+  function _writefile(text)
+    fout:write(text)
+  end
 
-require(...)
+  for i, name in ipairs(_inputs) do
+    fout = io.open(name .. '.html', 'w')
+
+    print(name) io.flush()
+    require(name)
+
+    fout:close()
+  end
+end

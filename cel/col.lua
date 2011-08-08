@@ -95,7 +95,7 @@ local function allocateslots(col, h)
     local extra = excess % col[_weight]
     local mult = math.floor((excess)/col[_weight])
 
-    for i, slot in col_items(col) do
+    for slot, i in col_items(col) do
       local weight = slot[_weight]
 
       if weight then

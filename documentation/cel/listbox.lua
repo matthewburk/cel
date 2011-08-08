@@ -41,70 +41,38 @@ export['cel.listbox'] {
     layout = {
       [[A table defineing the internal layout of a listbox]];
       code[=[
-      itemlist = {
-        face = face,
-        gap = integer,
-      },
-      itembox = {
-        face = face, 
-      },
-      stepsize = integer, 
-      ybar = { 
-        face = face,
-        autohide = boolean,
-        size = integer,
-        track = { 
+      layout = {
+        itemlist = {
           face = face,
-          size = integer,
-          link = {linker[, xval[, yval]]} or string,
-          slider = {
-            face = face,
-            size = integer,
-            minsize = integer,
-          },
+          gap = integer,
         },
-        decbutton = {
-          face = face,
-          size = integer,
-          link = {linker[, xval[, yval]]} or string,
+        itembox = {
+          face = face, 
         },
-        incbutton = {
-          face = face,
-          size = integer,
-          link = {linker[, xval[, yval]]} or string,
-        },
-      },
-      xbar = {
-        face = face,
-        autohide = boolean,
-        size = integer,
-        track {
-          face = face,
-          size = integer,
-          link = {linker[, xval[, yval]]} or string,
-          slider = {
-            face = face,
-            size = integer,
-            minsize = integer, 
-          },
-        },
-        decbutton = {
-          face = face,
-          size = integer,
-          link = {linker[, xval[, yval]]} or string,
-        },
-        incbutton = {
-          face = face,
-          size = integer,
-          link = {linker[, xval[, yval]]} or string,
-        },
+        stepsize = integer, 
+        xbar = table,
+        ybar = table,
       }
       ]=];
 
       params = {
-        param.face[[face - face or face name]];
-        param.integer[[gap - amount of space between each item in the list.]];
-        param.integer[[stepsize - number of units to move the subject in a single step.]];
+        param.table {
+          name='itemlist';
+          tabledef {
+            param.face[[face - face or face name]];
+            param.integer[[gap - amount of space between each item in the list.]];
+          };
+        };
+        param.table {
+          name='itembox';
+          tabledef {
+            param.face[[face - face or face name]];
+          };
+        };
+        param.integer[[stepsize - number of units to move the itemlist in a single step.
+        This only applies to horizontal steps.]];
+        param.table[[xbar - see cel.scroll for layout.]];
+        param.table[[ybar - see cel.scroll for layout.]];
       };
     };
 
@@ -213,17 +181,32 @@ export['cel.listbox'] {
       };
     };
 
-    functiondef['listbox:insert(index, link)'] {
+    functiondef['listbox:insert(link[, index])'] {
       [[links the given cel to the list, inserting it at the given index.]];
       [[This is a shortcut for using link, when a linker is not required.]];
 
       params = {
-        param.integer[[index - An array index.  If not provided then link is appended to the end of the list]];
         param.cel[[link - The cel (or string) to link.  If this is a string a label is created from the string.]];
+        param.integer[[index - An array index.  If not provided then link is appended to the end of the list]];
       };
 
       returns = {
         param.listbox[[self]];
+      };
+    };
+
+    functiondef['listbox:pick(x, y)'] {
+      [[Returns the item and the index of the item at coordinate x, y in the listbox.]];
+      [[If the x,y coordinate falls outside the portal rect then nothing is returned.]];
+      [[If no item it at (x,y) then nothing is returned.]];
+      params = {
+        param.integer[[x - x coordinate.]];
+        param.integer[[y - y coordinate.]];
+      };
+
+      returns = {
+        param.cel[[the listbox item which contains point(x,y).]];
+        param.integer[[the index of the listbox item.]];
       };
     };
 
@@ -333,14 +316,23 @@ export['cel.listbox'] {
     };
 
     functiondef['listbox:items([selected])'] {
-      [[Returns an iterator for the list.]];
+      [[Returns an iterator function and the listbox.]];
+      code[=[
+        for item, index in listbox:items() do end
+      ]=];
+      [[will iterate over each item in the listbox starting a the first item.]];
+      code[=[
+        for item in listbox:items('selected') do end
+      ]=];
+      [[will iterate over each selected item in no particular order.]];
 
       params = {
-        param.boolean[[selected - if true the only selected items are returned in the iterator.]];
+        param.string[[selected - iff this is 'selected' the iterator function iterates only selected items.]];
       };
 
       returns = {
-        param.iterator[[an iterator for the list]];
+        param.iterator[[an iterator function]];
+        param.listbox[[this listbox, iterator function invariant state]];
       };
     };
 
@@ -382,19 +374,20 @@ export['cel.listbox'] {
 
     functiondef['listbox:getcurrent()'] {
       [[Returns the current item in the list.]];
-      [[The current item is set with listbox:setcurrent().  The current item is inteded to indicate 
+      [[The current item is set with listbox:setcurrent().  The current item is intended to indicate 
       the item the user is interacting with.]];
       returns = {
         param.cel[[the current item or nil.]];
       };
     };
 
-    functiondef['listbox:setcurrent(index)'] {
-      [[Sets the item at index to the current item.]];
-      [[The new current item will take focus.]];
+    functiondef['listbox:setcurrent(item)'] {
+      [[Makes item (or the item at index item) the current item.]];
+      [[The item will take focus.]];
 
       params = {
-        param.integer[[index - index of the list itme to set current]];
+        param.cel[[item - a listbox item.]];
+        param.integer[[item - index of an item in the listbox.]];
       };
       returns = {
         param.listbox[[self]];
@@ -402,10 +395,11 @@ export['cel.listbox'] {
     };
 
     functiondef['listbox:scrolltoitem(item)'] {
-      [[Scrolls the listbox to the item]];
+      [[Scrolls the listbox to the item (or the item at index item)]];
 
       params = {
-        param.cel[[item - list item.]];
+        param.cel[[item - a listbox item.]];
+        param.integer[[item - index of an item in the listbox.]];
       };
       returns = {
         param.listbox[[self]];
@@ -430,6 +424,9 @@ export['cel.listbox'] {
           If mode is nil or any other value the item selection is reversed.]];
         };
       };
+      returns = {
+        param.listbox[[self]];
+      };
     };
 
     functiondef['listbox:selectall([mode])'] {
@@ -447,9 +444,5 @@ export['cel.listbox'] {
         param.listbox[[self]];
       };
     };
-
-   
   };
-
-  
 }

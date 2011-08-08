@@ -1,15 +1,6 @@
 export['cel'] {
   [[This is the main module for the Cel libarary.]];
 
-  list {
-    header='TODO:';
-    [[document that a metacel defines the description, a cel cannot add to or remove from this (unless the metacel lets it, which would be considered bad.]];
-    [[document that factory.newfactory is useful for creating a specialized factory that controls the face, layout,
-    and other properties of the cel.  For example createing a fixed size window with a sepcifc layout, always the 
-    same title and event handlers that are injected by the factory.]];
-  };
-
-
   propertydef['cel.mouse'] {
     [[The mouse]];
   };

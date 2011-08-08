@@ -67,8 +67,6 @@ local function pick(t, valueindex, rangeindex, gap, inval)
   local floor = math.floor
   local istart, iend, imid = 1, #t, 0
 
-  assert(istart <= iend)
-
   while istart <= iend do
     imid = floor( (istart+iend)/2 )
     local value = t[imid][valueindex]
@@ -541,9 +539,21 @@ do --metatable.clear
   end
 end
 
+--TODO use _next and _prev for all links so iteration is fast
 do --metatable.links
+  local function it(sequence, prev)
+    if prev then
+      local index = indexof(sequence, prev)
+      if index then
+        return sequence[_links][1+index], 1+index
+      end
+    else
+      return sequence[_links][1], 1
+    end
+  end
+
   function metatable.links(sequence)
-    return ipairs(sequence[_links])
+    return it, sequence
   end
 end
 
