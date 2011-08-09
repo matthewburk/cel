@@ -238,9 +238,18 @@ export['cel.sequence'] {
                    or closest to the y coordinate for a vertical sequence]];
       };
     };
-    functiondef['sequence:links()'] {
-      [[Returns an iterator over the links in the sequence, using ipairs()]];
-      [[TODO redefine this, ipairs exposes our private table]];
+
+    functiondef['sequence:ilinks()'] {
+      [[Returns an iterator function and the sequence.]];
+      code[=[
+        for index, link in sequence:ilinks() do end
+      ]=];
+      [[will iterate over each link in the sequence starting a the first link.]];
+
+      returns = {
+        param.iterator[[an iterator function]];
+        param.listbox[[the sequence, iterator function invariant state]];
+      };
     };
     functiondef['sort'] {
       [[TODO]]

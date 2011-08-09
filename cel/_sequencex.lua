@@ -505,9 +505,17 @@ do --metatable.clear
   end
 end
 
-do --metatable.links
-  function metatable.links(sequence)
-    return ipairs(sequence[_links])
+do --metatable.ilinks
+  local function it(sequence, i)
+    i = i + 1
+    local link = sequence[_links][i]
+    if link then
+      return i, link
+    end
+  end
+
+  function metatable.ilinks(sequence)
+    return it, sequence, 0
   end
 end
 
@@ -609,7 +617,14 @@ end
 do --metatable.indexof
   metatable.indexof = function(sequence, item)
     if item[_host] == sequence then 
-      return indexof(sequence, item)
+      local i = indexof(sequence, item)
+
+      if sequence[_links][i] == item then
+        return i
+      else
+        rowformation:reconcile(sequence, true)
+        return indexof(sequence, item)
+      end
     end
   end
 end

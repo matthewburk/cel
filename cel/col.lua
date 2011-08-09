@@ -26,11 +26,14 @@ local cel = require 'cel'
 local colmetacel, colmt = cel.sequence.y.newmetacel('col')
 local slotmetacel = cel.slot.newmetacel('col.slot')
 
-local _weight = {}
-local _minh = {}
+local _flex = {}
 local _col = {}
+local _minh = {}
+local _nslots = {}
+local _gap = {}
+local _notified = {}
 
-local col_items = colmt.links
+local col_items = colmt.ilinks
 local col_get = colmt.get
 
 colmt.next = nil
@@ -45,7 +48,7 @@ do
     if not filter then
       filter = function(...)
         local i, slot = iter(...)
-        if slot and slot[_weight] then
+        if slot and slot[_flex] then
           return i, slot:get() 
         else
           return i, slot
@@ -64,7 +67,7 @@ end
 
 function colmt.get(col, i)
   local slot = col_get(col, i)
-  if slot and slot[_weight] then
+  if slot and slot[_flex] then
     return slot:get()
   end
   return slot
@@ -73,118 +76,143 @@ end
 do
   local _setlimits = slotmetacel.setlimits
   function slotmetacel:setlimits(slot, minw, maxw, minh, maxh) 
-    slot[_col][_minh] = slot[_col][_minh] - slot.minh + math.max(minh, slot[_minh])
-    return _setlimits(self, slot, minw, maxw, math.max(minh, slot[_minh]), maxh)
+    --only record changes, initial minh is picked up in __link
+    if slot[_minh] then
+      local col = slot[_col]
+      col[_minh] = col[_minh] - slot[_minh] + minh
+      slot[_minh] = minh
+    end
+    return _setlimits(self, slot, minw, maxw, minh, maxh)
   end
 end
 
 do
   local _setlimits = colmetacel.setlimits
   function colmetacel:setlimits(col, minw, maxw, minh, maxh)
-    minh = col[_minh]
-    return _setlimits(self, col, minw, maxw, minh, nil)
+    return _setlimits(self, col, minw, maxw, col[_minh], nil)
   end
 end
 
 local function allocateslots(col, h)
-  if col[_weight] <= 0 then return end
+  if col[_flex] <= 0 then return end
 
   local excess = h-(col.minh or 0)
 
   if excess > 0 then
-    local extra = excess % col[_weight]
-    local mult = math.floor((excess)/col[_weight])
+    local extra = excess % col[_flex]
+    local mult = math.floor((excess)/col[_flex])
 
-    for slot, i in col_items(col) do
-      local weight = slot[_weight]
+    for i, slot in col_items(col) do
+      local flex = slot[_flex]
 
-      if weight then
-        local h = slot.minh + (weight * mult)
+      if flex then
+        local h = slot.minh + (flex * mult)
 
         if extra > 0 then
-          h = h + math.min(weight, extra)
-          extra = extra - weight
+          h = h + math.min(flex, extra)
+          extra = extra - flex
         end
 
         slot:resize(nil, h)
       end
     end
+  else
+    for i, slot in col_items(col) do
+      slot:resize(nil, slot.minh)
+    end
   end
 end
 
-local function slotlayout(minh, weight)
+local function slotlayout(minh, flex)
   return function()
-    return minh, weight
+    return minh, flex
   end
 end
 
 function colmetacel:__link(col, link, linker, xval, yval, option)
   if type(option) == 'function' then
-    local minh, weight = option()
+    local minh, flex = option()
 
-    col[_weight] = col[_weight] + weight
+    col[_flex] = col[_flex] + flex
 
-    local slot = slotmetacel:new()
-    slot[_minh] = minh
-    slot[_weight] = weight
+    local slot = slotmetacel:new(0, 0, 0, 0, 0, minh)
+    slot[_flex] = flex
     slot[_col] = col
-
-    slotmetacel:setlimits(slot, slot:pget('minw', 'maxw', 'minh', 'maxh'))
 
     slot:link(col, 'width')
 
     return slot, linker, xval, yval
-  elseif not link[_weight] then
-    col[_minh] = col[_minh] + link.h
+  else
+    link[_minh] = link.minh
+    
+    if col[_nslots] > 0 then
+      col[_minh] = col[_minh] + link[_minh] + col[_gap]
+    else
+      col[_minh] = col[_minh] + link[_minh]
+    end
+
+    col[_nslots] = col[_nslots] + 1
+
+    if not col[_notified] then
+      self:asyncall('reconcile', col)
+      col[_notified] = true
+    end
   end
 end
 
-function colmetacel:__linkmove(col, link, ox, oy, ow, oh)
-  if link.h ~= oh and not link[_weight] then
-    col[_minh] = col[_minh] - oh + link.h
-  end
+function colmetacel:reconcile(col)
+  col[_notified] = false
+  col:flux(allocateslots, col, col.h)
 end
 
 function colmetacel:__resize(col, ow, oh)
-  if col[_weight] > 0 and col.h ~= oh then
-    col:flux(allocateslots, col, col.h)
+  if col[_flex] > 0 and col.h ~= oh then
+    if not col[_notified] then
+      self:asyncall('reconcile', col)
+      col[_notified] = true
+    end
   end
 end
 
 do
   local _new = colmetacel.new
-  function colmetacel:new(face) --TODO don't need to define this, just let it pass to slot
-    local col = _new(self, 0, self:getface(face))
-    col[_weight] = 0
+  function colmetacel:new(gap, face) --TODO don't need to define this, just let it pass to slot
+    local col = _new(self, gap, self:getface(face))
+    col[_flex] = 0
     col[_minh] = 0
+    col[_gap] = gap or 0
+    col[_nslots] = 0
     return col
   end
 
   local _compile = colmetacel.compile
   function colmetacel:compile(t, col)
-    return _compile(self, t, col or colmetacel:new(t.face))
+    return _compile(self, t, col or colmetacel:new(t.gap, t.face))
   end
 
   function colmetacel:compileentry(col, entry, entrytype)
     if 'table' == entrytype then
-      local link = cel.tocel(entry[1], col)
-      if link then
-        local minh = entry.minh or 0
-        local weight = entry.weight or 0
-        local linker, xval, yval, option
+      local minh = entry.minh or 0
+      local flex = entry.flex or 0
+      local linker, xval, yval, option
 
-        if entry.link then
-          if type(entry.link) == 'table' then
-            linker, xval, yval = unpack(entry.link, 1, 3)
-          else
-            linker = entry.link
-          end
+      if entry.link then
+        if type(entry.link) == 'table' then
+          linker, xval, yval = unpack(entry.link, 1, 3)
         else
-          linker, xval, yval = link:pget('linker', 'xval', 'yval')
+          linker = entry.link
         end
-
-        link:link(col, linker, xval, yval, slotlayout(minh, weight))
       end
+
+      for i = 1, #entry do
+        local link = cel.tocel(entry[i], col)
+        if link then
+          if not entry.link then
+            linker, xval, yval = link:pget('linker', 'xval', 'yval')
+          end
+          link:link(col, linker, xval, yval, slotlayout(minh, flex))
+        end
+      end 
     end
   end
 end

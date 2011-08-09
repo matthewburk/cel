@@ -147,6 +147,11 @@ do --colformation.reconcile
 
     host[_metacel]:setlimits(host, minw, maxw, minh, maxh)
 
+    --colformation expects that the minh, maxh always equals the h, so does
+    --not respond to changes in its height, because they can only come from 
+    --itself, this mean the col metacel needs to keep that in mind when reacting to a __resize
+    --or else the formation breaks.
+    --also setlimts should change the height, col metacel changes that by changing minh
     if host[_w] ~= w then
       host:resize(w)
     end
@@ -540,20 +545,17 @@ do --metatable.clear
 end
 
 --TODO use _next and _prev for all links so iteration is fast
-do --metatable.links
-  local function it(sequence, prev)
-    if prev then
-      local index = indexof(sequence, prev)
-      if index then
-        return sequence[_links][1+index], 1+index
-      end
-    else
-      return sequence[_links][1], 1
+do --metatable.ilinks
+  local function it(sequence, i)
+    i  = i + 1
+    local link = sequence[_links][i]
+    if link then
+      return i, link
     end
   end
 
-  function metatable.links(sequence)
-    return it, sequence
+  function metatable.ilinks(sequence)
+    return it, sequence, 0
   end
 end
 
@@ -659,7 +661,14 @@ end
 do --metatable.indexof
   metatable.indexof = function(sequence, item)
     if item[_host] == sequence then 
-      return indexof(sequence, item)
+      local i = indexof(sequence, item)
+
+      if sequence[_links][i] == item then
+        return i
+      else
+        colformation:reconcile(sequence, true)
+        return indexof(sequence, item)
+      end
     end
   end
 end

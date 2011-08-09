@@ -315,24 +315,29 @@ export['cel.listbox'] {
       };
     };
 
-    functiondef['listbox:items([selected])'] {
+    functiondef['listbox:items()'] {
       [[Returns an iterator function and the listbox.]];
       code[=[
-        for item, index in listbox:items() do end
+        for index, item in listbox:items() do end
       ]=];
       [[will iterate over each item in the listbox starting a the first item.]];
-      code[=[
-        for item in listbox:items('selected') do end
-      ]=];
-      [[will iterate over each selected item in no particular order.]];
-
-      params = {
-        param.string[[selected - iff this is 'selected' the iterator function iterates only selected items.]];
-      };
 
       returns = {
         param.iterator[[an iterator function]];
-        param.listbox[[this listbox, iterator function invariant state]];
+        param.listbox[[the listbox, iterator function invariant state]];
+      };
+    };
+
+    functiondef['listbox:selecteditems()'] {
+      [[Returns an iterator function and the listbox.]];
+      code[=[
+        for item in listbox:selecteditems() do end
+      ]=];
+      [[will iterate over each selected item in no particular order.]];
+
+      returns = {
+        param.iterator[[an iterator function]];
+        param.listbox[[the listbox, iterator function invariant state]];
       };
     };
 

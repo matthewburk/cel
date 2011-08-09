@@ -105,21 +105,10 @@ function metatable:prev(item)
 end
 
 do
-  local dummy = {}
-
-  local function selectedit(listbox, prev)
-    return (next(listbox[_selected], prev)) --TODO need an index
-  end
-
-  local function it(listbox, item)
-    if item then
-      local index = self[_items]:indexof(item)
-      if index then
-        return listbox[_items]:get(index+1), index+1
-      end
-    else
-      return listbox[_items]:get(1), 1
-    end
+  local function it(listbox, i)
+    i = i + 1
+    local item = self[_items]:get(i)
+    if item then return i, item end
   end
 
   function metatable:items(subset)
@@ -130,7 +119,19 @@ do
 
       return selectedit, self
     end
-    return it, self
+    return it, self, 0
+  end
+
+  local function selectedit(listbox, prev)
+    return (next(listbox[_selected], prev)) --TODO need an index
+  end
+
+  local dummy = {}
+  function metatable:selecteditems(subset)
+    if not self[_selected] then
+      return pairs(dummy)
+    end
+    return selectedit, self
   end
 end
 

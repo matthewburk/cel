@@ -26,6 +26,8 @@ setfenv(1, _ENV)
 
 local _margin = {}
 local _slotlink = {}
+local _defaultminw = {}
+local _defaultminh = {}
 
 local slotformation = {}
 local math = math
@@ -50,8 +52,8 @@ do --slotformation.link
 
     event:onlink(host, link)
 
-    local minw = (rawget(link, _minw) or 0) + host[_margin].w
-    local minh = (rawget(link, _minh) or 0) + host[_margin].h
+    local minw = math.max((rawget(link, _minw) or 0) + host[_margin].w, host[_defaultminw])
+    local minh = math.max((rawget(link, _minh) or 0) + host[_margin].h, host[_defaultminh])
 
     if minw ~= host[_minw] or minh ~= host[_minh] then
       host[_metacel]:setlimits(host, minw, host[_maxw], minh, host[_maxh])
@@ -127,8 +129,11 @@ do --slotformation.linklimitschanged
     local w = margin.w
     local h = margin.h
 
+    minw = math.max(minw + margin.w, host[_defaultminw])
+    minh = math.max(minh + margin.h, host[_defaultminh])
+
     --TODO this will break if adding margin exceeds maxdim
-    host[_metacel]:setlimits(host, minw + w, host[_maxw], minh + h, host[_maxh])
+    host[_metacel]:setlimits(host, minw, host[_maxw], minh, host[_maxh])
   end
 end
 
@@ -294,16 +299,17 @@ do --metacel.new, metacel.compile
   local math = math
 
   local _new = metacel.new
-  function metacel:new(l, t, r, b, face)
+  function metacel:new(l, t, r, b, minw, minh, face)
     face = self:getface(face)
     local slot = _new(self, 0, 0, face) --add minw, minh
     l = math.max(0, math.floor(l or 0))
     r = math.max(0, math.floor(r or 0))
     t = math.max(0, math.floor(t or 0))
     b = math.max(0, math.floor(b or 0))
-
-    slot[_minw] = l + r --TODO set in compile
-    slot[_minh] = t + b --TODO set in compile
+    slot[_defaultminw] = minw or 0
+    slot[_defaultminh] = minh or 0
+    slot[_minw] = math.max(l + r, minw or 0) --TODO set in compile
+    slot[_minh] = math.max(t + b, minh or 0) --TODO set in compile
     slot[_margin] = {l = l, t = t, r = r, b = b, w = l + r, h = t + b}
     slot[_formation] = slotformation
     slot[_slotlink] = false 
@@ -315,9 +321,9 @@ do --metacel.new, metacel.compile
   function metacel:compile(t, slot)
     local margin = t.margin
     if margin then
-      slot = slot or metacel:new(margin.l, margin.t, margin.r, margin.b, t.face)
+      slot = slot or metacel:new(margin.l, margin.t, margin.r, margin.b, t.minw, t.minh, t.face)
     else
-      slot = slot or metacel:new(0, 0, 0, 0, t.face)
+      slot = slot or metacel:new(0, 0, 0, 0, 0, 0, t.face)
     end
     _compile(self, t, slot)
     return slot
