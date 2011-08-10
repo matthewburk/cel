@@ -49,17 +49,17 @@ do
     end
     local text = table.concat(out)
 
-    if self:len() > 500  then
+    if self:len() > self[_buffersize]  then
       self:remove(1)
     end
     newlabel(text, self[_labelface]):link(self, 'width')
-    self:scrollto(0, math.huge) --TODO fix this, it should not scroll off teh end of eh subject
+    self:scrollto(0, math.huge)
   end
 
   local function printdescription(self, t, indent)
     if #t > 0 then
       self:print(string.format('%s%d %s[%s] {x:%d y:%d w:%d h:%d id:%s [l:%d t:%d r:%d b:%d]',
-                 indent, t.id, t.metacel, tostring(t.face[_name]) or t.metacel, t.x, t.y, t.w, t.h, tostring(t.id),
+                 indent, t.id, t.metacel or 'virtual', tostring(t.face[_name]) or t.metacel or '', t.x, t.y, t.w, t.h, tostring(t.id),
                  t.clip.l, t.clip.t, t.clip.r, t.clip.b)) 
       local subindent = indent .. '  '
       for i = #t,1,-1 do
@@ -68,13 +68,26 @@ do
       self:print(indent .. '}') 
     else
       self:print(string.format('%s%d %s[%s] {x:%d y:%d w:%d h:%d id:%s [l:%d t:%d r:%d b:%d]}',
-                 indent, t.id, t.metacel, tostring(t.face[_name]) or t.metacel, t.x, t.y, t.w, t.h, tostring(t.id),
+                 indent, t.id, t.metacel or 'virtual', tostring(t.face[_name]) or t.metacel or '', t.x, t.y, t.w, t.h, tostring(t.id),
                  t.clip.l, t.clip.t, t.clip.r, t.clip.b))
     end
   end
 
   function metatable.printdescription(self)
     printdescription(self, cel.getdescription(), '')
+  end
+end
+
+function metatable:setbuffersize(size)
+  local excess = self:len() - size
+  self[_buffersize] = size
+
+  if excess > 0 then
+    self:flux(function()
+      for i = 1, excess do
+        self:remove(1)    
+      end
+    end)
   end
 end
 
@@ -89,8 +102,9 @@ do
       metacel = 'text',
       name = printbuffer[_buffer],
       font = printbuffer[_font],
-      textcolor = cel.color.rgb(0, 0, 0),
+      textcolor = cel.color.encodef(0, 0, 0),
     }
+    printbuffer[_buffersize] = 200
     return printbuffer
   end
 end

@@ -23,7 +23,7 @@ cel.face {
 
 cel.face {
   name = '@divider',
-  fillcolor = cel.color.rgb(255, 0, 255),
+  fillcolor = cel.color.encode(255, 0, 255),
   linecolor = false,
 }
 
@@ -31,8 +31,8 @@ cel.face {
   metacel = 'printbuffer',
   font = cel.loadfont('fixedsys', 12),
   linecolor = false,
-  fillcolor = cel.color.rgb(255, 255, 255),
-  textcolor = cel.color.rgb(0, 0, 0),
+  fillcolor = cel.color.encode(255, 255, 255),
+  textcolor = cel.color.encode(0, 0, 0),
 }
 
 cel.face {
@@ -46,7 +46,7 @@ local newboard
 do
   cel.face {
     metacel = 'board',
-    color = cel.color.rgb(255, 255, 255),
+    color = cel.color.encode(255, 255, 255),
   }
 
   local metacel, metatable = cel.newmetacel('board')
@@ -120,7 +120,7 @@ end
 cel.face {
   metacel = 'label',
   name = '@comment',
-  textcolor = cel.color.rgb(0, 100, 0),
+  textcolor = cel.color.encode(0, 100, 0),
   fillcolor = false,
   font = cel.loadfont('monospace:normal:italic', 10)
 }
@@ -128,7 +128,7 @@ cel.face {
 cel.face {
   metacel = 'label',
   name = '@code',
-  textcolor = cel.color.rgb(.05, .05, .05),
+  textcolor = cel.color.encodef(.05, .05, .05),
   fillcolor = false,
   font = cel.loadfont('code', 14)
 }
@@ -146,7 +146,7 @@ local function loadtut(tut, name)
     local firstpause = true
     local lines = {}
     local header = lines
-    for line in io.lines('../../tutorial/' .. name .. '.lua') do
+    for line in io.lines('cel/tutorial/' .. name .. '.lua') do
 
       if string.find(line, '--', 1, true) then
         lines[#lines + 1] = cel.label.new(line, '@comment')

@@ -1,45 +1,15 @@
 return function(root)
-local cel = require 'cel'
+  local cel = require 'cel'
 
---so we can link a string to a cel
-string.link = cel.string.link
-
-  --[[
   local menu = cel.menu {
-    'this',
-    'is',
-    'a',
-    'menu',
-
-    cel.menu.divider,
-
-    cel.menu {
-      name = 'submenu',
-      'a',
-      'b',
-      submenu2 = {
-        '1',
-        '2',
-        '3';
-      },
-      'c',
-    },
-  }
-  --]]
-  ---[[
-  local menu = cel.menu {
-    root = root,
     cel.text.new [[this is a rather large item]],
     'is',
     'a',
     'menu',
-    cel.menu.divider;
-    cel.menu.fork {
-      fork = 'submenu';
+    { [cel.menu.fork] = 'submenu';
       'a',
       'b',
-      cel.menu.fork {
-        fork = 'submenu2';
+      { [cel.menu.fork] = cel.textbutton.new('submenu2');
         '1',
         '2',
         '3';
@@ -47,21 +17,18 @@ string.link = cel.string.link
       'c',
     }
   }
-  --]]
 
-  string.link('hello ima string', root, 'center')
+  local window = cel.window.new(200, 200):link(root, 'edges')
 
-  cel.window.new(200, 200):link(root)
+  cel.string.link('hello ima string', window, 'center')
 
   function menu:onchoose(item)
-    print(item)
-    print('unlinking', self)
     self:unlink()
   end
 
-  function root:onmouseup(button, x, y, incept)
-    if button == cel.mouse.buttons.right and root:hasfocus(cel.mouse) == 1 then
-      menu:showat(x, y)
+  function window:onmouseup(button, x, y, incept)
+    if button == cel.mouse.buttons.right then
+      menu:showat(x+1, y+1, root)
     end
   end
 end

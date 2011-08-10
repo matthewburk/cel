@@ -92,10 +92,12 @@ function metatable.popupdismissed(menu)
     menu[_parentmenu][_submenu] = nil
     menu[_parentmenu] = nil
   end
+  menu[_root] = nil
 end
 
-function metatable.showat(menu, x, y)
-  local root = menu[_root]
+function metatable.showat(menu, x, y, root)
+  root = root or menu[_root]
+  menu[_root] = root
 
   --x = x + root.X
   --y = y + root.Y
@@ -121,8 +123,9 @@ function metatable.hide(menu)
 end
 
 local function showat(menu, x, y, parent)
+  menu[_root] = parent[_root]
   local root = menu[_root]
-  --TODO enform a single showing menu for the parent
+  --TODO enforce a single showing menu for the parent
   menu[_parentmenu] = parent
 
   if parent[_submenu] and parent[_submenu] ~= menu then
@@ -275,22 +278,31 @@ do --metacel['.slot']
 
 end
 
+local menufork = {}
 do
   local _new = metacel.new
-  function metacel:new(face, root)
+  function metacel:new(face)
     local face = self:getface(face)
     local options = face.options or options
     local menu = _new(self, 0, face)
     menu[_options] = options
-    menu[_root] = root
     return menu
   end
 
   local _compile = metacel.compile
   function metacel:compile(t, menu)
-    menu = menu or metacel:new(t.face, t.root)
+    menu = menu or metacel:new(t.face)
     menu.onchoose = t.onchoose
     return _compile(self, t, menu)
+  end
+
+  local _compileentry = metacel.compileentry
+  function metacel:compileentry(menu, entry, entrytype)
+    if 'table' == entrytype and entry[menufork] then
+      menu:fork(entry[menufork], cel.menu(entry))
+    else
+      _compileentry(self, menu, entry, entrytype)
+    end
   end
 end
 
@@ -299,15 +311,8 @@ do
   metacel.new_menuslot = slotmetacel:newfactory().new
 end
 
-local function fork(t) 
-  return function(menu)
-    t.root = menu[_root]
-    menu:fork(t.fork, cel.menu(t))
-  end
-end
-
 local function divider(menu)
   menu:putdivider()
 end
 
-return metacel:newfactory({options = options, fork=fork, divider=divider})
+return metacel:newfactory({options = options, divider=divider, fork=menufork})

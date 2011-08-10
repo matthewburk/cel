@@ -822,28 +822,22 @@ do
     scroll[_portal] = self['.portal']:new(w, h)
     scroll[_portal][_scroll] = scroll
 
-    local xval
-    local yval
+    scroll[_portal]:link(scroll, linkers.portal, 0, 0, 'raw')
+
     if layout.xbar then
       local layout = layout.xbar
       scroll[_xbar] = self['.bar']:new(scroll, 'x', layout, layout.face)
-      yval = scroll[_xbar].size
+      scroll[_xbar]:link(scroll, linkers.xbar, 0, 0, 'raw') 
+      scroll[_xbar].autohide = scroll[_xbar].autohide and 'hide' or false
     end
 
     if layout.ybar then
       local layout = layout.ybar
       scroll[_ybar] = self['.bar']:new(scroll, 'y', layout, layout.face)
-      xval = scroll[_ybar].size
+      scroll[_ybar]:link(scroll, linkers.ybar, 0, 0, 'raw')
+      scroll[_ybar].autohide = scroll[_ybar].autohide and 'hide' or false
     end
 
-    scroll[_portal]:link(scroll, linkers.portal, xval, yval, 'raw')
-
-    if scroll[_xbar] then
-      scroll[_xbar]:link(scroll, linkers.xbar, 1, scroll[_ybar].size, 'raw')
-    end
-    if scroll[_ybar] then
-      scroll[_ybar]:link(scroll, linkers.ybar, 1, scroll[_xbar].size, 'raw')
-    end
     return scroll
   end
 

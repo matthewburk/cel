@@ -117,8 +117,9 @@ return function(_ENV, cel)
         else
           local group={root=link}          
           popups[link]=group
-          groups[group]=true
+          groups[group]=false
         end
+
         link:addlistener('onmousedown', savegroup)
       end
     end
@@ -128,6 +129,10 @@ return function(_ENV, cel)
         local popup = link
         local downanchor = popup[_downanchor]
 
+        local group = popups[popup]
+        if group.root == link then
+          groups[group] = nil
+        end
         popups[popup] = nil
 
         if popup[_upanchor] then 

@@ -196,7 +196,7 @@ do --cel.describe, cel.printdescription
 
   local function printdescription(t, indent)
     write(indent, format('%d %s[%s] {x:%d y:%d w:%d h:%d id:%s [l:%d t:%d r:%d b:%d]',
-    t.id, t.metacel, tostring(t.face[_name]) or t.metacel, t.x, t.y, t.w, t.h, tostring(t.id),
+    t.id, t.metacel or 'virtual', tostring(t.face[_name]) or t.metacel or '', t.x, t.y, t.w, t.h, tostring(t.id),
     t.clip.l, t.clip.t, t.clip.r, t.clip.b))
     if t.mouse then write(',mouse') end
     if t.keyboard then write(',keyboard') end

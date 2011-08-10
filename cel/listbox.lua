@@ -81,11 +81,7 @@ do
       t[i]:link(listbox, nil, nil, nil, index)
     end
   end
-  function metatable:insertlist(index, t)
-    if not t then
-      t = index
-      index = nil
-    end
+  function metatable:insertlist(t, index)
     return self:flux(insertall, self, index, t)
   end
 end
@@ -372,7 +368,7 @@ do -- items metacel
             listbox:select(item, false)
           end
           if listbox[_current] == item then
-            changecurrent(listbox, listbox[_items]:get(index - 1) or listbox[_items]:get(1))
+            changecurrent(listbox, nil)
           end
         end
 
