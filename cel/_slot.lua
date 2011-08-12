@@ -81,6 +81,25 @@ do --slotformation.link
   end
 end
 
+do --slotformation.moved
+  --called anytime host is moved by any method
+  local _linker, _xval, _yval = _linker, _xval, _yval
+  function slotformation:moved(host, x, y, w, h, ox, oy, ow, oh)
+    if h ~= oh or w ~= ow then
+      event:onresize(host, ow, oh)
+      local slotlink = host[_slotlink]
+      for link in links(host) do
+        if link == slotlink or rawget(link, _linker) then
+          self:dolinker(host, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
+        end
+      end
+      if host[_metacel].__resize then
+        host[_metacel]:__resize(host, ow, oh)
+      end
+    end
+  end
+end
+
 do --slotformation.testlinker --TODO need to pass option to testlinker and reroute this to stacklinker
   local math = math
   function slotformation:testlinker(host, link, linker, xval, yval)
@@ -224,8 +243,11 @@ do --slotformation.movelink
     event:wait()
 
     if w ~= ow or h ~= oh then
-      --host:resize(math.max(ow, w + margin.w), math.max(oh, h + margin.h))
-      host:resize(w + margin.w, h + margin.h) --makes a tight fit
+      local zw, zh = w + margin.w, h + margin.h --tight fit 
+      if host[_metacel].__fitsubject then
+        zw, zh = host[_metacel]:__fitsubject(host, zw, zh)
+      end
+      host:resize(zw, zh) 
       --TODO to make a super tight fit force maxw/h to same value as w/h 
     end 
 

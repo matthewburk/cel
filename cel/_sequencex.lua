@@ -271,9 +271,9 @@ do --rowformation:linker
       y = math.modf(y)
       h = math.floor(h)
 
-      if h ~= oh then
+      --if h ~= oh then
         if h > hh then h = hh end
-      end
+      --end
 
       if y + h > hh then y = hh - h end
     end
@@ -293,10 +293,10 @@ do --rowformation.testlinker
     local _, y, _, h = self:linker(host, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
 
     --enforce min/max
-    if h ~= oh then
+    --if h ~= oh then
       if h < minh then h = minh end
       if h > maxh then h = maxh end
-    end
+    --end
 
     return ox, math.modf(y), ow, math.floor(h)
   end

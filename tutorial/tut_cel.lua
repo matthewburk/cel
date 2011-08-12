@@ -86,9 +86,9 @@ end
 if not cel.getlinker('w%.h% r.t') then
   cel.addlinker('w%.h% r.t', cel.composelinker('width%.height%', 'right.top'))
   cel.addlinker('w%.h% l.t', cel.composelinker('width%.height%', 'left.top'))
-  cel.addlinker('@(w%.h% r.t) edges', cel.composevhost('w%.h% r.t', 'edges'))
-  cel.addlinker('@(w%.h% l.t) edges', cel.composevhost('w%.h% l.t', 'edges'))
-  cel.addlinker('@width.fillbottom% : edges', cel.composevhost('width.fillbottom%', 'edges'))
+  cel.addlinker('@(w%.h% r.t) edges', cel.rcomposelinker('w%.h% r.t', 'edges'))
+  cel.addlinker('@(w%.h% l.t) edges', cel.rcomposelinker('w%.h% l.t', 'edges'))
+  cel.addlinker('@width.fillbottom% : edges', cel.rcomposelinker('width.fillbottom%', 'edges'))
 end
 
 

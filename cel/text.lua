@@ -38,10 +38,10 @@ local _layout = {}
 local _wrap = {}
 
 local layout = {
-  fit = 'default',
-  fitx = 'default',
-  fity = 'default',
   padding = {
+    fit = 'default',
+    fitx = 'default',
+    fity = 'default',
     l = 2,
     t = 2,
   },
@@ -135,7 +135,7 @@ function metatable:settext(str)
 
   self[_str] = str
 
-    local penx, peny, w, h, l, t, r, b = font:pad(layout, font:measure(str)) 
+    local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, font:measure(str)) 
     self[_padl] = l
     self[_padt] = t
     self[_padr] = r
@@ -171,7 +171,7 @@ function metatable.setwrapmode(text, mode)
     metacel:setlimits(text, nil, nil, nil, nil)
   else
     local font, str, layout = text[_font], text[_str], text[_layout]
-    local _, _, w, h = font:pad(layout, font:measure(str))
+    local _, _, w, h = font:pad(layout.padding, font:measure(str))
     metacel:setlimits(text, w)
   end
 end
@@ -200,7 +200,7 @@ do
 
     local font = face.font
     local layout = face.layout or layout
-    local penx, peny, w, h, l, t, r, b = font:pad(layout, font:measure(str)) 
+    local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, font:measure(str)) 
     local text 
     if wrapmode ~= 'nowrap' then
       text = _new(self, w, h, face, nil, w, h, nil)

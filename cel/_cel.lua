@@ -266,7 +266,7 @@ do --ENV.celmoved
         local host = link
         for link in links(host) do
           if rawget(link, _linker) then
-            dolinker(host, link, link[_linker], link[_xval], link[_yval])
+            dolinker(host, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
           end
         end
         if link[_metacel].__resize then

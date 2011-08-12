@@ -32,6 +32,7 @@ local _row = {}
 local _gap = {}
 local _nslots = {}
 local _notified = {}
+local _layout = {}
 
 local row_items = rowmt.ilinks
 local row_get = rowmt.get
@@ -39,6 +40,16 @@ local row_get = rowmt.get
 rowmt.next = nil
 rowmt.prev = nil
 rowmt.indexof = nil
+
+local layout = {
+  slot = {
+    face = nil
+  }
+}
+
+function slotmetacel:__fitsubject(slot, w, h)
+  return slot.fixedwidth, h
+end
 
 do
   local memo = setmetatable({}, {__mode = "kv"})
@@ -82,6 +93,9 @@ do
       row[_minw] = row[_minw] - slot[_minw] + minw
       slot[_minw] = minw
     end
+    if minw and minw > slot.fixedwidth then
+      slot.fixedwidth = minw
+    end
     return _setlimits(self, slot, minw, maxw, minh, maxh)
   end
 end
@@ -113,11 +127,13 @@ local function allocateslots(row, w)
           extra = extra - flex
         end
 
+        slot.fixedwidth = w
         slot:resize(w)
       end
     end
   else
     for i, slot in row_items(row) do
+      slot.fixedwidth = slot.minw
       slot:resize(slot.minw)
     end
   end
@@ -130,14 +146,15 @@ local function slotlayout(minw, flex)
 end
 
 function rowmetacel:__link(row, link, linker, xval, yval, option)
-  if type(option) == 'function' then
-    local minw, flex = option()
+  if type(option) == 'table' then
+    local minw, flex, face = option.minw or 0, option.flex or 0, option.face or row[_layout].slot.face 
 
     row[_flex] = row[_flex] + flex
 
-    local slot = slotmetacel:new(0, 0, 0, 0, minw, 0)
+    local slot = slotmetacel:new(0, 0, 0, 0, minw, 0, face)
     slot[_flex] = flex
     slot[_row] = row
+    slot.fixedwidth = minw
 
     slot:link(row, 'height')
 
@@ -177,11 +194,13 @@ end
 do
   local _new = rowmetacel.new
   function rowmetacel:new(gap, face) --TODO don't need to define this, just let it pass to slot
-    local row = _new(self, gap, self:getface(face))
+    face = self:getface(face)
+    local row = _new(self, gap, face)
     row[_flex] = 0
     row[_minw] = 0
     row[_gap] = gap or 0
     row[_nslots] = 0
+    row[_layout] = face.layout or layout
     return row
   end
 
@@ -192,9 +211,7 @@ do
 
   function rowmetacel:compileentry(row, entry, entrytype)
     if 'table' == entrytype then
-      local minw = entry.minw or 0
-      local flex = entry.flex or 0
-      local linker, xval, yval, option
+      local linker, xval, yval
 
       if entry.link then
         if type(entry.link) == 'table' then
@@ -210,7 +227,7 @@ do
           if not entry.link then
             linker, xval, yval = link:pget('linker', 'xval', 'yval')
           end
-          link:link(row, linker, xval, yval, slotlayout(minw, flex))
+          link:link(row, linker, xval, yval, entry)
         end
       end 
     end

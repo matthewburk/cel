@@ -106,8 +106,8 @@ do
 
     local col = cel.col.new()
 
-    tabs:link(col, 'edges', nil, nil, function() return 30, 0 end)
-    mutex:link(col, 'edges', nil, nil, function() return 0, 1 end)
+    tabs:link(col, 'edges', nil, nil,  {minh=30})
+    mutex:link(col, 'edges', nil, nil, {flex=1})
     
     tabpanel[_tabs] = tabs
     tabpanel[_mutex] = mutex

@@ -295,7 +295,11 @@ end
 
 do --loadfont TODO make driver supply path and extension
   local fonts = setmetatable({}, {__mode = 'v'})
-
+--from http://www.freetype.org/freetype2/docs/glyphs/glyphs-2.html
+--resolution is DPI
+--pixel_size = point_size * resolution / 72
+--pixel_coord = grid_coord * pixel_size / EM_size
+  
   local fontmt = {}
   do
     local string_byte = string.byte
@@ -521,13 +525,13 @@ do --loadfont TODO make driver supply path and extension
 
           local l = padding.l or 0
           local t = padding.t or 0
-          if type(l) == 'function' then l = math.floor(l(w,h) + .5) end
-          if type(t) == 'function' then t = math.floor(t(w,h) + .5) end
+          if type(l) == 'function' then l = math.floor(l(w,h,font) + .5) end
+          if type(t) == 'function' then t = math.floor(t(w,h,font) + .5) end
 
           local r = padding.r or l
           local b = padding.b or t
-          if type(r) == 'function' then r = math.floor(r(w,h) + .5) end
-          if type(b) == 'function' then b = math.floor(b(w,h) + .5) end
+          if type(r) == 'function' then r = math.floor(r(w,h,font) + .5) end
+          if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
 
           w = w + l + r 
           h = h + t + b
@@ -645,9 +649,14 @@ function M.composelinker(a, b)
   assert(b)
 
   --TODO memoize
-  return function(hw, hh, x, y, w, h, cvals, _)
-    x, y, w, h = a(hw, hh, x, y, w, h, cvals and cvals[1], cvals and cvals[2])
-    x, y, w, h = b(hw, hh, x, y, w, h, cvals and cvals[3], cvals and cvals[4])
+  return function(hw, hh, x, y, w, h, cvals, _, minw, maxw, minh, maxh)
+    x, y, w, h = a(hw, hh, x, y, w, h, cvals and cvals[1], cvals and cvals[2], minw, maxw, minh, maxh)
+    assert(x and y and w and h)
+    if w > maxw then w = maxw end
+    if w < minw then w = minw end
+    if h > maxh then h = maxh end
+    if h < minh then h = minh end
+    x, y, w, h = b(hw, hh, x, y, w, h, cvals and cvals[3], cvals and cvals[4], minw, maxw, minh, maxh)
     return x, y, w, h
   end
 end
@@ -662,10 +671,15 @@ function M.addlinker(name, linker)
 end
 
 do
-  local function recurse(a, b, hw, hh, x, y, w, h, tvals)
+  local empty = {}
+  local function recurse(a, b, hw, hh, x, y, w, h, tvals, _, minw, maxw, minh, maxh)
     tvals = tvals or empty
-    local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, tvals[1], tvals[2])
-    x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, tvals[3], tvals[4])
+    local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, tvals[1], tvals[2], minw, maxw, minh, maxh)
+    if vhw > maxw then vhw = maxw end
+    if vhw < minw then vhw = minw end
+    if vhh > maxh then vhh = maxh end
+    if vhh < minh then vhh = minh end
+    x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, tvals[3], tvals[4], minw, maxw, minh, maxh)
     return x + vhx, y + vhy, w, h
   end
 
@@ -678,43 +692,6 @@ do
     end
   end
 end
-
-function M.vhost(vhostlinker, linker)
-  if type(vhostlinker) == 'string' then
-    vhostlinker = linkers[vhostlinker] --TODO don't put host virtualizer in with linkers
-  end
-  if type(linker) == 'string' then
-    linker = linkers[linker]
-  end
-
-  assert(linker)
-  return function(hw, hh, x, y, w, h, cvals, _)
-    return vhostlinker(hw, hh, x, y, w, h, cvals and cvals[1], cvals and cvals[2],
-    linker, cvals and cvals[3], cvals and cvals[4])
-  end
-end
-
-do
-  local empty = {}
-  function M.composevhost(a, b)
-    if type(a) == 'string' then a = linkers[a] end
-    if type(b) == 'string' then b = linkers[b] end
-
-    --TODO memoize
-    return function(hw, hh, x, y, w, h, cvals, _)
-      cvals = cvals or empty
-      local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, cvals[1], cvals[2])
-      x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, cvals[3], cvals[4])
-      return x + vhx, y + vhy, w, h
-    end
-  end
-end
-
---[[
-function M.virtualhost(host, xval, yval, linker)
-  return host, 
-end
---]]
 
 do
   M.color = {}
