@@ -80,7 +80,7 @@ do --slotformation.link
     self:dolinker(host, link, linker, xval, yval) --assigns _x and _y
   end
 end
-
+--[[
 do --slotformation.moved
   --called anytime host is moved by any method
   local _linker, _xval, _yval = _linker, _xval, _yval
@@ -99,6 +99,7 @@ do --slotformation.moved
     end
   end
 end
+--]]
 
 do --slotformation.testlinker --TODO need to pass option to testlinker and reroute this to stacklinker
   local math = math

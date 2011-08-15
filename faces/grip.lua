@@ -4,15 +4,14 @@ return function(_ENV)
   setfenv(1, _ENV)
 
   local face = cel.face {
-    metacel = 'button',
-    textcolor = cel.color.encodef(.8, .8, .8),
+    metacel = 'grip',
     fillcolor = cel.color.encodef(.2, .2, .2),
     linecolor = cel.color.encodef(.4, .4, .4),
-    linewidth = linewidth,
+    linewidth = 1,
     radius = radius,
 
     variation = {
-      pressed = {
+      grabbed = {
         fillcolor = cel.color.encodef(.4, .4, .4),
         linecolor = cel.color.encodef(0, 1, 1),
       },
@@ -20,11 +19,10 @@ return function(_ENV)
         fillcolor = cel.color.encodef(.4, .4, .4),
         linecolor = cel.color.encodef(0, 1, 1),
         variation = {
-          pressed = {
-            textcolor = cel.color.encodef(.2, .2, .2),
+          grabbed = {
             fillcolor = cel.color.encodef(0, .8, .8),
             linecolor = cel.color.encodef(0, 1, 1),
-            linewidth = 2,
+            linewidth = 1,
           },
         },
       },
@@ -38,11 +36,11 @@ return function(_ENV)
 
     if t.mousein then
       fv = fv.variation.mousein
-      if t.pressed then
-        fv = fv.variation.pressed
+      if t.isgrabbed then
+        fv = fv.variation.grabbed
       end
-    elseif t.pressed then
-      fv = fv.variation.pressed
+    elseif t.isgrabbed then
+      fv = fv.variation.grabbed
     end
 
     return drawcel(fv, t)

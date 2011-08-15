@@ -35,6 +35,7 @@ local _textw = {}
 local _texth = {}
 
 local layout = {
+  padding={}
 }
 
 function metatable:getbaseline()

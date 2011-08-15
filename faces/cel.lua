@@ -1,36 +1,40 @@
 local cel = require 'cel'
 
-local drawlinks = function(t)
-  for i = #t,1,-1 do
-    local t = t[i]
-    t.face:draw(t)
-  end
-end
-
 return function(_ENV)
+  setfenv(1, setmetatable(_ENV, {__index=_G}))
+
+  function _ENV.drawlinks(t)
+    for i = #t,1,-1 do
+      local t = t[i]
+      if t.face.draw then t.face:draw(t) end
+    end
+  end
+
+  function _ENV.indexvariations(fv)
+    if rawget(fv, 'variation') then
+      local mt = {__index=fv}
+      for k, variation in pairs(rawget(fv, 'variation')) do
+        setmetatable(variation, mt)
+        indexvariations(variation)
+      end
+    end
+  end
+
+  _ENV.radius = false 
+  _ENV.linewidth = 1
+
   local face = cel.face {
     metacel = 'cel',
-    font = cel.loadfont(),
+    font = cel.loadfont('monospace:bold', 15),
     textcolor = cel.color.encodef(1, 1, 1),
     fillcolor = false,
     linecolor = false,
-    linewidth = 1,
-    radius = false,
-
-    variation = {
-      mousetouch = {
-        linecolor = cel.color.encodef(1, 1, 1),
-        linewidth = 3,
-      },
-    },
+    linewidth = linewidth,
+    radius = radius,
   }
 
   function face:draw(t)
     local fv = self
-
-    if t.mousetouch then
-      fv = fv.variation.mousetouch or fv
-    end
 
     clip(t.clip)
 
@@ -48,6 +52,8 @@ return function(_ENV)
 
   function face:print(t)
   end
+
+  indexvariations(face)
 end
 
 

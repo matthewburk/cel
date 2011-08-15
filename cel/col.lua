@@ -47,10 +47,6 @@ local layout = {
   }
 }
 
-function slotmetacel:__fitsubject(slot, w, h)
-  return w, slot.fixedheight
-end
-
 do
   local memo = setmetatable({}, {__mode = "kv"})
   
@@ -93,9 +89,6 @@ do
       col[_minh] = col[_minh] - slot[_minh] + minh
       slot[_minh] = minh
     end
-    if minh and minh > slot.fixedheight then
-      slot.fixedheight = minh
-    end
     return _setlimits(self, slot, minw, maxw, minh, maxh)
   end
 end
@@ -103,7 +96,10 @@ end
 do
   local _setlimits = colmetacel.setlimits
   function colmetacel:setlimits(col, minw, maxw, minh, maxh)
-    return _setlimits(self, col, minw, maxw, col[_minh], nil)
+    _setlimits(self, col, minw, maxw, col[_minh], nil)
+    if minh > col[_minh] then
+      col:resize(nil, minh)
+    end
   end
 end
 
@@ -127,39 +123,20 @@ local function allocateslots(col, h)
           extra = extra - flex
         end
 
-        slot.fixedheight = h
         slot:resize(nil, h)
       end
     end
   else
     for i, slot in col_items(col) do
-      slot.fixedheight = slot.minh
       slot:resize(nil, slot.minh)
     end
   end
 end
 
-local function slotlayout(minh, flex)
-  return function()
-    return minh, flex
-  end
-end
-
+local function slotoption() end
+local defaultoption = {minw=0, flex=0}
 function colmetacel:__link(col, link, linker, xval, yval, option)
-  if type(option) == 'table' then
-    local minh, flex, face = option.minh or 0, option.flex or 0, option.face or col[_layout].slot.face  
-
-    col[_flex] = col[_flex] + flex
-
-    local slot = slotmetacel:new(0, 0, 0, 0, 0, minh, face)
-    slot[_flex] = flex
-    slot[_col] = col
-    slot.fixedheight = minh
-
-    slot:link(col, 'width')
-
-    return slot, linker, xval, yval
-  else
+  if option == slotoption then
     link[_minh] = link.minh
     
     if col[_nslots] > 0 then
@@ -174,6 +151,27 @@ function colmetacel:__link(col, link, linker, xval, yval, option)
       self:asyncall('reconcile', col)
       col[_notified] = true
     end
+  else
+    if type(option) ~= 'table' then
+      option = defaultoption
+    end
+
+    local minh, flex, face = option.minh or 0, option.flex or 0, option.face or col[_layout].slot.face  
+    local minw = option.minw or nil
+
+    col[_flex] = col[_flex] + flex
+
+    local slot = slotmetacel:new(0, 0, 0, 0, minw, minh, face)
+    slot[_flex] = flex
+    slot[_col] = col
+
+    slot:link(col, 'width', nil, nil, slotoption)
+
+    if not (linker or xval or yval) then
+      return slot, 'edges'
+    end
+
+    return slot, linker, xval, yval
   end
 end
 
@@ -226,6 +224,9 @@ do
         if link then
           if not entry.link then
             linker, xval, yval = link:pget('linker', 'xval', 'yval')
+          end
+          if not (linker or xval or yval) then
+           linker = 'edges'
           end
           link:link(col, linker, xval, yval, entry)
         end

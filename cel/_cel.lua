@@ -204,8 +204,9 @@ do --ENV.describe
       t.y = gy
       t.w = cel[_w]
       t.h = cel[_h]
-      t.mousefocus = false
-      t.keyboardfocus = false
+      t.mousetouch = false
+      t.mousein = false
+      t.focus = false
       t.flowcontext = flows[cel] and flows[cel].context
       t.clip.l = gl
       t.clip.r = gr
@@ -224,8 +225,9 @@ do --ENV.describe
         y = gy,
         w = cel[_w],
         h = cel[_h],
-        mousefocus = false,
-        keyboardfocus = false,
+        mousetouch = false,
+        mousein = false,
+        focus = false,
         flowcontext = flows[cel] and flows[cel].context,
         clip = {l = gl, r = gr, t = gt, b = gb},
       }
@@ -233,16 +235,15 @@ do --ENV.describe
     end
 
     if mouse[_focus][cel] then
-      t.mousefocus = true
+      t.mousein = true
       if mouse[_focus].focus == cel then 
-        t.mousefocus = 1 
+        t.mousetouch = true 
       end
     end
 
     if keyboard[_focus][cel] then
-      t.keyboardfocus = true
-      --TODO do like mousefocus
-      t.keyboardfocus = true
+      t.focus = true
+      --TODO use number instead of boolean for focus 1 is top n is root 
     end
 
     if cel[_metacel].__describe then cel[_metacel]:__describe(cel, t) end
@@ -752,7 +753,9 @@ do --metacel.setlimits
     --but also need to resize if the limits unconstrain it
     --if i always resize it makes it really slow under certain conditions
     --like a sequence of wrapping text
-    if w ~= cel[_w] or h ~= cel[_h] or cel[_linker] then
+    --don't do this, the formation should handle it only, so just do it for the stackformation
+    --or do it when there is no host
+    if w ~= cel[_w] or h ~= cel[_h] or rawget(cel, _linker) then
       cel:resize(w, h)
     end
 

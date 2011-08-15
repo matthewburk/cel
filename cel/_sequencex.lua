@@ -324,6 +324,19 @@ do --rowformation.dolinker
   end
 end
 
+do --rowformation.linklimitschanged
+  function rowformation:linklimitschanged(host, link, minw, maxw, minh, maxh)
+    if minh < link[_h] and link == host[_brace] then
+      local edge = self:getbraceedge(host, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
+      if edge < host[_fluxminh] then
+        host[_brace] = nil
+        host[_rebrace] = true
+        self:reconcile(host) 
+      end
+    end
+  end
+end
+
 do --rowformation.movelink
   --movelink should only be called becuase move was explicitly called, make sure that is the case
   local math = math
@@ -438,9 +451,10 @@ do --rowformation.describeslot
         y = gy,
         w = link[_w],
         h = seq[_h],
-        mouse = hasmouse,
-        mousefocus = hasmouse, --TODO only set if link doesn't have mouse
+        mousetouch = false,
+        mousein = hasmouse, --TODO only set if link doesn't have mouse
         index = index,
+        --TODO focus
         clip = {l = gl, r = gr, t = gt, b = gb},
       }
 
