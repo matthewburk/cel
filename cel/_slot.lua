@@ -41,6 +41,31 @@ end
 
 slotformation.links = stackformation.links
 
+do --slotformation.getbraceedges
+  local math = math
+  function slotformation:getbraceedges(host, link, linker, xval, yval)
+    if not linker then
+      return link[_x] + link[_w], link[_y] + link[_h]
+    else
+      local minw, maxw = link[_minw] or 0, link[_maxw] or maxdim
+      local minh, maxh = link[_minh] or 0, link[_maxh] or maxdim
+      local x, y, w, h = linker(0, 0, link[_x], link[_y], link[_w], link[_h], xval, yval, minw, maxw, minh, maxh) 
+
+      if w < minw then w = minw end
+      if w > maxw then w = maxw end
+      if h < minh then h = minh end
+      if h > maxh then h = maxh end
+
+      x = math.modf(x)
+      w = math.floor(w)
+      y = math.modf(y)
+      h = math.floor(h)
+
+      return math.max(x + w, w, -x), math.max(y + h, h, -y)
+    end
+  end
+end
+
 do --slotformation.link
   function slotformation:link(host, link, linker, xval, yval, option)
     if option == 'slot' or not host[_slotlink] then
@@ -52,8 +77,9 @@ do --slotformation.link
 
     event:onlink(host, link)
 
-    local minw = math.max((rawget(link, _minw) or 0) + host[_margin].w, host[_defaultminw])
-    local minh = math.max((rawget(link, _minh) or 0) + host[_margin].h, host[_defaultminh])
+    local edgex, edgey = self:getbraceedges(host, link, linker, xval, yval)
+    local minw = math.max(edgex + host[_margin].w, host[_defaultminw])
+    local minh = math.max(edgey + host[_margin].h, host[_defaultminh])
 
     if minw ~= host[_minw] or minh ~= host[_minh] then
       host[_metacel]:setlimits(host, minw, host[_maxw], minh, host[_maxh])
@@ -243,12 +269,14 @@ do --slotformation.movelink
 
     event:wait()
 
+    --TODO do this, like in seuqence
+    --local edgex, edgey = self:getbraceedges(host, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
+
     if w ~= ow or h ~= oh then
-      local zw, zh = w + margin.w, h + margin.h --tight fit 
-      if host[_metacel].__fitsubject then
-        zw, zh = host[_metacel]:__fitsubject(host, zw, zh)
-      end
-      host:resize(zw, zh) 
+      local linker, xval, yval = rawget(host, _linker), rawget(host, _xval), rawget(host, _yval)
+      host:relink() --this is to make slot size to subject even if the slot is constrained by linker, like in a sequence
+      host:resize(w + margin.w, h + margin.h) 
+      host:relink(linker, xval, yval)
       --TODO to make a super tight fit force maxw/h to same value as w/h 
     end 
 
@@ -302,7 +330,7 @@ do --metatable.get
 end
 
 function metatable.dump(slot)
-  print('SLOTDUMP', slot)
+  print('SLOTDUMP-------------------------------', slot, slot[_celid])
   print('SLOTDUMP l', slot[_margin].l)
   print('SLOTDUMP t', slot[_margin].t)
   print('SLOTDUMP r', slot[_margin].r)

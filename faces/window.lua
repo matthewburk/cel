@@ -21,7 +21,7 @@ return function(_ENV)
       focus = {
         linecolor = cel.color.encodef(0, 1, 1),
       },
-      mousein = {
+      mousefocusin = {
         linecolor = cel.color.encodef(.4, .4, .4),
       },
     },
@@ -34,8 +34,8 @@ return function(_ENV)
 
     if t.focus then
       fv = fv.variation.focus
-    elseif t.mousein then
-      fv = fv.variation.mousein
+    elseif t.mousefocusin then
+      fv = fv.variation.mousefocusin
     end
 
     return drawcel(fv, t)

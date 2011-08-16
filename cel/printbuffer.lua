@@ -23,10 +23,8 @@ THE SOFTWARE.
 --]]
 local cel = require 'cel'
 local metacel, metatable = cel.listbox.newmetacel('printbuffer')
-local _buffer = {}
 local _buffersize = {}
-local _font = {}
-local _labelface = {}
+local _textface = {}
 
 do
   local newlabel = cel.text.new
@@ -52,7 +50,7 @@ do
     if self:len() > self[_buffersize]  then
       self:remove(1)
     end
-    newlabel(text, self[_labelface]):link(self, 'width')
+    newlabel(text, nil, self[_textface]):link(self, 'width')
     self:scrollto(0, math.huge)
   end
 
@@ -97,13 +95,12 @@ do
     face = self:getface(face)
 
     local printbuffer = _new(self, w, h, face)
-    printbuffer[_font] = face.font
-    printbuffer[_labelface] = cel.face {
+    printbuffer[_textface] = cel.face {
       metacel = 'text',
-      name = printbuffer[_buffer],
-      font = printbuffer[_font],
-      textcolor = cel.color.encodef(0, 0, 0),
+      name = cel.printbuffer,
+      font = cel.loadfont('code'),
     }
+
     printbuffer[_buffersize] = 200
     return printbuffer
   end

@@ -30,7 +30,7 @@ return function(root)
       },
     }
   local seq = cel.row {
-    cel.window.new(),
+    cel.window.new(200, 200),
     cel.button {
       link='height',
       w=50, h=50,
@@ -39,20 +39,18 @@ return function(root)
       end
     },
     {link='height', aslot}, 
-    { link='height';
       cel.window.new(),
       cel.window.new(),
-    },
   }
-    --]=]
-  root {
-    cel.window {
-      w = 400, h = 400,
-      cel.scroll {
-        link = {'edges'},
-        subject = {
-          cel.sequence.y {
-            cel.slot{seq},
+
+  print('chopped row w', seq.w)
+  local slot2 = cel.slot{seq}
+
+  print('slot2 w', slot2.w)
+
+  local acol = cel.col {
+            cel.button.new(600, 39),
+            slot2,
             cel.slot{cel.textbutton.new('there should be a row of buttons below me')},
             cel.row{
               {link='top';cel.button.new(20, 20), minh=20},
@@ -63,9 +61,33 @@ return function(root)
             },
             cel.slot{cel.textbutton.new('there should be a row of buttons above me')},
           },
+
+  print('slot2 w', slot2.w)
+  print('acol w', acol.w)
+  root {
+    cel.window {
+      w = 400, h = 400,
+      cel.scroll {
+        link = {'edges'},
+        subject = {
+          acol, 
         },
       }
     }
   }
+  print('chopped row w', seq.w)
+    --]=]
+    --[[
+  cel.window {
+    w=400, h=400,
+    cel.sequence.y {
+      {link = 'width'; cel.slot{ {link = 'edges', cel.window.new(300, 100)} }},
+      {link = 'width'; cel.slot{ {link = 'edges', cel.window.new(300, 100)} }},
+      {link = 'width'; cel.slot{ {link = 'edges', cel.window.new(300, 100)} }},
+      {link = 'width'; cel.slot{ {link = 'edges', cel.window.new(300, 100)} }},
+      {link = 'width'; cel.slot{ {link = 'edges', cel.window.new(300, 100)} }},
+    },
+  }:link(root)
+  --]]
 end
 

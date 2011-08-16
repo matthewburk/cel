@@ -110,6 +110,7 @@ local function reflow(text)
   local penx = text[_penx]
   local peny = text[_peny]
   local lineheight = font.lineheight--:height()
+  local justification = text[_layout].justification
 
   local lines = {}
   w = w - (text[_padl] or 0)
@@ -118,9 +119,26 @@ local function reflow(text)
   local y = text[_padt] or 0
 
   for i, j in font:wordwrap(str, w) do
-    lines[#lines + 1] = {i = i, j = j, penx = penx, peny = peny, y = y, h = lineheight}
+    --TODO get advance back from wordwrap
+    lines[#lines + 1] = {i = i, j = j, penx = penx, peny = peny, y = y, 
+    h = lineheight, 
+    advance=font:measureadvance(str, i, j)
+    }
     peny = peny + lineheight
     y = y + lineheight
+
+  end
+
+  if 'center' == justification then
+    for i=1, #lines do
+      local line = lines[i]
+      line.penx = math.floor(line.penx + ((w-line.advance)/2))
+    end
+  elseif 'right' == justification then
+    for i=1, #lines do
+      local line = lines[i]
+      line.penx = math.floor(line.penx + (w-line.advance))
+    end
   end
 
   text[_lines] = lines 
@@ -135,7 +153,8 @@ function metatable:settext(str)
 
   self[_str] = str
 
-    local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, font:measure(str)) 
+    local advancew, fonth, xmin, xmax, ymin, ymax = font:measure(str)
+    local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, advancew, fonth, xmin, xmax, ymin, ymax ) 
     self[_padl] = l
     self[_padt] = t
     self[_padr] = r
@@ -147,10 +166,10 @@ function metatable:settext(str)
     if self[_wrap] then
       --TODO don't want to reflow twice when chaning the text
       local minh = reflow(self)
-      metacel:setlimits(self, nil, w, minh, nil)
+      metacel:setlimits(self, nil, w, minh, minh)
     else
       self[_lines] = {{i = 1, j = nil, penx = penx, peny = peny, 
-                       y = t or 0, h = font.lineheight}}
+                       y = t or 0, h = font.lineheight, advance=advancew}}
       metacel:setlimits(self, w, w, h, h)
     end
     self:refresh()
@@ -187,7 +206,7 @@ do
   function metacel:__resize(text, ow, oh)
     if text.w ~= ow and text[_wrap] then
       local minh = reflow(text)
-      self:setlimits(text, text.minw, text.maxw, minh, text.maxh, nil, minh)
+      self:setlimits(text, text.minw, text.maxw, minh, minh, nil, minh)
     end
   end
 end
@@ -200,10 +219,11 @@ do
 
     local font = face.font
     local layout = face.layout or layout
-    local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, font:measure(str)) 
+    local advancew, fonth, xmin, xmax, ymin, ymax = font:measure(str)
+    local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, advancew, fonth, xmin, xmax, ymin, ymax) 
     local text 
     if wrapmode ~= 'nowrap' then
-      text = _new(self, w, h, face, nil, w, h, nil)
+      text = _new(self, w, h, face, nil, w, h, h)
       text[_wrap] = 'word'
     else
       text = _new(self, w, h, face, w, w, h, h)
@@ -225,7 +245,7 @@ do
       local int, zero = math.modf(peny) assert(zero == 0)
     end
     --TODO delay defining a line until it is described
-    text[_lines] = {{i = 1, j = nil, penx = penx, peny = peny, y = t or 0, h = font.lineheight}}
+    text[_lines] = {{i = 1, j = nil, penx = penx, peny = peny, y = t or 0, h = font.lineheight, advance=advancew}}
 
     return text
   end

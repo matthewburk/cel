@@ -15,7 +15,7 @@ return function(_ENV)
         fillcolor = cel.color.encodef(.4, .4, .4),
         linecolor = cel.color.encodef(0, 1, 1),
       },
-      mousein = {
+      mousefocusin = {
         fillcolor = cel.color.encodef(.4, .4, .4),
         linecolor = cel.color.encodef(0, 1, 1),
         variation = {
@@ -34,8 +34,8 @@ return function(_ENV)
   function face:draw(t)
     local fv = self
 
-    if t.mousein then
-      fv = fv.variation.mousein
+    if t.mousefocusin then
+      fv = fv.variation.mousefocusin
       if t.isgrabbed then
         fv = fv.variation.grabbed
       end

@@ -357,6 +357,7 @@ do --colformation.dolinker
   end
 end
 
+---[[
 do --colformation.linklimitschanged
   function colformation:linklimitschanged(host, link, minw, maxw, minh, maxh)
     if minw < link[_w] and link == host[_brace] then
@@ -369,6 +370,7 @@ do --colformation.linklimitschanged
     end
   end
 end
+--]]
 
 do --colformation.movelink
   --movelink should only be called becuase move was explicitly called, make sure that is the case
@@ -490,8 +492,8 @@ do --colformation.describeslot
         y = gy,
         w = seq[_w],
         h = link[_h],
-        mousetouch = false,
-        mousein = hasmouse, --TODO only set if link doesn't have mouse
+        mousefocus = false,
+        mousefocusin = hasmouse, --TODO only set if link doesn't have mouse
         index = index,
         clip = {l = gl, r = gr, t = gt, b = gb},
       }

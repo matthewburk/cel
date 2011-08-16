@@ -204,8 +204,8 @@ do --ENV.describe
       t.y = gy
       t.w = cel[_w]
       t.h = cel[_h]
-      t.mousetouch = false
-      t.mousein = false
+      t.mousefocus = false
+      t.mousefocusin = false
       t.focus = false
       t.flowcontext = flows[cel] and flows[cel].context
       t.clip.l = gl
@@ -225,8 +225,8 @@ do --ENV.describe
         y = gy,
         w = cel[_w],
         h = cel[_h],
-        mousetouch = false,
-        mousein = false,
+        mousefocus = false,
+        mousefocusin = false,
         focus = false,
         flowcontext = flows[cel] and flows[cel].context,
         clip = {l = gl, r = gr, t = gt, b = gb},
@@ -235,9 +235,9 @@ do --ENV.describe
     end
 
     if mouse[_focus][cel] then
-      t.mousein = true
+      t.mousefocusin = true
       if mouse[_focus].focus == cel then 
-        t.mousetouch = true 
+        t.mousefocus = true 
       end
     end
 

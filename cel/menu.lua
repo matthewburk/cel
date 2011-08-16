@@ -29,13 +29,13 @@ local _submenu = {}
 local _parentmenu = {}
 local _hidetask = {}
 local _showtask = {}
-local _options = {}
+local _layout = {}
 local _root = {}
 
 local metacel, metatable = cel.sequence.y.newmetacel('menu')
 metacel['.slot'] = cel.slot.newmetacel('menu.slot')
 
-local options = {
+local layout = {
   showdelay = 200;
   hidedelay = 200;
   slot = {
@@ -61,7 +61,7 @@ local function ismenuslot(slot)
 end
 
 function metatable.putdivider(menu)
-  local opt = menu[_options].divider
+  local opt = menu[_layout].divider
   cel.new(opt.w, opt.h, cel.menu.divider):link(menu, opt.link, 'divider')
   return menu
 end
@@ -69,7 +69,7 @@ end
 function metatable.fork(menu, fork, submenu)
   local fork = type(fork) == 'string' and cel.label.new(fork, cel.menu) or fork
   local slot = metacel.new_menuslot(menu, fork)
-  fork:link(slot, menu[_options].slot.item.link)
+  fork:link(slot, menu[_layout].slot.item.link)
   slot[_submenu] = submenu
   return menu
 end
@@ -162,7 +162,7 @@ do
       return
     elseif not ismenuslot(link) then
       local slot = self.new_menuslot(menu, link)
-      return slot, menu[_options].slot.item.link
+      return slot, menu[_layout].slot.item.link
     end
   end
 end
@@ -221,7 +221,7 @@ do --metacel['.slot']
       end
 
       if slot_submenu == menu_submenu then
-        menu[_hidetask] = cel.doafter(menu[_options].hidedelay, function()
+        menu[_hidetask] = cel.doafter(menu[_layout].hidedelay, function()
           slot_submenu:unlink()
           menu[_hidetask] = nil
         end)
@@ -242,20 +242,20 @@ do --metacel['.slot']
         end
       else
         if menu_submenu then
-          menu[_hidetask] = cel.doafter(menu[_options].hidedelay, function()
+          menu[_hidetask] = cel.doafter(menu[_layout].hidedelay, function()
             menu_submenu:unlink()
             menu[_hidetask] = nil
           end)
         end
 
-        menu[_showtask] = cel.doafter(menu[_options].showdelay, function() 
+        menu[_showtask] = cel.doafter(menu[_layout].showdelay, function() 
           showat(slot_submenu, slot.X + slot.w, slot.Y, menu) 
           menu[_showtask] = nil
         end)
       end
     else
       if menu_submenu and not menu[_hidetask] then
-        menu[_hidetask] = cel.doafter(menu[_options].hidedelay, function()
+        menu[_hidetask] = cel.doafter(menu[_layout].hidedelay, function()
           menu_submenu:unlink()
           menu[_hidetask] = nil
         end)
@@ -267,11 +267,11 @@ do --metacel['.slot']
     local normalize = cel.util.normalize_padding
     local _new = metacel_slot.new
     function metacel_slot:new(menu, item)
-      local options = menu[_options].slot
-      local slot = _new(self, normalize(options.padding, item.w, item.h))
+      local layout = menu[_layout].slot
+      local slot = _new(self, normalize(layout.padding, item.w, item.h))
       slot[_menu] = menu
       slot.item = item
-      slot:link(menu, options.link)
+      slot:link(menu, layout.link)
       return slot 
     end
   end
@@ -283,9 +283,9 @@ do
   local _new = metacel.new
   function metacel:new(face)
     local face = self:getface(face)
-    local options = face.options or options
+    local layout = face.layout or layout
     local menu = _new(self, 0, face)
-    menu[_options] = options
+    menu[_layout] = layout
     return menu
   end
 
@@ -315,4 +315,4 @@ local function divider(menu)
   menu:putdivider()
 end
 
-return metacel:newfactory({options = options, divider=divider, fork=menufork})
+return metacel:newfactory({layout = layout, divider=divider, fork=menufork})

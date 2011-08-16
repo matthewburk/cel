@@ -90,11 +90,11 @@ return function(_ENV)
 
         clip(t.clip)
 
-        if (t.mousein or t.host.mousein) and setcolor(fv.fillcolor) then
+        if (t.mousefocusin or t.host.mousefocusin) and setcolor(fv.fillcolor) then
           fillrect(t.x, t.y, t.w, t.h, fv.radius)
         end
 
-        if fv.linewidth and setcolor(fv.linecolor) and t.host.mousein then
+        if fv.linewidth and setcolor(fv.linecolor) and t.host.mousefocusin then
           setlinewidth(fv.linewidth)
           strokerect(t.x, t.y, t.w, t.h, fv.radius)
         end
@@ -125,11 +125,11 @@ return function(_ENV)
 
         clip(t.clip)
 
-        if (t.mousein or t.host.mousein) and setcolor(fv.fillcolor) then
+        if (t.mousefocusin or t.host.mousefocusin) and setcolor(fv.fillcolor) then
           fillrect(t.x, t.y, t.w, t.h, fv.radius)
         end
 
-        if fv.linewidth and setcolor(fv.linecolor) and t.host.mousein then
+        if fv.linewidth and setcolor(fv.linecolor) and t.host.mousefocusin then
           setlinewidth(fv.linewidth)
           strokerect(t.x, t.y, t.w, t.h, fv.radius)
         end

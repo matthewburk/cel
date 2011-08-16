@@ -451,8 +451,8 @@ do --rowformation.describeslot
         y = gy,
         w = link[_w],
         h = seq[_h],
-        mousetouch = false,
-        mousein = hasmouse, --TODO only set if link doesn't have mouse
+        mousefocus = false,
+        mousefocusin = hasmouse, --TODO only set if link doesn't have mouse
         index = index,
         --TODO focus
         clip = {l = gl, r = gr, t = gt, b = gb},

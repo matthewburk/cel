@@ -103,6 +103,8 @@ do
   end
 end
 
+
+
 local function allocateslots(col, h)
   if col[_flex] <= 0 then return end
 
@@ -168,7 +170,7 @@ function colmetacel:__link(col, link, linker, xval, yval, option)
     slot:link(col, 'width', nil, nil, slotoption)
 
     if not (linker or xval or yval) then
-      return slot, 'edges'
+      return slot--, 'edges'
     end
 
     return slot, linker, xval, yval
@@ -226,7 +228,7 @@ do
             linker, xval, yval = link:pget('linker', 'xval', 'yval')
           end
           if not (linker or xval or yval) then
-           linker = 'edges'
+           --linker = 'edges'
           end
           link:link(col, linker, xval, yval, entry)
         end
