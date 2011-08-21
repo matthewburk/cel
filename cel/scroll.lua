@@ -36,7 +36,7 @@ THE SOFTWARE.
 ----TODO this thing is fucked, too messy, unwanted recursion happens too easily
 local cel = require 'cel'
 
---local print = function() end
+--local --print = function() end
 local metacel, metatable = cel.newmetacel('scroll')
 metacel['.portal'] = cel.newmetacel('scroll.portal')
 metacel['.bar'] = cel.newmetacel('scroll.bar')
@@ -61,14 +61,17 @@ local _xbar = {}
 local _ybar = {}
 local _insync = {}
 local _updateflow = {}
+local _borders = {}
 
 local layout
 do
-  local size = 18 --width for y, height for x
+  local size = 28 --width for y, height for x
   layout = {
     stepsize = 20,
     ybar = {
-      autohide = true, --TODO doesn't work when false on both bars
+      --show can be true, false, or nil, nil is auto
+      --show = true, 
+      align = 'left',
       size = size, 
       track = {
         size = size,
@@ -89,7 +92,8 @@ do
       },
     },
     xbar = {
-      autohide = true,
+      --show = false,
+      align = 'bottom',
       size = size,
       track = {
         size = size,
@@ -109,6 +113,7 @@ do
       },
     },
   }
+  
 end
 
 local linkers = {}
@@ -129,46 +134,40 @@ function linkers.subject(hw, hh, x, y, w, h, fillx, filly)
   return x, y, fillx and hw or w, filly and hh or h
 end
 
-function linkers.portal(hw, hh, x, y, w, h, xval, yval)
-  xval = xval or 0
-  yval = yval or 0
-  return 0, 0, hw - xval, hh - yval
-end
-
-function linkers.ybar(hw, hh, x, y, w, h, p, bargap)
-  return hw - (w * p), 0, w, hh - bargap
-end
-
-function linkers.xbar(hw, hh, x, y, w, h, p, bargap)
-  return 0, hh - (h * p), hw - bargap, h
-end
-
 local sync = {}
 
-local synccount = 0
-local avoidsynccount = 0
 
 local function matches(v, a, b)
   return (v == a or (b == nil or v == b))
 end
 
-do
-  local flowybar = {}
-  local flowxbar = {}
+local flowybar = {}
+local flowxbar = {}
 
+do
   function flowybar.showbar(ybar, p)
     local scroll = ybar[_scroll]
     local portal = scroll[_portal]
     local xbar = scroll[_xbar]
 
-    if xbar then
-      ybar:relink(linkers.ybar, p, scroll.h - xbar.t)
-      xbar:relink(linkers.xbar, xbar.xval, scroll.w - ybar.l)
-    else
-      ybar:relink(linkers.ybar, p, 0)
+    ybar:relink(ybar.linker, p, xbar)
+
+    if ybar.align == 'left' then
+      ybar.lgap = ybar.r
+      ybar.rgap = 0
+    else 
+      ybar.lgap = 0
+      ybar.rgap = scroll.w - ybar.l
     end
 
-    portal:relink(linkers.portal, scroll.w - ybar.l, portal.yval)
+    xbar:relink(xbar.linker, xbar.xval, ybar)
+
+    do
+      local gaps = portal.gaps
+      gaps.l = gaps.fixedl + ybar.lgap
+      gaps.r = gaps.fixedr + ybar.rgap 
+      portal:relink(portal.linker, gaps)
+    end
   end
 
   function flowxbar.showbar(xbar, p)
@@ -177,15 +176,30 @@ do
     local portal = scroll[_portal]
     local ybar = scroll[_ybar]
 
-    local movesubject = scroll[_subject].b == portal.h
+    --TODO why am i moving subject here, but not for flowybar.showbar?
+    --this pins it to the bottom if its alreayd on the bottom, is that always
+    --the correct thing to do?  I think it is
+    local movesubject = scroll[_subject] and scroll[_subject].b == portal.h
 
-    if ybar then
-      xbar:relink(linkers.xbar, p, scroll.w - ybar.l)
-      ybar:relink(linkers.ybar, ybar.xval, scroll.h - xbar.t)
-    else
-      xbar:relink(linkers.xbar, p, 0)
+    xbar:relink(xbar.linker, p, ybar)
+
+    if xbar.align == 'top' then
+      xbar.tgap = xbar.b
+      xbar.bgap = 0
+    else 
+      xbar.tgap = 0
+      xbar.bgap = scroll.h - xbar.t
     end
-    portal:relink(linkers.portal, portal.xval, scroll.h - xbar.t)
+
+    ybar:relink(ybar.linker, ybar.xval, xbar)
+
+    do
+      local gaps = portal.gaps
+      gaps.t = gaps.fixedt + xbar.tgap
+      gaps.b = gaps.fixedb + xbar.bgap 
+      portal:relink(portal.linker, gaps)
+    end
+
     if movesubject then
       scroll[_subject]:moveby(nil, -math.huge)
     else
@@ -198,13 +212,19 @@ do
     local portal = scroll[_portal]
     local xbar = scroll[_xbar]
 
-    if xbar then
-      ybar:relink(linkers.ybar, p, scroll.h - xbar.t)
-      xbar:relink(linkers.xbar, xbar.xval, scroll.w - ybar.l)
-    else
-      ybar:relink(linkers.ybar, p, 0)
+    ybar:relink(ybar.linker, p, xbar)
+
+    if ybar.align == 'left' then
+      ybar.lgap = ybar.r
+      ybar.rgap = 0
+    else 
+      ybar.lgap = 0
+      ybar.rgap = scroll.w - ybar.l
     end
-    --portal:relink(linkers.portal, scroll.w - ybar.l, portal.yval)
+
+    xbar:relink(xbar.linker, xbar.xval, ybar)
+
+    --portal:relink is not flowed and immediately snaps to place
   end
 
   function flowxbar.hidebar(xbar, p)
@@ -212,13 +232,20 @@ do
     local scroll = xbar[_scroll]
     local portal = scroll[_portal]
     local ybar = scroll[_ybar]
-    if ybar then
-      xbar:relink(linkers.xbar, p, scroll.w - ybar.l)
-      ybar:relink(linkers.ybar, ybar.xval, scroll.h - xbar.t)
-    else
-      xbar:relink(linkers.xbar, p, 0)
+
+    xbar:relink(xbar.linker, p, ybar)
+
+    if xbar.align == 'top' then
+      xbar.tgap = xbar.b
+      xbar.bgap = 0
+    else 
+      xbar.tgap = 0
+      xbar.bgap = scroll.h - xbar.t
     end
-    --portal:relink(linkers.portal, portal.xval, scroll.h - xbar.t)
+
+    ybar:relink(ybar.linker, ybar.xval, xbar)
+
+    --portal:relink is not flowed and immediately snaps to place
   end
 
   local function syncportal(scroll)
@@ -228,57 +255,59 @@ do
     local xbarnewmode
     local ybarnewmode
 
-    if xbar then
-      if xbar.autohide == 'unhide' then
-        --print('showing xbar')
-        xbar.autohide = 'show'
-        xbarnewmode = 'showbar'
-      elseif xbar.autohide == 'unshow' then
-        --print('hiding xbar')
-        xbar.autohide = 'hide'
-        xbarnewmode = 'hidebar'
-      end
+    if xbar.autohide == 'unhide' then
+      --print('showing xbar')
+      xbar.autohide = 'show'
+      xbarnewmode = 'showbar'
+    elseif xbar.autohide == 'unshow' then
+      --print('hiding xbar')
+      xbar.autohide = 'hide'
+      xbarnewmode = 'hidebar'
     end
 
-    if ybar then
-      if ybar.autohide == 'unhide' then
-        --print('showing ybar')
-        ybar.autohide = 'show'
-        ybarnewmode = 'showbar'
-      elseif ybar.autohide == 'unshow' then
-        --print('hiding ybar')
-        ybar.autohide = 'hide'
-        ybarnewmode = 'hidebar'
-      end
+    if ybar.autohide == 'unhide' then
+      --print('showing ybar')
+      ybar.autohide = 'show'
+      ybarnewmode = 'showbar'
+    elseif ybar.autohide == 'unshow' then
+      --print('hiding ybar', debug.traceback())
+      ybar.autohide = 'hide'
+      ybarnewmode = 'hidebar'
     end
 
     if xbarnewmode or ybarnewmode then      
-      if xbar then
-        --print('mode', xbarnewmode, 'x', xbar.autohide)
-        if xbarnewmode == 'showbar' then
-          xbar:endflow()
-          xbar:flowvalue(scroll:getflow('showxbar'), 0, 1, flowxbar[xbarnewmode])
-        elseif xbarnewmode == 'hidebar' then
-          xbar:endflow()
-          xbar:flowvalue(scroll:getflow('hidexbar'), 1, 0, flowxbar[xbarnewmode])
-          portal:relink(linkers.portal, portal.xval, 0)
+      --print('mode', xbarnewmode, 'x', xbar.autohide)
+      if xbarnewmode == 'showbar' then
+        xbar:endflow()
+        xbar:flowvalue(scroll:getflow('showxbar'), 0, 1, flowxbar[xbarnewmode])
+      elseif xbarnewmode == 'hidebar' then
+        xbar:endflow()
+        xbar:flowvalue(scroll:getflow('hidexbar'), 1, 0, flowxbar[xbarnewmode])
+
+        do
+          local gaps = portal.gaps
+          gaps.t = gaps.fixedt
+          gaps.b = gaps.fixedb 
+          portal:relink(portal.linker, gaps)
         end
       end
-      if ybar then
-        --print('mode', ybarnewmode, 'y', ybar.autohide)
-        if ybarnewmode == 'showbar' then
-          ybar:endflow()
-          ybar:flowvalue(scroll:getflow('showybar'), 0, 1, flowybar[ybarnewmode])
-        elseif ybarnewmode == 'hidebar' then
-          ybar:endflow()
-          ybar:flowvalue(scroll:getflow('hideybar'), 1, 0, flowybar[ybarnewmode])
-          portal:relink(linkers.portal, 0, portal.yval)
+      --print('mode', ybarnewmode, 'y', ybar.autohide)
+      if ybarnewmode == 'showbar' then
+        ybar:endflow()
+        ybar:flowvalue(scroll:getflow('showybar'), 0, 1, flowybar[ybarnewmode])
+      elseif ybarnewmode == 'hidebar' then
+        ybar:endflow()
+        ybar:flowvalue(scroll:getflow('hideybar'), 1, 0, flowybar[ybarnewmode])
+        do
+          local gaps = portal.gaps
+          gaps.l = gaps.fixedl
+          gaps.r = gaps.fixedr 
+          portal:relink(portal.linker, gaps)
         end
       end
-      if xbar and ybar then
-        if not ybarnewmode then ybar:relink(linkers.ybar, ybar.xval, scroll.h - xbar.t) end
-        if not xbarnewmode then xbar:relink(linkers.xbar, xbar.xval, scroll.w - ybar.l) end
-      end
+
+      if not ybarnewmode then ybar:relink(ybar.linker, ybar.xval, xbar) end
+      if not xbarnewmode then xbar:relink(xbar.linker, xbar.xval, ybar) end
     end
   end
 
@@ -297,14 +326,12 @@ do
       end
 
       sync.model(scroll)
-      synccount = synccount + 1
       
       scroll[_insync] = true 
-    else
-      avoidsynccount = avoidsynccount + 1
     end
     return scroll
   end
+
 end
 
 
@@ -372,7 +399,6 @@ local function __updatevalue(scroll, dim, value)
   value = math.max(value, 0)
   value = math.min(value, dim.max)
   if dim.value ~= value then
-    --print('updating value to', value)
     dim.value = value
     scroll[_insync] = false 
   end
@@ -428,9 +454,9 @@ local function sliderdragged(slider, dx, dy)
 end
 
 do --track
-  local metacel = metacel['.bar']['.track']
+  local metatrack = metacel['.bar']['.track']
 
-  function metacel:__resize(track)
+  function metatrack:__resize(track)
     local scrollbar = track[_scrollbar]
     if scrollbar.axis == 'y' then
       scrollbar.modelrange = track.h
@@ -439,15 +465,15 @@ do --track
     end  
   end
 
-  function metacel:onresize(track)
+  function metatrack:onresize(track)
     sync.model(track[_scrollbar][_scroll])
   end
 end
 
 do --portal
-  local metacel = metacel['.portal']
+  local metaportal = metacel['.portal']
 
-  metacel.__relink = false --don't allow subject to relink, must link how scroll makes it
+  metaportal.__relink = false --don't allow subject to relink, must link how scroll makes it
 
   local function __updatesize(scroll, portal, dim, size)
     if size < 0 then size = 0 end 
@@ -514,7 +540,8 @@ do --portal
     end
 
     if xbar and ybar then
-      if scroll.h >= ydim.range and scroll.w >= xdim.range then
+      local gaps = scroll[_portal].gaps
+      if scroll.h-(gaps.fixedt + gaps.fixedb) >= ydim.range and scroll.w - (gaps.fixedl + gaps.fixedr) >= xdim.range then
         if 'show' == ybar.autohide then
           yautohide = 'unshow'
         elseif 'unhide' == ybar.autohide then
@@ -536,7 +563,7 @@ do --portal
     end
   end
 
-  function metacel:__resize(portal, ow, oh)
+  function metaportal:__resize(portal, ow, oh)
     local scroll = portal[_scroll]
     if portal.w ~= ow then 
       __updatesize(scroll, portal, scroll[_xdim], portal.w)
@@ -547,63 +574,57 @@ do --portal
     __checkbars(scroll, portal)
   end
 
-  function metacel:onresize(portal)
+  function metaportal:onresize(portal)
     sync.scroll(portal[_scroll])
   end
 
-  do
-    --returns true if range changed
-    local function __updaterange(scroll, dim, range)
-      assert(scroll)
-      assert(dim)
-      assert(range)
-      if range < 0 then range = 0 end
-      if dim.range ~= range then
-        local size = dim.size
-        local max = math.max(range - size, 0)
-        local value = math.min(dim.value, max)
-        dim.range = range
-        dim.max = max
-        dim.value = value
-        scroll[_insync] = false 
-        return true
-      end
-      return false
+  --returns true if range changed
+  local function __updaterange(scroll, dim, range)
+    assert(scroll)
+    assert(dim)
+    assert(range)
+    if range < 0 then range = 0 end
+    if dim.range ~= range then
+      local size = dim.size
+      local max = math.max(range - size, 0)
+      local value = math.min(dim.value, max)
+      dim.range = range
+      dim.max = max
+      dim.value = value
+      scroll[_insync] = false 
+      return true
     end
+    return false
+  end
 
-    function metacel:__link(portal, link, linker, xval, yval, option)
-      if 'subject' == option then
-        local scroll = portal[_scroll]
-        __updaterange(scroll, scroll[_xdim], link.w)
-        __updaterange(scroll, scroll[_ydim], link.h)
-        __checkbars(scroll, portal)
-      end
-      --TODO revisit if we have to return anything it we arent changing stuff
-      return portal, linker, xval, yval, nil 
-    end
-
-    function metacel:__linkmove(portal, link, ox, oy, ow, oh)
+  function metaportal:__link(portal, link, linker, xval, yval, option)
+    if 'subject' == option then
       local scroll = portal[_scroll]
-     
-      if scroll[_subject] == link then
-        --print('__linkmove')
-        if scroll[_insync] ~= 'syncing' then
-          local checkbars = false 
-          if ox ~= link.x then __updatevalue(scroll, scroll[_xdim], -link.x) end
-          if oy ~= link.y then __updatevalue(scroll, scroll[_ydim], -link.y) end
-          if ow ~= link.w then checkbars = __updaterange(scroll, scroll[_xdim], link.w) or checkbars end
-          if oh ~= link.h then checkbars = __updaterange(scroll, scroll[_ydim], link.h) or checkbars end
-          if checkbars then __checkbars(scroll, portal) end
-        elseif scroll[_insync] == 'syncing' then 
-          local checkbars = false 
-          if ow ~= link.w then checkbars = __updaterange(scroll, scroll[_xdim], link.w) or checkbars end
-          if oh ~= link.h then checkbars = __updaterange(scroll, scroll[_ydim], link.h) or checkbars end
-          if checkbars then __checkbars(scroll, portal) end
+      __updaterange(scroll, scroll[_xdim], link.w)
+      __updaterange(scroll, scroll[_ydim], link.h)
+      __checkbars(scroll, portal)
+
+    end
+  end
+
+  metaportal.metatable.__tostring = nil
+  function metaportal:onlink(portal, link)
+    local scroll = portal[_scroll]
+    if scroll[_subject] == link then
+      sync.scroll(portal[_scroll])
+      for name, border in pairs(scroll[_borders]) do
+        if border.subject then
+          if name == 'top' or name == 'bottom' then
+            border.subject:move(link.x, 0, link.w) 
+          else
+            border.subject:move(0, link.y, nil, link.h) 
+          end
         end
       end
     end
+  end
 
-    function metacel:__unlink(portal, link)
+  function metaportal:__unlink(portal, link)
     local scroll = portal[_scroll]
     if scroll[_subject] == link then
       scroll[_subject] = nil
@@ -614,37 +635,54 @@ do --portal
 
     end
   end
-  end
 
-  function metacel:onlinkmove(portal, link)
+  function metaportal:__linkmove(portal, link, ox, oy, ow, oh)
     local scroll = portal[_scroll]
-    --if scroll[_insync] == 'syncing' then return end
+   
     if scroll[_subject] == link then
-      --print('onlinkmove sync')
-      sync.scroll(portal[_scroll])
+      if scroll[_insync] ~= 'syncing' then
+        local checkbars = false 
+        if ox ~= link.x then __updatevalue(scroll, scroll[_xdim], -link.x) end
+        if oy ~= link.y then __updatevalue(scroll, scroll[_ydim], -link.y) end
+        if ow ~= link.w then checkbars = __updaterange(scroll, scroll[_xdim], link.w) or checkbars end
+        if oh ~= link.h then checkbars = __updaterange(scroll, scroll[_ydim], link.h) or checkbars end
+        if checkbars then __checkbars(scroll, portal) end
+      elseif scroll[_insync] == 'syncing' then 
+        local checkbars = false 
+        if ow ~= link.w then checkbars = __updaterange(scroll, scroll[_xdim], link.w) or checkbars end
+        if oh ~= link.h then checkbars = __updaterange(scroll, scroll[_ydim], link.h) or checkbars end
+        if checkbars then __checkbars(scroll, portal) end
+      end
     end
   end
 
-  function metacel:onlink(portal, link)
+  function metaportal:onlinkmove(portal, link)
     local scroll = portal[_scroll]
     if scroll[_subject] == link then
       sync.scroll(portal[_scroll])
+      for name, border in pairs(scroll[_borders]) do
+        if border.subject then
+          if name == 'top' or name == 'bottom' then
+            border.subject:move(link.x, 0, link.w) 
+          else
+            border.subject:move(0, link.y, nil, link.h) 
+          end
+        end
+      end
     end
   end
-
-  
 end
 
 do
-  local metacel =  metacel['.bar']
+  local metabar =  metacel['.bar']
   local _new = metacel.new
 
-  function metacel:__describe(scrollbar, t)
+  function metabar:__describe(scrollbar, t)
     t.axis = scrollbar.axis
     t.size = scrollbar.size
   end
 
-  function metacel:new(scroll, axis, layout, face)
+  function metabar:new(scroll, axis, layout, face)
     assert(scroll)
     assert(axis)
     assert(layout)
@@ -654,7 +692,7 @@ do
     scrollbar[_scroll] = scroll
     scrollbar.axis = axis
     scrollbar.size = layout.size
-    scrollbar.autohide = layout.autohide and 'show' or false 
+    scrollbar.autohide = layout.show == nil and 'hide' or false 
     scrollbar.modelrange = 0
     scrollbar.modelmax = 0
     scrollbar.minmodelsize = layout.track.slider.minsize
@@ -697,6 +735,162 @@ do
   end
 end
 
+function metatable:settopborder(bordercel, linker, xval, yval, option)
+  local h = bordercel.h
+  local border = self[_borders].top
+  local portal = self[_portal]
+
+  local gaps = portal.gaps
+
+  gaps.t = gaps.t - gaps.fixedt
+  gaps.fixedt = h
+  gaps.t = gaps.t + h
+
+  if not border then
+    border = cel.new(portal.w, h):link(self, linkers.border.top, gaps, nil, 'raw'):sink() 
+    self[_borders].top = border
+  else
+    border:resize(portal.w, h)
+  end
+
+  local target 
+  if option == 'subject' then
+    border.subject = border.subject or cel.new(0, h):link(border, 'height')
+    target = border.subject
+
+    if self[_subject] then 
+      border.subject:move(self[_subject].x, 0, self[_subject].w)
+    end
+  else
+    if border.subject then
+      border.subject:unlink()
+      border.subject = nil
+    end
+    target = border
+  end
+
+  portal:relink(portal.linker, portal.xval)
+  bordercel:link(target, linker, xval, yval)
+  return self
+end
+
+function metatable:setleftborder(bordercel, linker, xval, yval, option)
+  local w = bordercel.w
+  local border = self[_borders].left
+  local portal = self[_portal]
+
+  local gaps = portal.gaps
+
+  gaps.l = gaps.l - gaps.fixedl
+  gaps.fixedl = w
+  gaps.l = gaps.l + w
+
+  if not border then
+    border = cel.new(w, portal.h):link(self, linkers.border.left, gaps, nil, 'raw'):sink() 
+    self[_borders].left = border
+  else
+    border:resize(w, portal.h)
+  end
+
+  local target 
+  if option == 'subject' then
+    border.subject = border.subject or cel.new(w, 0):link(border, 'width')
+    target = border.subject
+
+    if self[_subject] then 
+      border.subject:move(0, self[_subject].y, nil, self[_subject].h)
+    end
+  else
+    if border.subject then
+      border.subject:unlink()
+      border.subject = nil
+    end
+    target = border
+  end
+
+  portal:relink(portal.linker, portal.xval)
+  bordercel:link(target, linker, xval, yval)
+  return self
+end
+
+function metatable:setbottomborder(bordercel, linker, xval, yval, option)
+  local h = bordercel.h
+  local border = self[_borders].bottom
+  local portal = self[_portal]
+
+  local gaps = portal.gaps
+
+  gaps.b = gaps.b - gaps.fixedb
+  gaps.fixedb = h
+  gaps.b = gaps.b + h
+
+  if not border then
+    border = cel.new(portal.w, h):link(self, linkers.border.bottom, gaps, nil, 'raw'):sink() 
+    self[_borders].bottom = border
+  else
+    border:resize(portal.w, h)
+  end
+
+  local target 
+  if option == 'subject' then
+    border.subject = border.subject or cel.new(0, h):link(border, 'height')
+    target = border.subject
+
+    if self[_subject] then 
+      border.subject:move(self[_subject].x, 0, self[_subject].w)
+    end
+  else
+    if border.subject then
+      border.subject:unlink()
+      border.subject = nil
+    end
+    target = border
+  end
+
+  portal:relink(portal.linker, portal.xval)
+  bordercel:link(target, linker, xval, yval)
+  return self
+end
+
+function metatable:setrightborder(bordercel, linker, xval, yval, option)
+  local w = bordercel.w
+  local border = self[_borders].right
+  local portal = self[_portal]
+
+  local gaps = portal.gaps
+
+  gaps.r = gaps.r - gaps.fixedr
+  gaps.fixedr = w
+  gaps.r = gaps.r + w
+
+  if not border then
+    border = cel.new(w, portal.h):link(self, linkers.border.right, gaps, nil, 'raw'):sink() 
+    self[_borders].right = border
+  else
+    border:resize(w, portal.h)
+  end
+
+  local target 
+  if option == 'subject' then
+    border.subject = border.subject or cel.new(w, 0):link(border, 'width')
+    target = border.subject
+
+    if self[_subject] then 
+      border.subject:move(0, self[_subject].y, nil, self[_subject].h)
+    end
+  else
+    if border.subject then
+      border.subject:unlink()
+      border.subject = nil
+    end
+    target = border
+  end
+
+  portal:relink(portal.linker, portal.xval)
+  bordercel:link(target, linker, xval, yval)
+  return self
+end
+
 --autohide is line or page
 function metatable.step(scroll, xsteps, ysteps, mode)
   scroll[_subject]:endflow(scroll:getflow('scroll'))      
@@ -712,7 +906,6 @@ function metatable.step(scroll, xsteps, ysteps, mode)
     if ysteps and ysteps ~= 0 then y = y + (ysteps * ydim.size) end
   end
 
-  --print('scroll to by step', x, y)
   return scroll:scrollto(x, y)
 end
 
@@ -796,6 +989,14 @@ function metacel:__link(scroll, link, linker, xval, yval, option)
   return scroll[_portal], linker, xval, yval
 end
 
+function metacel:__relink(scroll, link)
+  if link == scroll[_portal] then
+    for name, border in pairs(scroll[_borders]) do
+      border:relink(border.linker, border.xval)
+    end
+  end
+end
+
 function metacel:onmousewheel(scroll, direction, x, y, intercepted)
   if not intercepted and scroll[_subject] then
     local invalue = scroll[_subject].y
@@ -809,6 +1010,44 @@ function metacel:onmousewheel(scroll, direction, x, y, intercepted)
 end
 
 do
+  linkers.xbar = {
+    bottom = function(hw, hh, x, y, w, h, p, ybar)
+      return ybar.lgap, hh - (h * p), hw - (ybar.lgap + ybar.rgap), h
+    end,
+    top = function(hw, hh, x, y, w, h, p, ybar)
+      return ybar.lgap, -(h * (1-p)), hw - (ybar.lgap + ybar.rgap), h
+    end,
+  }
+
+  linkers.ybar = {
+    right = function(hw, hh, x, y, w, h, p, xbar)
+      return hw - (w * p), xbar.tgap, w, hh - (xbar.tgap + xbar.bgap)
+    end,
+    left = function(hw, hh, x, y, w, h, p, xbar)
+      return -(w * (1-p)), xbar.tgap, w, hh - (xbar.tgap + xbar.bgap)
+    end
+  }
+
+  linkers.portal = function(hw, hh, x, y, w, h, gaps)
+    return gaps.l, gaps.t, hw - (gaps.l + gaps.r), hh - (gaps.t + gaps.b)
+  end
+
+  linkers.border = {
+    top = function(hw, hh, x, y, w, h, gaps)
+      return gaps.l, gaps.t-gaps.fixedt, hw - (gaps.l + gaps.r), h 
+    end,
+    bottom = function(hw, hh, x, y, w, h, gaps)
+      return gaps.l, hh-gaps.b, hw - (gaps.l + gaps.r), h 
+    end,
+    left = function(hw, hh, x, y, w, h, gaps)
+      return gaps.l-gaps.fixedl, gaps.t, w, hh - (gaps.t + gaps.b) 
+    end,
+    right = function(hw, hh, x, y, w, h, gaps)
+      return hw-gaps.r, gaps.t, w, hh - (gaps.t + gaps.b) 
+    end,
+  }
+
+
   local _new = metacel.new
   function metacel:new(w, h, face)
     face = self:getface(face)
@@ -818,24 +1057,43 @@ do
 
     scroll[_xdim] = { value = 0, max = 0, size = 0, range = 0, }
     scroll[_ydim] = { value = 0, max = 0, size = 0, range = 0, }
+    scroll[_borders] = {}
 
     scroll[_portal] = self['.portal']:new(w, h)
     scroll[_portal][_scroll] = scroll
+    scroll[_portal].gaps = {
+      l=0, r=0, t=0, b=0,
+      fixedl = 0,
+      fixedr = 0,
+      fixedt = 0,
+      fixedb = 0,
+    }
 
-    scroll[_portal]:link(scroll, linkers.portal, 0, 0, 'raw')
+    scroll[_portal]:link(scroll, linkers.portal, scroll[_portal].gaps, nil, 'raw')
 
-    if layout.xbar then
-      local layout = layout.xbar
-      scroll[_xbar] = self['.bar']:new(scroll, 'x', layout, layout.face)
-      scroll[_xbar]:link(scroll, linkers.xbar, 0, 0, 'raw') 
-      scroll[_xbar].autohide = scroll[_xbar].autohide and 'hide' or false
-    end
+    do
+      local xbar = self['.bar']:new(scroll, 'x', layout.xbar, layout.xbar.face)
+      xbar.align = layout.xbar.align == 'top' and 'top' or 'bottom'
+      xbar.tgap = 0
+      xbar.bgap = 0
+      scroll[_xbar] = xbar
+      
 
-    if layout.ybar then
-      local layout = layout.ybar
-      scroll[_ybar] = self['.bar']:new(scroll, 'y', layout, layout.face)
-      scroll[_ybar]:link(scroll, linkers.ybar, 0, 0, 'raw')
-      scroll[_ybar].autohide = scroll[_ybar].autohide and 'hide' or false
+      local ybar = self['.bar']:new(scroll, 'y', layout.ybar, layout.ybar.face)
+      ybar.align = layout.ybar.align == 'left' and 'left' or 'right'
+      ybar.lgap = 0
+      ybar.rgap = 0
+      scroll[_ybar] = ybar
+
+      xbar:link(scroll, linkers.xbar[xbar.align], 0, ybar, 'raw') 
+      ybar:link(scroll, linkers.ybar[ybar.align], 0, xbar, 'raw')
+
+      if layout.xbar.show == true then
+        flowxbar.showbar(xbar, 1)
+      end
+      if layout.ybar.show == true then
+        flowybar.showbar(ybar, 1)
+      end
     end
 
     return scroll
@@ -857,9 +1115,6 @@ do
   local _newmetacel = metacel.newmetacel
   function metacel:newmetacel(name)
     local newmetacel, metatable = _newmetacel(self, name) 
-    --newmetacel['.portal'] = metacel['.portal']:newmetacel(name .. '.portal')    
-    --newmetacel['.bar'] = metacel['.bar']:newmetacel(name .. '.bar')    
-    --TODO add in other metacels
     return newmetacel, metatable
   end
 end
