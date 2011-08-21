@@ -42,11 +42,15 @@ function metatable:clear(link)
   if link and self[_links][link] ~= nil then
     self[_links][link] = nil
     link:unlink()
+    if link == self[_subject] then
+      self[_subject] = nil
+    end
   else
     for link in pairs(self[_links]) do
       self[_links][link] = nil
       link:unlink()
     end
+    self[_subject] = nil
   end
   return self
 end
