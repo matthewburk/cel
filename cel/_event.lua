@@ -143,18 +143,66 @@ return function(_ENV, M)
     end
   end
 
-  do --onlinkmove --onlysend to metacel
-    local _metacel = _metacel
-    local dispatch = function(e)
-      local cel, link, ox, oy, ow, oh, extra = e[2], e[3], e[4], e[5], e[6], e[7], e[8]
-      cel[_metacel]:onlinkmove(cel, link, ox, oy, ow, oh, extra)
+  do --onlinkmove --only sent to metacel, duplicates merged
+    local queue = {first = 0, last = -1}
+    local memo = { } --link to cel
+
+    local function push(event, cel, link, ox, oy, ow, oh)
+      local i = queue.last
+      i = i + 1; 
+      queue[i] = {cel, link, ox, oy, ow, oh, i}
+      queue.last = i
+      event:push(queue)
+      return queue[i]
+    end
+
+    --TODO if event:push sees the same queue, increment a counter for the queue instead of putting it on 
+    --the main queue again
+    local function repush(event, e)
+      local i = queue.last
+      i = i + 1; 
+      queue[i] = e
+      e[7]=i
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local e = queue[i]; 
+
+      queue[i] = nil;
+      queue.first = i+1
+
+      if e[7] == i then
+        return e 
+      end
+    end
+
+    function queue.dispatch()
+      local e = pop()
+      if e then
+        local cel, link, ox, oy, ow, oh = e[1], e[2], e[3], e[4], e[5], e[6]
+        if memo[link] == e then
+          memo[link]=nil
+        end
+        --print('---------dipatching onlinkmove event', cel, link, ox, oy, ow, oh)
+        cel[_metacel]:onlinkmove(cel, link, ox, oy, ow, oh) 
+      end
     end
 
     function event:onlinkmove(cel, link, ox, oy, ow, oh)
-      local extra
-      if cel[_metacel].onlinkmove then 
-        self:push({dispatch, cel, link, ox, oy, ow, oh, extra})
-        --print('pushing onlinkmove', cel, link)
+      if rawget(cel[_metacel], 'onlinkmove') then 
+        --if link was in another cel and that event was not delivered yet
+        --the event will still be delivered but will not coalese if it gets the 
+        --same link again
+        local e = memo[link]
+        if e and e[1] == cel then
+          --print('******repushing onlinkmove event', cel, link, ox, oy, ow, oh)
+          repush(self, e) 
+        else
+          memo[link] = push(self, cel, link, ox, oy, ow, oh) 
+        end
       end
     end
   end
@@ -178,14 +226,6 @@ return function(_ENV, M)
       local oh = queue[i]; queue[i] = nil; i = i + 1
       queue.first = i
       return cel, ow, oh 
-    end
-
-    local dispatch = function(e)
-      local cel, ow, oh = e[2], e[3], e[4]
-      if cel[_metacel].onresize then 
-        cel[_metacel]:onresize(cel, ow, oh) 
-      end
-      if cel.onresize then cel:onresize(ow, oh) end
     end
 
     function queue.dispatch()
