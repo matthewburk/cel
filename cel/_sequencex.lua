@@ -227,31 +227,36 @@ do --rowformation.link
       host[_fluxw] = link[_w]
     end
 
+    local edge
+
     --set _y
     if not linker then
       link[_y] = yval <= 0 and 0 or math.floor(yval)
+      edge = link[_y] + link[_h]
+      if edge > host[_fluxminh] then 
+        host[_brace] = link 
+        host[_fluxminh] = edge
+        if host[_fluxh] < edge then
+          host[_fluxh] = edge
+        end
+      end
     else 
+      edge = self:getbraceedge(host, link, linker, xval, yval)
+      if edge > host[_fluxminh] then 
+        host[_brace] = link 
+        host[_fluxminh] = edge
+        if host[_fluxh] < edge then
+          host[_fluxh] = edge
+        end
+      end
       link[_linker] = linker
       link[_xval] = xval
       link[_yval] = yval
       self:dolinker(host, link, linker, xval, yval)
     end
 
-    local edge
-    if linker then 
-      edge = self:getbraceedge(host, link, linker, xval, yval)
-    else
-      edge = link[_y] + link[_h]
-    end
-
     --increase host height to edge
-    if edge > host[_fluxminh] then 
-      host[_brace] = link 
-      host[_fluxminh] = edge
-      if host[_fluxh] < edge then
-        host[_fluxh] = edge
-      end
-    end
+    
 
 
     event:onlink(host, link, index)
@@ -263,9 +268,12 @@ end
 do --rowformation:linker
   local math = math
   function rowformation:linker(host, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh)
-    if linker then
-      local hh, _ = host[_h], nil
+    --if linker then
+      --TODO should be able to use _fluxh always, somehow it can be 0 while h is > 0
+      local hh, hfh = host[_h], host[_fluxh]
+      if hfh > hh then hh = hfh end
       local oh = h
+      local _
       --hw is link.w we ignore return x and w becuase the linker must not alter them
       _, y, _, h = linker(w, hh, 0, y, w, h, xval, yval, minw, maxw, minh, maxh)
       y = math.modf(y)
@@ -276,7 +284,7 @@ do --rowformation:linker
       --end
 
       if y + h > hh then y = hh - h end
-    end
+    --end
     
     if y < 0 then y = 0 end
 
@@ -353,15 +361,17 @@ do --rowformation.movelink
     if not(x ~= ox or y ~= oy or w ~= ow or h ~= oh) then return link end
 
     --always apply the rowformation linker
-    x, y, w, h = self:linker(host, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
-                             x, y, w, h, minw, maxw, minh, maxh)
+    if rawget(link, _linker) then
+      x, y, w, h = self:linker(host, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
+                               x, y, w, h, minw, maxw, minh, maxh)
+    end
     if w < minw then w = minw end
     if w > maxw then w = maxw end
     if h < minh then h = minh end
     if h > maxh then h = maxh end    
 
     --don't need to check x, it can't change, enforced by self:linker
-    if y ~= oy then y = math.modf(y); link[_y] = y; end
+    if y ~= oy then y = math.max(0, math.modf(y)); link[_y] = y; end
     if w ~= ow then w = math.floor(w); link[_w] = w; end
     if h ~= oh then h = math.floor(h); link[_h] = h; end
 

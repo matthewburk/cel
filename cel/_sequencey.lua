@@ -231,26 +231,36 @@ do --colformation.link
       host[_fluxh] = host[_fluxh] + link[_h] + host[_gap]
     end
 
+    local edge
+
     --set _x
     if not linker then
       link[_x] = xval <= 0 and 0 or math.floor(xval)
+      edge = link[_x] + link[_w]
+      if edge > host[_fluxminw] then 
+        host[_brace] = link 
+        host[_fluxminw] = edge
+        if host[_fluxw] < edge then
+          host[_fluxw] = edge
+        end
+      end
     else 
+      edge = self:getbraceedge(host, link, linker, xval, yval)
+      if edge > host[_fluxminw] then 
+        host[_brace] = link 
+        host[_fluxminw] = edge
+        if host[_fluxw] < edge then
+          host[_fluxw] = edge
+        end
+      end
       link[_linker] = linker
       link[_xval] = xval
       link[_yval] = yval
       self:dolinker(host, link, linker, xval, yval)
     end
 
-    local edge = self:getbraceedge(host, link, linker, xval, yval)
-
     --increase host width to edge
-    if edge > host[_fluxminw] then 
-      host[_brace] = link 
-      host[_fluxminw] = edge
-      if host[_fluxw] < edge then
-        host[_fluxw] = edge
-      end
-    end
+    
 
     event:onlink(host, link, index)
 
@@ -261,21 +271,25 @@ end
 do --colformation:linker
   local math = math
   function colformation:linker(host, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh)
-    assert(linker)
-    local hw, _ = host[_w], nil
+    --assert(linker)
+    local hw, hfw = host[_w], host[_fluxw]
+    if hfw > hw then hw = hfw end
     local ow = w
+    local _
     --hh is link.h we ignore return y and h becuase the linker must not alter them
     x, _, w, _ = linker(hw, h, x, 0, w, h, xval, yval, minw, maxw, minh, maxh)
     x = math.modf(x)
     w = math.floor(w)
 
-    if w ~= ow then
+    --if w ~= ow then
       if w > hw then w = hw end
-    end
+    --end
 
     if x + w > hw then x = hw - w end
+
+    if x < 0 then x = 0 end
     
-    return math.max(x, 0), link[_y], w, h
+    return x, link[_y], w, h
   end
 end
 
