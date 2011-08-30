@@ -8,8 +8,8 @@ return function(_ENV)
 
     textcolor = cel.color.encodef(.8, .8, .8),
     fillcolor = false,
-    linecolor = false,
-    linewidth = false,
+    linecolor = cel.color.encodef(.8, .8, .8),
+    linewidth = 1,
     radius = radius,
 
     layout = {

@@ -166,7 +166,7 @@ do --slotformation.dolinker
 end
 
 do --slotformation.linklimitschanged
-  function slotformation:linklimitschanged(host, link, minw, maxw, minh, maxh)
+  function slotformation:linklimitschanged(host, link, ominw, omaxw, ominh, omaxh)
     if link ~= host[_slotlink] then
       return
     end
@@ -175,8 +175,8 @@ do --slotformation.linklimitschanged
     local w = margin.w
     local h = margin.h
 
-    minw = math.max(minw + margin.w, host[_defaultminw])
-    minh = math.max(minh + margin.h, host[_defaultminh])
+    local minw = math.max((link[_minw] or 0) + margin.w, host[_defaultminw])
+    local minh = math.max((link[_minh] or 0) + margin.h, host[_defaultminh])
 
     --TODO this will break if adding margin exceeds maxdim
     host[_metacel]:setlimits(host, minw, host[_maxw], minh, host[_maxh])
@@ -323,6 +323,7 @@ end
 
 local metacel, metatable = metacel:newmetacel('slot')
 
+--TODO remove this function make all links private
 do --metatable.get
   function metatable.get(slot)
     return rawget(slot, _links)

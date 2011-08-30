@@ -58,6 +58,7 @@ do --ENV.hosts iterates over all hosts of a cel
   end
 end
 
+--TODO use a refresh bit on a cel, don't use the refreshtable
 do --ENV.refresh
   refreshtable = {}
 
@@ -85,8 +86,8 @@ do --ENV.move
       return host[_formation]:movelink(host, cel, x, y, w, h)
     else
       local ox, oy, ow, oh = cel[_x], cel[_y], cel[_w], cel[_h]
-      local minw, maxw = cel[_minw] or 0, cel[_maxw] or maxdim
-      local minh, maxh = cel[_minh] or 0, cel[_maxh] or maxdim
+      local minw, maxw = cel[_minw], cel[_maxw]
+      local minh, maxh = cel[_minh], cel[_maxh]
 
       if w ~= ow or h ~= oh then 
         if w < minw then w = minw end
@@ -152,24 +153,34 @@ end
 
 
 do --ENV.linkall
-  local linkparams = setmetatable({}, {__mode = 'k'})
-
   function linkall(host, t)
     linkall = function(host, t)
       event:wait()
+
+      local linker = t.link
+      local xval, yval, option
+
+      if linker then
+        if type(linker) == 'table' then
+          linker, xval, yval, option = unpack(linker, 1, 4)
+        elseif type(linker) ~= 'function' then
+          linker = linkers[linker]
+        end
+      end
 
       for i=1, #t do
         local link = t[i]
         local linktype = type(link)
 
         if linktype == 'function' then
-          link(host, t)
+          link(host, t, linker, xval, yval, option)
         elseif linktype == 'string' then
-          host[_metacel]:__celfromstring(host, link):link(host)
+          --TODO __celfromstring should merge with compile entry
+          host[_metacel]:__celfromstring(host, link):link(host, linker, xval, yval, option)
         elseif linktype == 'table' and link[_metacel] then --if link is a cel
-          link:link(host, link[_linker], link[_xval], link[_yval])
+          link:link(host, linker, xval, yval, option)
         else
-          host[_metacel]:compileentry(host, link, linktype)
+          host[_metacel]:compileentry(host, link, linktype, linker, xval, yval, option)
         end
       end
 
@@ -181,58 +192,51 @@ do --ENV.linkall
 end
 
 do --ENV.describe
-  local descriptions = setmetatable({}, {__mode = 'kv'})
 
-  function describe(cel, host, gx, gy, gl, gt, gr, gb)
-    gx = gx + cel[_x] --TODO clamp to maxint
-    gy = gy + cel[_y] --TODO clamp to maxint
+  local previous
+  local current
 
-    if gx > gl then gl = gx end
-    if gy > gt then gt = gy end
+  local cache = setmetatable({}, {__mode='kv'})
 
-    if gx + cel[_w] < gr then gr = gx + cel[_w] end
-    if gy + cel[_h] < gb then gb = gy + cel[_h] end
+  local function getdescription(cel)
+    local t = cache[cel]
+    t = t or {
+      host = false,
+      id = 0,
+      metacel = cel[_metacel][_name],
+      face = false,
+      x = 0,
+      y = 0,
+      w = 0,
+      h = 0,
+      mousefocus = false,
+      mousefocusin = false,
+      focus = false,
+      flowcontext = false,
+      clip = { l=0, r=0, t=0, b=0 },
+    }
 
-    if gr <= gl or gb <= gt then return end
+    --cache[cel]=t
+    return t
+  end
 
-    local t = descriptions[cel]
-
-    if t then
-      t.id = cel[_celid]
-      t.host = host
-      t.x = gx
-      t.y = gy
-      t.w = cel[_w]
-      t.h = cel[_h]
-      t.mousefocus = false
-      t.mousefocusin = false
-      t.focus = false
-      t.flowcontext = flows[cel] and flows[cel].context
-      t.clip.l = gl
-      t.clip.r = gr
-      t.clip.t = gt
-      t.clip.b = gb
-
-      for i = 1, #t do t[i] = nil end
-    else
-      --print 'loading new description'
-      t = {
-        id = cel[_celid],
-        metacel = cel[_metacel][_name],
-        face = cel[_face] or cel[_metacel][_face],
-        host = host,
-        x = gx,
-        y = gy,
-        w = cel[_w],
-        h = cel[_h],
-        mousefocus = false,
-        mousefocusin = false,
-        focus = false,
-        flowcontext = flows[cel] and flows[cel].context,
-        clip = {l = gl, r = gr, t = gt, b = gb},
-      }
-      descriptions[cel] = t
-    end
+  --describe for all cels
+  local function __describe(cel, host, gx, gy, gl, gt, gr, gb, t)
+    t.host = host
+    t.id = cel[_celid]
+    t.face = cel[_face] or cel[_metacel][_face]
+    t.x = gx
+    t.y = gy
+    t.w = cel[_w]
+    t.h = cel[_h]
+    t.mousefocus = false
+    t.mousefocusin = false
+    t.focus = false
+    t.flowcontext = flows[cel] and flows[cel].context
+    t.clip.l = gl
+    t.clip.r = gr
+    t.clip.t = gt
+    t.clip.b = gb
 
     if mouse[_focus][cel] then
       t.mousefocusin = true
@@ -247,10 +251,44 @@ do --ENV.describe
     end
 
     if cel[_metacel].__describe then cel[_metacel]:__describe(cel, t) end
+  end
 
-    (rawget(cel, _formation) or stackformation):describelinks(cel, t, gx, gy, gl, gt, gr, gb)
+  function describe(cel, host, gx, gy, gl, gt, gr, gb)
+    gx = gx + cel[_x] --TODO clamp to maxint
+    gy = gy + cel[_y] --TODO clamp to maxint
+
+    if gx > gl then gl = gx end
+    if gy > gt then gt = gy end
+
+    if gx + cel[_w] < gr then gr = gx + cel[_w] end
+    if gy + cel[_h] < gb then gb = gy + cel[_h] end
+
+    if gr <= gl or gb <= gt then return end
+
+    local t = getdescription(cel)
+
+    __describe(cel, host, gx, gy, gl, gt, gr, gb, t)
+
+    local formation =  rawget(cel, _formation) or stackformation
+    formation:describelinks(cel, t, gx, gy, gl, gt, gr, gb)
 
     return t
+  end
+
+  do --stackformation.describelinks
+    function stackformation:describelinks(cel, host, gx, gy, gl, gt, gr, gb)
+      local i = 1
+      local n = #host
+      local link = rawget(cel, _links)
+      while link do
+        host[i] = describe(link, host, gx, gy, gl, gt, gr, gb)
+        i = host[i] and i + 1 or i
+        link = link[_next]
+      end
+      for i = i, n do
+        host[i]=nil
+      end
+    end
   end
 end
 
@@ -351,8 +389,8 @@ do --ENV.testlinker
     if rawget(host, _formation) then
       return host[_formation]:testlinker(host, cel, linker, xval, yval)
     else
-      local minw, maxw = cel[_minw] or 0, cel[_maxw] or maxdim
-      local minh, maxh = cel[_minh] or 0, cel[_maxh] or maxdim
+      local minw, maxw = cel[_minw], cel[_maxw]
+      local minh, maxh = cel[_minh], cel[_maxh]
 
       x, y, w, h = linker(host[_w], host[_h], x, y, w, h, xval, yval, minw, maxw, minh, maxh)
 
@@ -366,17 +404,6 @@ do --ENV.testlinker
   end
 end
 
-do --stackformation.describelinks
-  function stackformation:describelinks(cel, host, gx, gy, gl, gt, gr, gb)
-    local i = 1
-    local link = rawget(cel, _links)
-    while link do
-      host[i] = describe(link, host, gx, gy, gl, gt, gr, gb)
-      i = host[i] and i + 1 or i
-      link = link[_next]
-    end
-  end
-end
 
 do --stackformation.links
   local function nextlink(host, link)
@@ -393,8 +420,13 @@ end
 do --stackformation.dolinker
   function stackformation:dolinker(host, link, linker, xval, yval)
     local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
-    local minw, maxw, minh, maxh = link[_minw] or 0, link[_maxw] or maxdim, link[_minh] or 0, link[_maxh] or maxdim
+    local minw, maxw, minh, maxh = link[_minw], link[_maxw], link[_minh], link[_maxh]
     local x, y, w, h = linker(host[_w], host[_h], ox, oy, ow, oh, xval, yval, minw, maxw, minh, maxh)
+
+    assert(minw)
+    assert(maxw)
+    assert(minh)
+    assert(maxh)
 
     if w ~= ow or h ~= oh then
       if w < minw then w = minw end
@@ -468,22 +500,25 @@ end
 
 do --metacel.new
   local floor = math.floor
+  --[[
   local _x, _y, _w, _h = _x, _y, _w, _h
   local _minw, _maxw, _minh, _maxh = _minw, _maxw, _minh, _maxh
   local _metacel = _metacel
   local _face = _face
   local setmetatable = setmetatable
+  --]]
   local celid = 1
+
   function metacel:new(w, h, face, minw, maxw, minh, maxh)
     local cel = {
       [_x] = 0,
       [_y] = 0,
       [_w] = w and floor(w) or 0,
       [_h] = h and floor(h) or 0,
-      [_minw] = minw and floor(minw),
-      [_maxw] = maxw and floor(maxw),
-      [_minh] = minh and floor(minh),
-      [_maxh] = maxh and floor(maxh),
+      [_minw] = minw and floor(minw) or 0,
+      [_maxw] = maxw and floor(maxw) or 2^31-1,
+      [_minh] = minh and floor(minh) or 0,
+      [_maxh] = maxh and floor(maxh) or 2^31-1,
       [_metacel] = self,
       [_face] = self[_face][face],
       [_celid] = celid
@@ -513,6 +548,7 @@ do --metacel.compile
     cel.onfocus = t.onfocus
     cel.onkeydown = t.onkeydown
     cel.onkeyup = t.onkeyup
+    --[[
     if t.link then
       local linker, xval, yval
 
@@ -530,6 +566,7 @@ do --metacel.compile
       cel[_xval] = xval
       cel[_yval] = yval
     end
+    --]]
     linkall(cel, t)
 
     event:signal()
@@ -567,7 +604,7 @@ do --metacel.newfactory
 
     local factory = {}
 
-    M[metacel[_name]] = factory 
+    --M[metacel[_name]] = factory 
 
     if metatable then
       for k, v in pairs(metatable) do
@@ -637,10 +674,10 @@ do --metacel.newmetacel
       elseif k == 'xval' then return rawget(t, _xval)
       elseif k == 'yval' then return rawget(t, _yval)
       elseif k == 'linker' then return rawget(t, _linker)
-      elseif k == 'minw' then return rawget(t, _minw) or 0
-      elseif k == 'maxw' then return rawget(t, _maxw) or maxdim
-      elseif k == 'minh' then return rawget(t, _minh) or 0
-      elseif k == 'maxh' then return rawget(t, _maxh) or maxdim 
+      elseif k == 'minw' then return rawget(t, _minw)
+      elseif k == 'maxw' then return rawget(t, _maxw)
+      elseif k == 'minh' then return rawget(t, _minh)
+      elseif k == 'maxh' then return rawget(t, _maxh)
       elseif k == 'l' then return t[_x]
       elseif k == 'r' then return t[_x] + t[_w]
       elseif k == 't' then return t[_y]
@@ -717,7 +754,9 @@ do --metacel.setlimits
     --TODO changing the limits should cause the linker to run if 
     --the current w/h is restrained by the limits, but the linker
     --would grow/shrink it if it could
-    if cel[_metacel] ~= self then  --TODO think of a better way to make sure this gets to right metacel
+    --
+    --
+    if cel[_metacel] ~= self then
       return cel[_metacel]:setlimits(cel, minw, maxw, minh, maxh, nw, nh)
     end
 
@@ -726,10 +765,19 @@ do --metacel.setlimits
     minh = max(floor(minh or 0), 0)
     maxh = max(floor(maxh or maxdim), minh)
 
-    if minw == 0 then cel[_minw] = nil else cel[_minw] = minw end
-    if minh == 0 then cel[_minh] = nil else cel[_minh] = minh end
-    if maxw == maxdim then cel[_maxw] = nil else cel[_maxw] = maxw end
-    if maxh == maxdim then cel[_maxh] = nil else cel[_maxh] = maxh end
+    local ominw = cel[_minw]
+    local omaxw = cel[_maxw]
+    local ominh = cel[_minh]
+    local omaxh = cel[_maxh]
+
+    cel[_minw] = minw
+    cel[_maxw] = maxw
+    cel[_minh] = minh
+    cel[_maxh] = maxh
+
+    if not (ominw ~= minw or omaxw ~= maxw or ominh ~= minh or omaxh ~= maxh) then
+      return
+    end
 
     local w = nw or cel[_w]
     local h = nh or cel[_h]
@@ -745,7 +793,7 @@ do --metacel.setlimits
     if host then
       local formation = rawget(host, _formation)
       if formation and formation.linklimitschanged then
-        formation:linklimitschanged(host, cel, minw, maxw, minh, maxh)
+        formation:linklimitschanged(host, cel, ominw, omaxw, ominh, omaxh)
       end
     end
 
@@ -942,15 +990,15 @@ do --metatable.relink
     cel[_xval] = nil
     cel[_yval] = nil
 
-    --TODO must have formation:relink like formation:link so it can enforce linker
-    --TODO more important to have formation:relink so it can know that the relink is
-    --a command and it should accomodate instead of ignoring linker changes to 
-    --height like sequence.y does
-    if linker then
-      cel[_linker] = linker
-      cel[_xval] = xval
-      cel[_yval] = yval
-      dolinker(host, cel, linker, xval, yval)
+    if host[_formation] and host[_formation].relink then
+      host[_formation]:relink(host, cel, linker, xval, yval)
+    else
+      if linker then
+        cel[_linker] = linker
+        cel[_xval] = xval
+        cel[_yval] = yval
+        dolinker(host, cel, linker, xval, yval)
+      end
     end
 
     event:signal()
@@ -1535,8 +1583,11 @@ do --metatable.raise
     local host = rawget(cel, _host)
 
     if not host then return cel end
-    --noop for anything other than stackformation
-    if rawget(host, _formation) then return cel end
+
+    local formation = rawget(host, _formation)
+    if formation and formation.pick then 
+      return cel 
+    end
 
     if rawget(cel, _next) then
       cel[_next][_prev] = rawget(cel, _prev)
@@ -1571,8 +1622,10 @@ do --metatable.sink
 
     if not host then return cel end
 
-    --noop for anything other than stackformation
-    if rawget(host, _formation) then return cel end
+    local formation = rawget(host, _formation)
+    if formation and formation.pick then 
+      return cel 
+    end
 
     --TODO this prevents execution when host is not stackformation as well, but its not explicit enough
     if not rawget(cel, _next) then return cel end 
@@ -1618,10 +1671,10 @@ do --metatable.__index
     elseif k == 'xval' then return rawget(t, _xval)
     elseif k == 'yval' then return rawget(t, _yval)
     elseif k == 'linker' then return rawget(t, _linker)
-    elseif k == 'minw' then return rawget(t, _minw) or 0
-    elseif k == 'maxw' then return rawget(t, _maxw) or maxdim
-    elseif k == 'minh' then return rawget(t, _minh) or 0
-    elseif k == 'maxh' then return rawget(t, _maxh) or maxdim
+    elseif k == 'minw' then return rawget(t, _minw)
+    elseif k == 'maxw' then return rawget(t, _maxw)
+    elseif k == 'minh' then return rawget(t, _minh)
+    elseif k == 'maxh' then return rawget(t, _maxh)
     elseif k == 'l' then return t[_x]
     elseif k == 'r' then return t[_x] + t[_w]
     elseif k == 't' then return t[_y]
@@ -1644,6 +1697,11 @@ function metatable:dump()
   print(self, F('x%d', self.x), F('y%d', self.y), F('w%d', self.w), F('h%d', self.h))
   print(self, F('minw%d', self.minw), F('maxw%d', self.maxw))
   print(self, F('minh%d', self.minh), F('maxh%d', self.maxh))
+  print(self, 'PAIRS')
+  for k, v in pairs(self) do
+    print(' ', k, v)
+  end
+
   if self[_metacel].__dump then
     self[_metacel]:__dump(self)
   end

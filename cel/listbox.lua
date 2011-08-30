@@ -24,7 +24,7 @@ THE SOFTWARE.
 local cel = require 'cel'
 
 local metacel, metatable = cel.scroll.newmetacel('listbox')
-metacel['.itemlist'] = cel.sequence.y.newmetacel('listbox.itemlist')
+metacel['.itemlist'] = cel.col.newmetacel('listbox.itemlist')
 
 local _listbox = {}
 local _items = {}
@@ -334,6 +334,9 @@ do
   end
 end
 
+--TODO why does listbox.big test take twice as long as col.big test
+--
+--
 function metacel:onkey(listbox, state, key, intercepted)
   --[[do it even if key was already intercepted
   if state > 0 then

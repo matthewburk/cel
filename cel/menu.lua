@@ -32,7 +32,7 @@ local _showtask = {}
 local _layout = {}
 local _root = {}
 
-local metacel, metatable = cel.sequence.y.newmetacel('menu')
+local metacel, metatable = cel.col.newmetacel('menu')
 metacel['.slot'] = cel.slot.newmetacel('menu.slot')
 
 local layout = {

@@ -70,7 +70,7 @@ end
 function metatable.adddefaultcontrols(window)
   local minbutton = cel.button.new(20, 20)
   local maxbutton = cel.button.new(24, 24)
-  local seq = cel.sequence.x.new()
+  local seq = cel.row.new()
   minbutton:link(seq, 'bottom')
   maxbutton:link(seq)
   window:addcontrols(seq, 'right')

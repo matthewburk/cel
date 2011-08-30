@@ -518,7 +518,6 @@ do --metacel.new, metacel.compile
     grid[_sortedrows] = {}
 
     grid[_minw] = minw
-    grid[_maxw] = nil
     grid[_minh] = 0
     grid[_maxh] = 0
 

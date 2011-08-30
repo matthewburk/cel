@@ -198,6 +198,7 @@ do --cel.describe, cel.printdescription
     write(indent, format('%d %s[%s] {x:%d y:%d w:%d h:%d id:%s [l:%d t:%d r:%d b:%d]',
     t.id, t.metacel or 'virtual', tostring(t.face[_name]) or t.metacel or '', t.x, t.y, t.w, t.h, tostring(t.id),
     t.clip.l, t.clip.t, t.clip.r, t.clip.b))
+    --[[
     if t.mouse then write(',mouse') end
     if t.keyboard then write(',keyboard') end
     if t.focus then 
@@ -206,6 +207,7 @@ do --cel.describe, cel.printdescription
       if t.focus.keyboard then write('keyboard') end
       write(']') 
     end
+    --]]
 
     if #t > 0 then
         write('\n')
@@ -731,13 +733,14 @@ do
 end
 
 ----[[ TODO load on demand
-M.sequence = {
-  x = require('cel._sequencex')(_ENV, M),
-  y = require('cel._sequencey')(_ENV, M),
-}
-
+M.col = require('cel._col')(_ENV, M)
+M.row = require('cel._row')(_ENV, M)
 M.slot = require('cel._slot')(_ENV, M)
 M.grid = require('cel._grid')(_ENV, M)
+--[[
+M.sequence = {
+  y = require('cel._sequencey')(_ENV, M)
+}
 --]]
 
 
@@ -760,7 +763,7 @@ function M.newnamespace(out)
   end
 
   local __index = function(namespace, k)
-    print('namespace __index', namespace, k)
+    --print('namespace __index', namespace, k)
     local v = M[k]
     if M.isfactory(v) then
       namespace[k] = setmetatable({}, {

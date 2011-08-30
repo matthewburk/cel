@@ -4,8 +4,13 @@ return function(_ENV)
   setfenv(1, setmetatable(_ENV, {__index=_G}))
 
   function _ENV.drawlinks(t)
+    local _t = t
     for i = #t,1,-1 do
       local t = t[i]
+      if not t then
+        print(_t.metacel, _t.face, _t.id, i)
+        cel.printdescription()
+      end
       if t.face.draw then t.face:draw(t) end
     end
   end
@@ -25,7 +30,7 @@ return function(_ENV)
 
   local face = cel.face {
     metacel = 'cel',
-    font = cel.loadfont('monospace:bold', 15),
+    font = cel.loadfont('code'),
     textcolor = cel.color.encodef(1, 1, 1),
     fillcolor = false,
     linecolor = false,

@@ -3,7 +3,7 @@ local cel = require 'cel'
 return function(root)
   cel.face {
     metacel = 'sequence.y',
-    fillcolor = cel.color.rgb(244, 0, 0),
+    fillcolor = cel.color.encode(244, 0, 0),
   }
 
   root {

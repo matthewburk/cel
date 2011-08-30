@@ -8,11 +8,11 @@ return function(root)
         window:adddefaultcontrols()
         WINDOW = window
       end,
+      link = {'edges'},
+
       cel.listbox {
-        link = {'edges'},
         --cel.window.new(300, 300),
         function(self)
-          self:settopborder(cel.textbutton.new('the top'))
           local _new = cel.textbutton.new
           local new = function(...)
             local button = _new(...)
@@ -21,8 +21,11 @@ return function(root)
           end
           new = cel.textbutton.new
           local width = cel.getlinker('width') 
-          for i = 1, 3000 do
-            new('hello'):link(self, 'right')
+          for i = 1, 100 do
+            new('The purpose of this test is to see how wrapping text affects performace when laid out in a sequence.'):link(self, width)
+            new('It seems that the sequence will resize a few times before settling on a width.'):link(self, width)
+            cel.textbutton.new(tostring(self:len())):link(self, width)
+            cel.window.new(200, 200):adddefaultcontrols():link(self)
           end
         --self.onchange = function(self, item, index, change)
         --  print(self, item, index, change)

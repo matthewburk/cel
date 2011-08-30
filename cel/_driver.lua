@@ -88,7 +88,7 @@ function driver.timer(ms)
   local elapsed = ms - timer.millis 
   timer.millis = ms
 
-  if ms - mark > 10 then
+  if ms - mark > 1 then
     mark = ms
   else
     return

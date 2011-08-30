@@ -102,7 +102,7 @@ do
     face = self:getface(face)
     local tabpanel = _new(self, w, h, face)
     local mutex = cel.mutexpanel.new()
-    local tabs = cel.sequence.x.new()
+    local tabs = cel.row.new()
 
     local col = cel.col.new()
 
