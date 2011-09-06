@@ -3,32 +3,28 @@ local cel = require 'cel'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local face = cel.face {
-    metacel = 'text',
+  local face = cel.getmetaface('text')
+  face.textcolor = cel.color.encodef(.8, .8, .8)
+  face.fillcolor = false
+  face.linecolor = false
+  face.linewidth = false
 
-    textcolor = cel.color.encodef(.8, .8, .8),
-    fillcolor = false,
-    linecolor = cel.color.encodef(.8, .8, .8),
-    linewidth = 1,
-    radius = radius,
-
-    layout = {
-      padding = {
-        l = function(w, h, font) return font.bbox.ymax * .1 end,
-      },
+  face.layout = {
+    padding = {
+      l = function(w, h, font) return font.bbox.ymax * .1 end,
     },
   }
 
-  function face:draw(t)
-    local fv = self
-
+  function face.draw(f, t)
     clip(t.clip)
-    
-    if setcolor(fv.fillcolor) then
-      fillrect(t.x, t.y, t.w, t.h, fv.radius)
+
+    if f.fillcolor then
+      setcolor(f.fillcolor)
+      fillrect(t.x, t.y, t.w, t.h, f.radius)
     end
 
-    if t.text and setcolor(fv.textcolor) then
+    if f.textcolor and t.text then
+      setcolor(f.textcolor)
       for i, line in ipairs(t.lines) do
         --uncomment this optimization later
         --if t.y + line.y < t.clip.b  and t.y + line.y + line.h > t.clip.t then
@@ -37,15 +33,14 @@ return function(_ENV)
       end
     end
 
-    if fv.linewidth and setcolor(fv.linecolor) then
-      setlinewidth(fv.linewidth)
-      strokerect(t.x, t.y, t.w, t.h, fv.radius)
+    if f.linewidth and f.linecolor then
+      setlinewidth(f.linewidth)
+      setcolor(f.linecolor)
+      strokerect(t.x, t.y, t.w, t.h, f.radius)
     end
 
     return drawlinks(t)
   end
-
-  indexvariations(face) 
 end
 
 

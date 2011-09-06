@@ -307,7 +307,7 @@ do --metatable.newcol
 end
 
 do --metatable.newrow
-  local metacel = metacel:newmetacel('grid.row')
+  local metacel = _ENV.metacel:newmetacel('grid.row')
 
   function metacel:__link(row, link, linker, xval, yval, index)
     local slot = row[_links][index or 1] or row[_links][1]
@@ -452,12 +452,8 @@ do --metatable.flux
 end
 
 local layout = {
-  rowface = M.face {
-    metacel = 'grid.row'
-  },
-  slotface = M.face {
-    metacel = 'grid.slot',
-  } 
+  rowface = M.getmetaface('grid.row'),
+  slotface = M.getmetaface('grid.slot'),
 }
 
 local function colrowtuple(col, row)

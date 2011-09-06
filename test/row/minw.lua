@@ -4,7 +4,7 @@ return function(root)
 
   local new = cel.textbutton.new
 
-  local face = cel.face.get()
+  local face = cel.getmetaface('cel')
 
   local linker = cel.composelinker('width', 'center')
 

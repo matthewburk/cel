@@ -121,6 +121,10 @@ function metatable.getstate(window)
   return window[_state] or 'normal'
 end
 
+function metatable.getclientrect()
+  return self[_client]:pget('x', 'y', 'w', 'h')
+end
+
 local function onrestored(window)
   local oldstate = window[_state]
   window[_state] = nil
@@ -378,6 +382,16 @@ do
     window = window or metacel:new(t.w, t.h, t.title, t.face)
     window.onchange = t.onchange
     return _compile(self, t, window)
+  end
+
+  local _newmetacel = metacel.newmetacel
+  function metacel:newmetacel(name)
+    local newmetacel, metatable = _newmetacel(self, name)
+    newmetacel['.handle'] = metacel['.handle']:newmetacel(name .. '.handle')
+    newmetacel['.client'] = metacel['.client']:newmetacel(name .. '.client')
+    newmetacel['.border'] = metacel['.border']:newmetacel(name .. '.border')
+    newmetacel['.corner'] = metacel['.corner']:newmetacel(name .. '.corner')
+    return newmetacel, metatable
   end
 end
 

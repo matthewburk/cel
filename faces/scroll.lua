@@ -3,147 +3,170 @@ local cel = require 'cel'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local face = cel.face {
-    metacel = 'scroll',
-    textcolor = false,
-    fillcolor = false,
-    linecolor = false,
-    linewidth = false,
-    radius = false,
+  local scroll = cel.getmetaface('scroll')
+  scroll.textcolor = false
+  scroll.fillcolor = false
+  scroll.linecolor = false
+  scroll.linewidth = false
 
-    flow = {
-      scroll = cel.flows.linear(100);
-      showybar = cel.flows.linear(500);
-      hideybar = cel.flows.linear(300);
-      --showxbar = cel.flows.linear(500);
-      --hidexbar = cel.flows.linear(100);
-    };
+  scroll.flow = {
+    scroll = cel.flows.linear(100);
+    showybar = cel.flows.linear(500);
+    hideybar = cel.flows.linear(100);
+    showxbar = cel.flows.linear(500);
+    hidexbar = cel.flows.linear(100);
   }
 
+  local size = 20
+  scroll.layout = {
+    stepsize = 20,
+    ybar = {
+      align = 'right',
+      size = size, 
+      track = {
+        size = size,
+        link = {'edges', nil, size},
+        slider = {
+          minsize = 20,
+          size = size,
+        };
+      },
+      decbutton = {
+        size = size,
+        link = {'width.top'},
+      },
+      incbutton = {
+        size = size,
+        link = {'width.bottom'},
+      },
+    },
+    xbar = {
+      align = 'bottom',
+      size = size,
+      track = {
+        size = size,
+        link = {'edges', size, nil},
+        slider = {
+          minsize = 10,
+          size = size,
+        },
+      },
+      decbutton = {
+        size = size,
+        link = {'left.height'},
+      },
+      incbutton = {
+        size = size,
+        link = {'right.height'},
+      },
+    },
+  }
+
+  scroll.draw = function(f, t) return drawlinks(t) end
+
+  --scrollbar
+  local scrollbar = cel.getmetaface('scroll.bar')
+  scrollbar.fillcolor = cel.color.encodef(.4, .4, .4)
+
+  --track
+  local track = cel.getmetaface('scroll.bar.track')
+  track.select = false
+  track.draw = scroll.draw
+
+  --slider
+  local slider = cel.getmetaface('scroll.bar.slider')
+  slider.fillcolor = cel.color.encodef(.2, .2, .2)
+  slider.linecolor = cel.color.encodef(0, 1, 1)
+  slider.accentcolor = cel.color.encodef(0, 1, 1)
+  slider.select = false
+
+  function slider.draw(f, t, size)
+    local size = size or t.host.host.size
+
+    clip(t.clip)
+
+    if f.fillcolor then
+      setcolor(f.fillcolor)
+      fillrect(t.x, t.y, t.w, t.h, f.radius)
+    end
+
+    if f.linewidth and f.linecolor then
+      setlinewidth(f.linewidth)
+      setcolor(f.linecolor)
+      strokerect(t.x, t.y, t.w, t.h, f.radius)
+    end
+
+    if f.accentcolor then
+      setcolor(f.accentcolor)
+      save()
+      translate(t.x + t.w/2, t.y + t.h/2)
+      scale(size, size)
+      fillarc(0, 0, .1, 0, 2 * math.pi);
+      restore()
+    end
+
+    return drawlinks(t)
+  end
+
+  --incbutton
+  local incbutton = cel.getmetaface 'scroll.bar.inc'
+  incbutton.fillcolor = cel.color.encodef(.2, .2, .2)
+  incbutton.linecolor = cel.color.encodef(0, 1, 1)
+  incbutton.accentcolor = cel.color.encodef(0, 1, 1)
+  incbutton.draw = function(f, t) return slider.draw(f, t, t.host.size) end
+
   do
-    local scrollbar = cel.face {
-      metacel = 'scroll.bar',
-      --fillcolor = cel.color.encodef(118/255, 151/255, 193/255),
-      --linecolor = cel.color.encodef(178/255, 208/255, 246/255),
+    local face = incbutton
+    face['%pressed'] = face:new {
       fillcolor = cel.color.encodef(.4, .4, .4),
+      linecolor = cel.color.encodef(0, 1, 1),
     }
 
-    do --track
-      cel.face {
-        metacel = 'scroll.bar.track',
-        textcolor = false,
-        fillcolor = false,
-        linecolor = false,
-        linewidth = false,
-        radius = false,
-        draw = function(face, t) return drawlinks(t) end,
+    face['%mousefocusin'] = face:new {
+      fillcolor = cel.color.encodef(.4, .4, .4),
+      linecolor = cel.color.encodef(0, 1, 1),
+    }
+    
+    do
+      local face = face['%mousefocusin']
+
+      face['%pressed'] = face:new {
+        textcolor = cel.color.encodef(.2, .2, .2),
+        fillcolor = cel.color.encodef(0, .8, .8),
+        linecolor = cel.color.encodef(0, 1, 1),
+        linewidth = 2,
       }
     end
+  end
 
-    do --slider
-      local slider = cel.face {
-        metacel = 'scroll.bar.slider',
-        fillcolor = cel.color.encodef(.2, .2, .2),
+  --decbutton
+  local decbutton = cel.getmetaface 'scroll.bar.dec'
+  decbutton.fillcolor = cel.color.encodef(.2, .2, .2)
+  decbutton.linecolor = cel.color.encodef(0, 1, 1)
+  decbutton.accentcolor = cel.color.encodef(0, 1, 1)
+  decbutton.draw = function(f, t) return slider.draw(f, t, t.host.size) end
+
+  do
+    local face = decbutton
+    face['%pressed'] = face:new {
+      fillcolor = cel.color.encodef(.4, .4, .4),
+      linecolor = cel.color.encodef(0, 1, 1),
+    }
+
+    face['%mousefocusin'] = face:new {
+      fillcolor = cel.color.encodef(.4, .4, .4),
+      linecolor = cel.color.encodef(0, 1, 1),
+    }
+    
+    do
+      local face = face['%mousefocusin']
+
+      face['%pressed'] = face:new {
+        textcolor = cel.color.encodef(.2, .2, .2),
+        fillcolor = cel.color.encodef(0, .8, .8),
         linecolor = cel.color.encodef(0, 1, 1),
-        forecolor = cel.color.encodef(0, 1, 1),
+        linewidth = 2,
       }
-
-      function slider:draw(t)
-        local fv = self
-        local size = t.host.host.size
-
-        clip(t.clip)
-
-        if setcolor(fv.fillcolor) then
-          fillrect(t.x, t.y, t.w, t.h, fv.radius)
-        end
-
-        if fv.linewidth and setcolor(fv.linecolor) then
-          setlinewidth(fv.linewidth)
-          strokerect(t.x, t.y, t.w, t.h, fv.radius)
-        end
-
-        if setcolor(fv.forecolor) then
-          save()
-          translate(t.x + t.w/2, t.y + t.h/2)
-          scale(size, size)
-          fillarc(0, 0, .1, 0, 2 * math.pi);
-          restore()
-        end
-
-        return drawlinks(t)
-      end
-    end
-
-    do --incbutton
-      local incbutton = cel.face {
-        metacel = 'scroll.bar.inc',
-        fillcolor = cel.color.encodef(.2, .2, .2),
-        linecolor = cel.color.encodef(0, 1, 1),
-        forecolor = cel.color.encodef(0, 1, 1),
-      }
-
-      function incbutton:draw(t)
-        local fv = self
-        local size = t.host.size
-        local axis = t.host.axis
-
-        clip(t.clip)
-
-        if (t.mousefocusin or t.host.mousefocusin) and setcolor(fv.fillcolor) then
-          fillrect(t.x, t.y, t.w, t.h, fv.radius)
-        end
-
-        if fv.linewidth and setcolor(fv.linecolor) and t.host.mousefocusin then
-          setlinewidth(fv.linewidth)
-          strokerect(t.x, t.y, t.w, t.h, fv.radius)
-        end
-
-        if setcolor(fv.forecolor) then
-          save()
-          translate(t.x + t.w/2, t.y + t.h/2)
-          scale(size, size)
-          fillarc(0, 0, .1, 0, 2 * math.pi);
-          restore()
-        end
-
-        return drawlinks(t)
-      end
-    end
-    do --decbutton
-      local decbutton = cel.face {
-        metacel = 'scroll.bar.dec',
-        fillcolor = cel.color.encodef(.2, .2, .2),
-        linecolor = cel.color.encodef(0, 1, 1),
-        forecolor = cel.color.encodef(0, 1, 1),
-      }
-
-      function decbutton:draw(t)
-        local fv = self
-        local size = t.host.size
-        local axis = t.host.axis
-
-        clip(t.clip)
-
-        if (t.mousefocusin or t.host.mousefocusin) and setcolor(fv.fillcolor) then
-          fillrect(t.x, t.y, t.w, t.h, fv.radius)
-        end
-
-        if fv.linewidth and setcolor(fv.linecolor) and t.host.mousefocusin then
-          setlinewidth(fv.linewidth)
-          strokerect(t.x, t.y, t.w, t.h, fv.radius)
-        end
-
-        if setcolor(fv.forecolor) then
-          save()
-          translate(t.x + t.w/2, t.y + t.h/2)
-          scale(size, size)
-          fillarc(0, 0, .1, 0, 2 * math.pi);
-          restore()
-        end
-
-        return drawlinks(t)
-      end
     end
   end
 end

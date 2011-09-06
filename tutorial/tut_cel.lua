@@ -12,7 +12,6 @@ cel.face {
     --hidexbar = cel.flows.linear(100),
   },
 }
---]]
 
 cel.face {
   name = 'listbox@item',
@@ -20,35 +19,17 @@ cel.face {
   linecolor = false,
   hovercolor = false,
 }
+--]]
 
-cel.face {
-  name = '@divider',
+cel.getmetaface('cel'):new {
   fillcolor = cel.color.encode(255, 0, 255),
   linecolor = false,
-}
-
-cel.face {
-  metacel = 'printbuffer',
-  font = cel.loadfont('fixedsys', 12),
-  linecolor = false,
-  fillcolor = cel.color.encode(255, 255, 255),
-  textcolor = cel.color.encode(0, 0, 0),
-}
-
-cel.face {
-  metacel = 'window',
-  fillcolor = false,  
-}
+}:register('@divider')
 
 local tut = {}
 
 local newboard
 do
-  cel.face {
-    metacel = 'board',
-    color = cel.color.encode(255, 255, 255),
-  }
-
   local metacel, metatable = cel.newmetacel('board')
 
   function metatable.print(board, ...)
@@ -117,21 +98,17 @@ function tut:pause()
   coroutine.yield(true)
 end
 
-cel.face {
-  metacel = 'label',
-  name = '@comment',
+cel.getmetaface('label'):new {
   textcolor = cel.color.encode(0, 100, 0),
+  font = cel.loadfont('monospace:normal:italic', 10),
   fillcolor = false,
-  font = cel.loadfont('monospace:normal:italic', 10)
-}
+}:register('@comment')
 
-cel.face {
-  metacel = 'label',
-  name = '@code',
+cel.getmetaface('label'):new {
   textcolor = cel.color.encodef(.05, .05, .05),
+  font = cel.loadfont('code', 14),
   fillcolor = false,
-  font = cel.loadfont('code', 14)
-}
+}:register('@code')
 
 local function loadtut(tut, name)
   tut.window:settitle(name)

@@ -26,6 +26,7 @@ local cel = require 'cel'
 local _subject = {}
 local _bucket = {}
 local _links = {}
+local _linkparams = {}
 local meta, metatable = cel.newmetacel('mutexpanel')
 
 do
@@ -55,12 +56,12 @@ function metatable:clear(link)
   return self
 end
 
-function metatable:show(link, ...)
+function metatable:show(link)
   if self[_subject] then
     self[_subject]:link(self[_bucket])
   end
   self[_subject] = link
-  link:link(self, ...)
+  link:link(self, link[_linkparams])
   return self
 end
 
@@ -68,7 +69,8 @@ function meta:__link(mutexpanel, link, linker, xval, yval, option)
   mutexpanel[_links][link] = option or link
 
   if link ~= mutexpanel[_subject] then
-    return mutexpanel[_bucket], linker, xval, yval
+    link[_linkparams] = {linker, xval, yval}
+    return mutexpanel[_bucket]
   end
 end
 

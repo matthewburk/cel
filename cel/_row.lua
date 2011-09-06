@@ -470,7 +470,9 @@ function rowformation:linker(row, link, linker, xval, yval, x, y, w, h, minw, ma
     if hw > slot.w and w ~= hw then hw = slot.w end 
     if w > hw then w = hw end
     if x + w > hw then x = hw - w end
-    if x < 0 then x = 0 end
+    if x < 0 or (not slot.minw) or slot.minw <= w then
+      x = 0
+    end
   end
 
   if h > hh then h = hh end
@@ -491,7 +493,6 @@ function rowformation:linklimitschanged(row, link, ominw, omaxw, ominh, omaxh)
 
   local doreflex = false
 
-  --[[
   if slot.flex > 0 and not slot.minw then
     local original = links.minw
     links.minw = links.minw - (ominw or 0) 
@@ -501,10 +502,7 @@ function rowformation:linklimitschanged(row, link, ominw, omaxw, ominh, omaxh)
       links.reform = true
       doreflex = true
     end
-  end
-  --]]
-  
-  if slot.flex == 0 then
+  elseif slot.flex == 0 then
     if slot.w < link[_minw] then
       links.minw = links.minw - slot.w
       slot.w = link[_minw]

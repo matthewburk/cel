@@ -3,104 +3,88 @@ local cel = require 'cel'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local window = cel.face {
-    metacel = 'window',
-    textcolor = false,
-    fillcolor = false,
-    linecolor = cel.color.encodef(.2, .2, .2),
-    linewidth = 4,
-    radius = radius,
+  local face = cel.getmetaface('window')
+  face.textcolor = false
+  face.fillcolor = false
+  face.linecolor = cel.color.encodef(.2, .2, .2)
+  face.linewidth = 4
+  face.radius = false
 
-    flow = {
-      minimize = cel.flows.linear(200),
-      maximize = cel.flows.linear(200),
-      restore = cel.flows.linear(200),
-    };
-
-    variation = {
-      focus = {
-        linecolor = cel.color.encodef(0, 1, 1),
-      },
-      mousefocusin = {
-        linecolor = cel.color.encodef(.4, .4, .4),
-      },
-    },
+  face.flow = {
+    minimize = cel.flows.linear(2000),
+    maximize = cel.flows.linear(200),
+    restore = cel.flows.linear(200),
   }
 
-  local drawcel = cel.face.get('cel').draw
+  face['%focus'] = face:new {
+    linecolor = cel.color.encodef(0, 1, 1),
+  }
 
-  function window:draw(t)
-    local fv = self
+  face['%mousefocusin'] = face:new {
+    linecolor = cel.color.encodef(.4, .4, .4),
+  }
 
+  function face.select(face, t)
     if t.focus then
-      fv = fv.variation.focus
+      face = face['%focus'] or face
     elseif t.mousefocusin then
-      fv = fv.variation.mousefocusin
+      face = face['%mousefocusin'] or face
     end
-
-    return drawcel(fv, t)
+    return face
   end
 
-  indexvariations(window)
+  do --window.handle
+    local face = cel.getmetaface('window.handle')
+    face.fillcolor = cel.color.encodef(.4, .4, .4)
+    face.font = cel.loadfont('arial:bold')
 
-  do
-    local handle = cel.face {
-      metacel = 'window.handle',
-      fillcolor = cel.color.encodef(.4, .4, .4),
-      radius=false,
-      font = cel.loadfont('arial:bold'),
-
-      variation = {
-        focus = {
-          textcolor = cel.color.encodef(.2, .2, .2),
-          fillcolor = cel.color.encodef(0, 1, 1),
-        },
-      },
+    face['%focus'] = face:new {
+      textcolor = cel.color.encodef(.2, .2, .2),
+      fillcolor = cel.color.encodef(0, 1, 1),
     }
 
-    function handle:draw(t)
-      local fv = self
-
+    function face.select(face, t)
       if t.host.focus then
-        fv = fv.variation.focus or fv
+        face = face['%focus'] or face
       end
+      return face
+    end
 
+    function face.draw(f, t)
       clip(t.clip)
 
-      if setcolor(fv.fillcolor) then
-        fillrect(t.x, t.y, t.w, t.h, fv.radius)
+      if f.fillcolor then
+        setcolor(f.fillcolor)
+        fillrect(t.x, t.y, t.w, t.h, f.radius)
       end
 
-      if t.host.title and setcolor(fv.textcolor) then
-        fillstringlt(fv.font, t.x + 4, t.y + 4, t.host.title)
+      if t.host.title and f.textcolor then
+        setcolor(f.textcolor)
+        fillstringlt(f.font, t.x + 4, t.y + 4, t.host.title)
       end
 
-      if fv.linewidth and setcolor(fv.linecolor) then
-        setlinewidth(fv.linewidth)
-        strokerect(t.x, t.y, t.w, t.h, fv.radius)
+      if f.linewidth and f.linecolor then
+        setlinewidth(f.linewidth)
+        setcolor(f.linecolor)
+        strokerect(t.x, t.y, t.w, t.h, f.radius)
       end
 
       return drawlinks(t)
     end
-
-    indexvariations(handle)
   end
 
-  do --client
-    cel.face {
-      metacel = 'window.client',
-      fillcolor = cel.color.encodef(.2, .2, .2),
-      linecolor = false,
-      linewidth = false,
-      radius = radius,
-    }
+  do --window.client
+    local face = cel.getmetaface('window.client')
+    face.fillcolor = cel.color.encodef(.2, .2, .2)
+    face.linecolor = false
+    face.linewidth = false
   end
 
-  do --border
-    local face = cel.face {
-      metacels = {'window.border', 'window.corner'},
-      draw = false,
-    }
+  do --window.border, window.corner
+    cel.getmetaface('window.border').draw = false
+    cel.getmetaface('window.border').select = false
+    cel.getmetaface('window.corner').draw = false
+    cel.getmetaface('window.corner').select = false
   end
 end
 

@@ -24,30 +24,28 @@ THE SOFTWARE.
 local cel = require 'cel'
 
 local metacel, metatable = cel.scroll.newmetacel('listbox')
-metacel['.itemlist'] = cel.col.newmetacel('listbox.itemlist')
+metacel['.list'] = cel.col.newmetacel('listbox.list')
 
 local _listbox = {}
 local _items = {}
 local _selected = {}
 local _current = {}
 local _changes = {}
-local _boxface = {}
-local boxface = cel.face { metacel='listbox.itembox' }
-
-cel.face { metacel = 'listbox.itemlist' }
+local _slotface = {}
+local slotface = cel.getmetaface('listbox.slot')
 
 local layout = {
-  itemlist = {
-    face = nil,
-    gap = 0,
-    
-  },
-  itembox = {
-    --note that itembox is a virtual cel
-    face = boxface,  
-  };
+  gap = 0,
+  slotface = slotface,  
 }
 
+function metatable:beginflux(...)
+  return self[_items]:beginflux(...)
+end
+
+function metatable:endflux(...)
+  return self[_items]:endflux(...)
+end
 function metatable:flux(...)
   self[_items]:flux(...)
   return self 
@@ -357,7 +355,7 @@ function metacel:onkey(listbox, state, key, intercepted)
 end
 
 do -- items metacel
-  local metacel = metacel['.itemlist'] 
+  local metacel = metacel['.list'] 
 
   do --metacel.dispatchevents
     function metacel:dispatchevents(listbox)
@@ -422,7 +420,7 @@ do -- items metacel
     function metacel:__describeslot(items, item, index, t)
       local listbox = items[_listbox]
 
-      t.face = listbox[_boxface]
+      t.face = listbox[_slotface]
 
       if listbox[_selected] and listbox[_selected][item] then
         t.selected = true
@@ -474,9 +472,9 @@ do
     local layout = face.layout or layout
 
     local listbox = _new(self, w, h, face)
-    listbox[_boxface] = layout.itembox.face or boxface
+    listbox[_slotface] = layout.slotface or slotface
 
-    local items = metacel['.itemlist']:new(layout.itemlist.gap, layout.itemlist.face)
+    local items = metacel['.list']:new(layout.gap, layout)
 
     items[_listbox] = listbox
     listbox[_items] = items

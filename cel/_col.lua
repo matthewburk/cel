@@ -473,10 +473,12 @@ function colformation:linker(col, link, linker, xval, yval, x, y, w, h, minw, ma
   if x < 0 then x = 0 end
 
   if slot.flex == 0 then
-    if hh > slot.h and h ~= hh then hh = slot.h end 
+    --if hh > slot.h and h ~= hh then hh = slot.h end 
     if h > hh then h = hh end
     if y + h > hh then y = hh - h end
-    if y < 0 then y = 0 end
+    if y < 0 or (not slot.minh) or slot.minh <= h then
+      y = 0
+    end
   end
 
   slot.linky = y
@@ -493,7 +495,16 @@ function colformation:linklimitschanged(col, link, ominw, omaxw, ominh, omaxh)
 
   local doreflex = false
 
-  if slot.flex == 0 then
+  if slot.flex > 0 and not slot.minh then
+    local original = links.minh
+    links.minh = links.minh - (ominh or 0) 
+    links.minh = links.minh + (link[_minh]) 
+
+    if links.minh ~= original then
+      links.reform = true
+      doreflex = true
+    end
+  elseif slot.flex == 0 then
     if slot.h < link[_minh] then
       links.minh = links.minh - slot.h
       slot.h = link[_minh]

@@ -2,63 +2,47 @@ local cel = require 'cel'
 
 local _tabs = {}
 local _mutex = {}
-local _current = {}
-local meta, metatable = cel.newmetacel('tabpanel')
-local metahandle = cel.grip.newmetacel('tab.handle')
---local metatrack = cel.newmetacel('tab.handletrack')
+local _selected = {}
+local metatabpanel, metatable = cel.newmetacel('tabpanel')
+local metatab = cel.slot.newmetacel('tabpanel.tab')
 
 local layout = {
   tabs = {
+    align = 'top',
+    link = {'center'};
+    tab = {
+      face = nil,
+    }
   },
   client = {
+    face = nil,
+    link = {'edges'}
   },
 }
 
---[[ do this later, implement full drag and drop
-function metatrack:__linkmove(track, handle, ox, oy, ow, oh)
-  if handle == track.active then
-  end
-end
-
-
-function metatrack:onmousemove(track, x, y)
-  if track.flux then
-    local pick, index = track.sequence:pick(x, y)
-
-    if pick ~= track.fluxhandle then
-
-    end
-    --if 
-    --find slot in track at x,y
-    --if slot is not the slot of the active handle
-    --vacate slot if not vacated and make it the slot of the active handle
-  end
-end
---]]
-
 do
-  local grip__describe = metahandle.__describe
-  function metahandle:__describe(handle, t)
-    grip__describe(t)
-    t.selected = handle.selected
-    t.active = handle.active
-    t.placement = 'top'
-    t.title = handle.title
+  function metatab:__describe(tab, t)
+    t.selected = tab.tabpanel[_selected] == tab
+    t.align = 'top'
   end
 end
 
-function metatable:addtab(name, title, subject, ...)
+local lopt = {flex=1}
+function metatable:addtab(name, subject, ...)
   local tabs = self[_tabs]
   local mutex = self[_mutex]
 
-  local handle = cel.tocel(title, self)--metahandle:new(self, title)
+  local tab = metatab:new()
+  tab.tabpanel = self
+  tab.subjecthost = cel.slot.new()
+  tab.subject = subject
+  tabs[name] = tab
 
-  tabs[name] = function() return handle, subject end
+  tab:link(tabs, 'edges', nil, nil, lopt)
+  tab.subjecthost:link(mutex, 'edges')
+  subject:link(tab.subjecthost, ...)
 
-  handle:link(tabs)
-  subject:link(mutex, ...)
-
-  if not self[_current] then
+  if not self[_selected] then
     self:selecttab(name)
   end
   return self
@@ -67,11 +51,17 @@ end
 function metatable:removetab(name)
   local tabs = self[_tabs]
   local mutex = self[_mutex]
-  local f = tabs[name]
-  if f then
-    local handle, subject = f()
-    handle:unlink()
-    mutex:clear(subject)
+  local tab = tabs[name]
+  if tab then
+    tabs[name] = nil
+
+    if self[_selected] == tab then
+      self[_selected] = nil
+    end
+
+    tab:unlink()
+    mutex:clear(tab.subjecthost)
+    tab.subject:unlink()
   end
 
   return self
@@ -80,47 +70,65 @@ end
 function metatable:selecttab(name)
   local tabs = self[_tabs]
   local mutex = self[_mutex]
+  local tab = tabs[name]
 
-  local f = tabs[name]
-  if f then
-    local handle, subject = f()
-    self[_current] = name
-    mutex:show(subject)
+  if tab then
+    self[_selected] = tab 
+    mutex:show(tab.subjecthost)
   end
   return self
 end
 
-function meta:__link(tabpanel, link, linker, xval, yval, option)
-  if option ~= 'raw' then
-    return select(2, self[_tabs][self[_current]]), linker, xval, yval, option
+function metatable:getclientrect()
+  return self:pget('x', 'y', 'w', 'h')
+end
+
+function metatable:gettabalign()
+  return self[_tabs].align
+end
+
+--just give direct access to tabs
+function metatable:breakaway()
+
+end
+
+function metatabpanel:__link(tabpanel, link, linker, xval, yval, option)
+  if option then
+    local tab = tabpanel[_tabs][option]
+    if tab then
+      return tab.subjecthost, linker, xval, yval
+    end
   end
 end
 
 do
-  local _new = meta.new
-  function meta:new(w, h, face)
+  local _new = metatabpanel.new
+  function metatabpanel:new(w, h, face)
     face = self:getface(face)
+    local layout = face.layout or layout
+
     local tabpanel = _new(self, w, h, face)
-    local mutex = cel.mutexpanel.new()
+    local mutex = cel.mutexpanel.new(w, h, layout.client.face)
     local tabs = cel.row.new()
+    tabs.align = layout.tabs.align or 'top'
+    tabs.tabface = layout.tabs.tab.face
 
-    local col = cel.col.new()
-
-    tabs:link(col, 'edges', nil, nil,  {minh=30})
-    mutex:link(col, 'edges', nil, nil, {flex=1})
+    tabs:link(tabpanel, layout.tabs.link)
+    mutex:link(tabpanel, layout.client.link)
     
     tabpanel[_tabs] = tabs
     tabpanel[_mutex] = mutex
 
-    col:link(tabpanel, 'edges', nil, nil, 'raw')
+    tabpanel.tabs = tabs
+
     return tabpanel
   end
 
-  local _compile = meta.compile
-  function meta:compile(t, tabpanel)
+  local _compile = metatabpanel.compile
+  function metatabpanel:compile(t, tabpanel)
     tabpanel = tabpanel or meta:new(t.w, t.h, t.face)
     return _compile(self, t, tabpanel)
   end
 end
 
-return meta:newfactory()
+return metatabpanel:newfactory()

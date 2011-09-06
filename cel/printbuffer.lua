@@ -95,9 +95,7 @@ do
     face = self:getface(face)
 
     local printbuffer = _new(self, w, h, face)
-    printbuffer[_textface] = cel.face {
-      metacel = 'text',
-      name = cel.printbuffer,
+    printbuffer[_textface] = cel.getmetaface('text'):new {
       font = cel.loadfont('code'),
     }
 

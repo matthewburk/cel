@@ -67,7 +67,7 @@ do
   _pick = privatekey('_pick')
   _describe = privatekey('_describe')
   _movelink = privatekey('_movelink')
-  _metafaces = privatekey('_metafaces')
+  _variations = privatekey('_variations')
   _minw = privatekey('_minw')
   _minh = privatekey('_minh')
   _maxw = privatekey('_maxw')
@@ -104,8 +104,7 @@ M.mouse = require('cel._mouse')(_ENV, M)
 
 M.keyboard = require('cel._keyboard')(_ENV, M)
 
-M.face = require('cel._face')(_ENV, M)
-
+require('cel._face')(_ENV, M)
 require('cel._event')(_ENV, M)
 require('cel._driver')(_ENV, M)
 require('cel._cel')(_ENV, M)

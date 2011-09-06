@@ -3,49 +3,43 @@ local cel = require 'cel'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local face = cel.face {
-    metacel = 'grip',
-    fillcolor = cel.color.encodef(.2, .2, .2),
-    linecolor = cel.color.encodef(.4, .4, .4),
-    linewidth = 1,
-    radius = radius,
+  local face = cel.getmetaface('grip')
+  face.fillcolor = cel.color.encodef(.2, .2, .2)
+  face.linecolor = cel.color.encodef(.4, .4, .4)
+  face.linewidth = 1
 
-    variation = {
-      grabbed = {
-        fillcolor = cel.color.encodef(.4, .4, .4),
-        linecolor = cel.color.encodef(0, 1, 1),
-      },
-      mousefocusin = {
-        fillcolor = cel.color.encodef(.4, .4, .4),
-        linecolor = cel.color.encodef(0, 1, 1),
-        variation = {
-          grabbed = {
-            fillcolor = cel.color.encodef(0, .8, .8),
-            linecolor = cel.color.encodef(0, 1, 1),
-            linewidth = 1,
-          },
-        },
-      },
-    },
-  }
-
-  local drawcel = cel.face.get('cel').draw
-
-  function face:draw(t)
-    local fv = self
-
+  function face.select(face, t)
     if t.mousefocusin then
-      fv = fv.variation.mousefocusin
+      face = face['%mousefocusin'] or face
       if t.isgrabbed then
-        fv = fv.variation.grabbed
+        face = face['%grabbed'] or face
       end
     elseif t.isgrabbed then
-      fv = fv.variation.grabbed
+      face = face['%grabbed'] or face
     end
-
-    return drawcel(fv, t)
+    return face
   end
 
-  indexvariations(face)
+  do
+    face['%grabbed'] = face:new {
+      fillcolor = cel.color.encodef(.4, .4, .4),
+      linecolor = cel.color.encodef(0, 1, 1),
+    }
+
+    face['%mousefocusin'] = face:new {
+      fillcolor = cel.color.encodef(.4, .4, .4),
+      linecolor = cel.color.encodef(0, 1, 1),
+    }
+    
+    do
+      local face = face['%mousefocusin']
+
+      face['%grabbed'] = face:new {
+        fillcolor = cel.color.encodef(0, .8, .8),
+        linecolor = cel.color.encodef(0, 1, 1),
+        linewidth = 1,
+      }
+    end
+  end
 end
 

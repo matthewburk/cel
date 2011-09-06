@@ -216,7 +216,7 @@ do --ENV.describe
       clip = { l=0, r=0, t=0, b=0 },
     }
 
-    --cache[cel]=t
+    cache[cel]=t
     return t
   end
 
@@ -495,18 +495,11 @@ end
 do --ENV.metacel
   metacel = {}
   metacel[_name] = 'cel'
-  metacel[_face] = M.face[_metafaces]['cel']
+  metacel[_face] = M.getmetaface('cel')
 end
 
 do --metacel.new
   local floor = math.floor
-  --[[
-  local _x, _y, _w, _h = _x, _y, _w, _h
-  local _minw, _maxw, _minh, _maxh = _minw, _maxw, _minh, _maxh
-  local _metacel = _metacel
-  local _face = _face
-  local setmetatable = setmetatable
-  --]]
   local celid = 1
 
   function metacel:new(w, h, face, minw, maxw, minh, maxh)
@@ -520,7 +513,8 @@ do --metacel.new
       [_minh] = minh and floor(minh) or 0,
       [_maxh] = maxh and floor(maxh) or 2^31-1,
       [_metacel] = self,
-      [_face] = self[_face][face],
+      --TODO add _variations to metacel to avoid extra lookup
+      [_face] = self[_face][_variations][face],
       [_celid] = celid
     }
     celid = celid + 1
@@ -698,8 +692,8 @@ do --metacel.newmetacel
 
     metacel[_name] = name
     metacel.metatable = metatable
-    
-    metacel[_face] = setmetatable(defineface(name), {__index = self[_face]})
+   
+    metacel[_face] = newmetaface(name, self[_face])
 
     return metacel, metatable
   end
@@ -708,8 +702,9 @@ end
 do --metacel.getface
   local _face = _face
   function metacel:getface(face)
+    --TODO add _variations to metacel
     if face then
-      local rawface = rawget(self[_face], face) or rawget(metacel[_face], face)
+      local rawface = rawget(self[_face][_variations], face) or rawget(metacel[_face][_variations], face)
       return rawface or self[_face]
     else
       return self[_face]

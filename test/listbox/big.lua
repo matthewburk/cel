@@ -10,14 +10,14 @@ return function(root)
     w = 400, h = 400, 
     title = 'listbox';
 
-    link = 'height';
+    link = 'edges';
     function(self)
       self:adddefaultcontrols()
     end,
     cel.listbox {
-      w = 100, 
+      w = 400, 
       function(listbox)
-        for i=1, 10000 do
+        for i=1, 3000 do
           new('Hello'):link(listbox, linker)
           new('Madison'):link(listbox, linker)
           new('Zoe'):link(listbox, linker)
@@ -29,9 +29,12 @@ return function(root)
           new('Mercedes'):link(listbox, linker)
           new('Audi'):link(listbox, linker)
         end
+        print(listbox:len())
       end
     },
   }:link(root)
+
+  
 
 end
 
