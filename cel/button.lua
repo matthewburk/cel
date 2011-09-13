@@ -24,15 +24,26 @@ THE SOFTWARE.
 local cel = require 'cel'
 
 local _pressed = {} 
-local _holding = {} 
+local _holding = {}
+local _state = {}
 local metacel, metatable = cel.newmetacel('button')
 
 function metatable.ispressed(button)
   return button[_pressed] and true or false
 end
 
+function metatable:setstate(state)
+  self[_state] = state
+  self:refresh()
+end
+
+function metatable:getstate()
+  return self[_state] 
+end
+
 function metacel:__describe(button, t)
   t.pressed = button[_pressed]
+  t.state = button[_state] or ''
 end
 
 function metacel:onmouseout(button)

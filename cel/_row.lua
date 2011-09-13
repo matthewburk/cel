@@ -27,6 +27,7 @@ THE SOFTWARE.
 return function (_ENV, M)
 setfenv(1, _ENV)
 
+local _dcache = {}
 local _links = {}
 local _flux = {}
 local _slotface = {}
@@ -704,7 +705,41 @@ do --rowformation.pick
 end
 
 do --rowformation.describeslot
-  local slotdescriptions = setmetatable({}, {__mode = 'kv'})
+  local cache = setmetatable({}, {__mode='kv'})
+
+  local function initdcache(row, a, b)
+    local dcache = row[_dcache]
+    if not dcache then
+      dcache = setmetatable({}, {__mode='kv'})
+      row[_dcache] = dcache 
+    end
+    dcache.offset = a-1
+  end
+
+  local function getdescription(row, index)
+    local dcache = row[_dcache]
+    local t = dcache[index-dcache.offset]
+   
+    t = t or {
+      host = false,
+      id = 0,
+      metacel = false,
+      face = false,
+      x = 0,
+      y = 0,
+      w = 0,
+      h = 0,
+      mousefocus = false,
+      mousefocusin = false,
+      focus = false,
+      flowcontext = false,
+      clip = { l=0, r=0, t=0, b=0 },
+      index = 0,
+    }
+
+    dcache[index-dcache.offset]=t
+    return t
+  end
 
   function rowformation:describeslot(row, host, gx, gy, gl, gt, gr, gb, index, link, hasmouse)
     local slot = link[_slot]
@@ -726,23 +761,24 @@ do --rowformation.describeslot
       return ret
     end
 
-    --TODO use same cache meachnism that is used in _cel
+    local t = getdescription(row, index)
 
-    local t = {
-      id = 0, --virtual, find a way to assign an id
-      metacel = '['.. index ..']',
-      face = face,
-      host = host,
-      x = gx,
-      y = gy,
-      w = slot.w,
-      h = row[_h],
-      mousefocus = false,
-      mousefocusin = hasmouse, --TODO only set if link doesn't have mouse
-      index = index,
-      --TODO focus
-      clip = {l = gl, r = gr, t = gt, b = gb},
-    }
+    t.id = 0 --virtual, find a way to assign an id
+    t.metacel = '['.. index ..']'
+    t.face = face
+    t.host = host
+    t.x = gx
+    t.y = gy
+    t.w = slot.w
+    t.h = row[_h]
+    t.mousefocus = false
+    t.mousefocusin = hasmouse --TODO only set if link doesn't have mouse
+    t.index = index
+    --TODO focus
+    t.clip.l = gl
+    t.clip.r = gr
+    t.clip.t = gt
+    t.clip.b = gb
 
     if row[_metacel].__describeslot then
       row[_metacel]:__describeslot(row, link, index, t)
@@ -757,9 +793,8 @@ do --rowformation.describeslot
 
     return t
   end
-end
 
-do --rowformation.describelinks
+  --rowformation.describelinks
   function rowformation:describelinks(row, host, gx, gy, gl, gt, gr, gb)
     local links = row[_links]
     local nlinks = links.n
@@ -782,6 +817,7 @@ do --rowformation.describelinks
 
       local i = 1
       local n = #host
+      initdcache(row, a, b)
       for index = a, b do
         host[i] = self:describeslot(row, host, gx, gy, gl, gt, gr, gb, index, links[index], vcel == links[index])
         i = host[i] and i + 1 or i

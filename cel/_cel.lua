@@ -60,11 +60,31 @@ end
 
 --TODO use a refresh bit on a cel, don't use the refreshtable
 do --ENV.refresh
-  refreshtable = {}
+  ---[[
+  local rootdirtyrect = {
 
+  }
+
+  function refreshmove(cel, ox, oy, ow, oh)
+    cel[_refresh] = true
+    --calc full rect
+    --clip to host rect
+    --merge with existing dirty rect of host
+
+  end
+
+  function refreshlink(host, link)
+
+  end
+  --]]
+
+  local _refresh = _refresh
   function refresh(cel)
-    while cel and not refreshtable[cel] do
-      refreshtable[cel] = true
+    cel[_refresh] = 'full'
+    cel = rawget(cel, _host)
+
+    while cel and cel[_refresh] ~= 'full' do
+      cel[_refresh] = true 
       cel = rawget(cel, _host)
     end
   end
@@ -272,6 +292,7 @@ do --ENV.describe
     local formation =  rawget(cel, _formation) or stackformation
     formation:describelinks(cel, t, gx, gy, gl, gt, gr, gb)
 
+    cel[_refresh] = false
     return t
   end
 
@@ -323,7 +344,7 @@ do --ENV.celmoved
       end
     end
     
-    refresh(link)
+    refresh(link, 'move', ox, oy, ow, oh)
   end
 end
 
@@ -944,7 +965,7 @@ do --metatable.link
     local formation = rawget(host, _formation) or stackformation
     formation:link(host, cel, linker, xval, yval, option)
 
-    refresh(host)
+    refresh(host, 'link', cel)
     event:signal()
     return cel
   end
@@ -1026,7 +1047,7 @@ do --metatable.unlink
         host:takefocus(keyboard)
       end
 
-      refresh(host)
+      refresh(host, 'unlink', cel)
       event:signal()
     end
     return cel

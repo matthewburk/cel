@@ -81,6 +81,7 @@ do
   _keystates = privatekey('_keystates')
   _celid = privatekey('_celid')
   _disabled = privatekey('_disabled')
+  _refresh = privatekey('_refresh')
 end
 
 maxdim = 2^31-1
@@ -180,8 +181,7 @@ do --cel.describe, cel.printdescription
 
   function M.describe()
     local altered = false
-    if not preamble.description or refreshtable[root] then
-      refreshtable = {}
+    if not preamble.description or root[_refresh] then
       count = count + 1
       preamble.timestampdescribe = M.timer()
       preamble.count = count 
@@ -435,6 +435,33 @@ do --loadfont TODO make driver supply path and extension
       --]]
     end
 
+    --[[
+    do
+      local breakon = {
+        [' '] = ' ',
+        ['\n'] = '\n',
+        ['\t'] = '\t',
+      }
+
+      function fontmt.wrap(font, text, r, i, j)
+        local metrics = font.metrics
+        local advance = 0
+        local breaki = i
+        local breakadvance = 0
+
+        for i = i, j do
+          local glyph = metrics[string.byte(text, i)]
+          local isbreak = breakon[glyph.char]
+          local char =  and
+          advance = advance + glyph.advance
+
+          if char then
+            return char, i, advance
+          end
+        end
+      end
+    end
+    --]]
 
     do
       local function fencetext(font, text, i, j, fence)
@@ -454,6 +481,7 @@ do --loadfont TODO make driver supply path and extension
         mode = mode or 'strongwords' --strongwords means they don't get sliced unless there is no other choice
         --weaklines means lines can be sliced
         local string = string
+
         return function()
           if (not i) or i > j then return end
           local ri = i
@@ -694,35 +722,7 @@ do
   end
 end
 
-do
-  M.color = {}
-  local math_min = math.min
-  local math_max = math.max
-  local math_floor = math.floor
-  local string_char = string.char
-  local string_byte = string.byte
-  
-  function M.color.encode(r, g, b, a)
-    return string_char(r, g, b, a or 255)
-  end
 
-  function M.color.decode(color)
-    return string_byte(color, 1, 4)
-  end
-
-  function M.color.encodef(r, g, b, a)
-    r = r and math_min(255, math_max(255 * r, 0)) or 0
-    g = g and math_min(255, math_max(255 * g, 0)) or 0
-    b = b and math_min(255, math_max(255 * b, 0)) or 0
-    a = a and math_min(255, math_max(255 * a, 0)) or 255
-    return string_char(r, g, b, a)
-  end
-
-  function M.color.decodef(color)
-    local r, g, b, a = string_byte(color, 1, 4)
-    return r/255, g/255, b/255, a/255
-  end
-end
 
 do
   function M.newfactory(metacel, metatable)

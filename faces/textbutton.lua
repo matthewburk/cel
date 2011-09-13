@@ -1,5 +1,6 @@
 local cel = require 'cel'
 
+require 'cel.textbutton'
 return function(_ENV)
   setfenv(1, _ENV)
 
@@ -37,12 +38,12 @@ return function(_ENV)
 
   do
     face['%pressed'] = face:new {
-      fillcolor = cel.color.encodef(.4, .4, .4),
+      fillcolor = cel.color.tint(.5, face.fillcolor),
       linecolor = cel.color.encodef(0, 1, 1),
     }
 
     face['%mousefocusin'] = face:new {
-      fillcolor = cel.color.encodef(.4, .4, .4),
+      fillcolor = cel.color.tint(.5, face.fillcolor),
       linecolor = cel.color.encodef(0, 1, 1),
     }
     
