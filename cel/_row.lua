@@ -98,7 +98,7 @@ end
 --reflex becuase the flex ratio of a slot changes
 --which means total flex changes or a sinlge slot flex changes
 --relex if the *excess* width of a row changes
-local function reflex(row, force, wreflex, hreflex)
+local function reflex(row, force, wreflex)
   if row[_flux] > 0 and not force then return 'influx' end
 
   
@@ -109,14 +109,12 @@ local function reflex(row, force, wreflex, hreflex)
     return
   end
 
-  hreflex = links.hreflex
-
   event:wait()
 
   if links.n > 0 then
     local nloops = 0
     repeat
-      hreflex = links.hreflex
+      local hreflex = links.hreflex
       nloops = nloops + 1
       if nloops > 2 then
         print('XOMFASDF#@$!@FDSAFSAFAFSAFSDFAAF')
@@ -258,7 +256,7 @@ function rowformation:moved(row, x, y, w, h, ox, oy, ow, oh)
     links.h = h
     links.hreflex = links.hreflex or h ~= oh
     if row[_flux] == 0 then
-      reflex(row, false, links.flex > 0 and w ~= ow, links.hreflex)
+      reflex(row, false, links.flex > 0 and w ~= ow)
     end
     if row[_metacel].__resize then
       row[_metacel]:__resize(row, ow, oh)
@@ -322,6 +320,7 @@ do --rowformation.link
       if edge > links.minh then 
         links.brace = link 
         links.minh = edge
+        links.hreflex = true
         if links.h < edge then links.h = edge end
       end
     else 
@@ -329,6 +328,7 @@ do --rowformation.link
       if edge > links.minh then 
         links.brace = link 
         links.minh = edge
+        links.hreflex = true
         if links.h < edge then links.h = edge end
       end
       link[_linker] = linker
@@ -340,7 +340,7 @@ do --rowformation.link
     event:onlink(row, link, index)
 
     if row[_flux] == 0 then
-      reflex(row, false, links.flex > 0, nil)
+      reflex(row, false, links.flex > 0)
     end
   end
 end
@@ -363,6 +363,7 @@ function rowformation:relink(row, link, linker, xval, yval)
   if edge > links.minh then 
     links.brace = link 
     links.minh = edge
+    links.hreflex = true
     if links.h < edge then 
       links.h = edge 
       doreflex = true
@@ -518,6 +519,7 @@ function rowformation:linklimitschanged(row, link, ominw, omaxw, ominh, omaxh)
     if edge > links.minh then
       links.minh = edge
       links.brace = link
+      links.hreflex = true
       if links.h < edge then 
         links.h = edge 
         doreflex = true
@@ -616,6 +618,7 @@ do --rowformation.movelink
     if edge > links.minh then
       links.minh = edge
       links.brace = link
+      links.hreflex = true
       if links.h < edge then 
         links.h = edge 
         doreflex = true
@@ -952,6 +955,16 @@ end
 --returns item, index
 function metatable.pick(row, x, y)
   return rowformation:pick(row, x, y)
+end
+
+function metatable.sort(row, comp)
+  row:beginflux()
+  local links = row[_links]
+  table.sort(links, comp)
+  links.reform = true
+  row:endflux()
+  row:refresh()
+  return row 
 end
 
 --TODO does not quite work

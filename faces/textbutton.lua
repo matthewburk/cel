@@ -4,7 +4,7 @@ require 'cel.textbutton'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local face = cel.getmetaface('textbutton')
+  local face = cel.getface('textbutton')
 
   face.layout = {
     padding = {

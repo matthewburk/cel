@@ -452,8 +452,8 @@ do --metatable.flux
 end
 
 local layout = {
-  rowface = M.getmetaface('grid.row'),
-  slotface = M.getmetaface('grid.slot'),
+  rowface = M.getface('grid.row'),
+  slotface = M.getface('grid.slot'),
 }
 
 local function colrowtuple(col, row)

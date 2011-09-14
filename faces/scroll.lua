@@ -3,7 +3,7 @@ local cel = require 'cel'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local scroll = cel.getmetaface('scroll')
+  local scroll = cel.getface('scroll')
   scroll.textcolor = false
   scroll.fillcolor = false
   scroll.linecolor = false
@@ -65,16 +65,16 @@ return function(_ENV)
   scroll.draw = function(f, t) return drawlinks(t) end
 
   --scrollbar
-  local scrollbar = cel.getmetaface('scroll.bar')
+  local scrollbar = cel.getface('scroll.bar')
   scrollbar.fillcolor = cel.color.encodef(.4, .4, .4)
 
   --track
-  local track = cel.getmetaface('scroll.bar.track')
+  local track = cel.getface('scroll.bar.track')
   track.select = false
   track.draw = scroll.draw
 
   --slider
-  local slider = cel.getmetaface('scroll.bar.slider')
+  local slider = cel.getface('scroll.bar.slider')
   slider.fillcolor = cel.color.encodef(.2, .2, .2)
   slider.linecolor = cel.color.encodef(0, 1, 1)
   slider.accentcolor = cel.color.encodef(0, 1, 1)
@@ -109,7 +109,7 @@ return function(_ENV)
   end
 
   --incbutton
-  local incbutton = cel.getmetaface 'scroll.bar.inc'
+  local incbutton = cel.getface 'scroll.bar.inc'
   incbutton.fillcolor = cel.color.encodef(.2, .2, .2)
   incbutton.linecolor = cel.color.encodef(0, 1, 1)
   incbutton.accentcolor = cel.color.encodef(0, 1, 1)
@@ -140,7 +140,7 @@ return function(_ENV)
   end
 
   --decbutton
-  local decbutton = cel.getmetaface 'scroll.bar.dec'
+  local decbutton = cel.getface 'scroll.bar.dec'
   decbutton.fillcolor = cel.color.encodef(.2, .2, .2)
   decbutton.linecolor = cel.color.encodef(0, 1, 1)
   decbutton.accentcolor = cel.color.encodef(0, 1, 1)

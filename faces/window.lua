@@ -3,7 +3,7 @@ local cel = require 'cel'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local face = cel.getmetaface('window')
+  local face = cel.getface('window')
   face.textcolor = false
   face.fillcolor = false
   face.linecolor = cel.color.encodef(.2, .2, .2)
@@ -34,7 +34,7 @@ return function(_ENV)
   end
 
   do --window.handle
-    local face = cel.getmetaface('window.handle')
+    local face = cel.getface('window.handle')
     face.fillcolor = cel.color.encodef(.4, .4, .4)
     face.font = cel.loadfont('arial:bold')
 
@@ -74,17 +74,17 @@ return function(_ENV)
   end
 
   do --window.client
-    local face = cel.getmetaface('window.client')
+    local face = cel.getface('window.client')
     face.fillcolor = cel.color.encodef(.2, .2, .2)
     face.linecolor = false
     face.linewidth = false
   end
 
   do --window.border, window.corner
-    cel.getmetaface('window.border').draw = false
-    cel.getmetaface('window.border').select = false
-    cel.getmetaface('window.corner').draw = false
-    cel.getmetaface('window.corner').select = false
+    cel.getface('window.border').draw = false
+    cel.getface('window.border').select = false
+    cel.getface('window.corner').draw = false
+    cel.getface('window.corner').select = false
   end
 end
 

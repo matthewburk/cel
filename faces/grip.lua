@@ -3,7 +3,7 @@ local cel = require 'cel'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local face = cel.getmetaface('grip')
+  local face = cel.getface('grip')
   face.fillcolor = cel.color.encodef(.2, .2, .2)
   face.linecolor = cel.color.encodef(.4, .4, .4)
   face.linewidth = 1

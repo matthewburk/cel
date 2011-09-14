@@ -3,7 +3,7 @@ local cel = require 'cel'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local face = cel.getmetaface('button')
+  local face = cel.getface('button')
 
   face.textcolor = cel.color.encodef(.8, .8, .8)
   face.fillcolor = cel.color.encodef(.2, .2, .2)
@@ -46,7 +46,7 @@ return function(_ENV)
   end
 
   do --red button
-    local face = cel.getmetaface('button'):new {
+    local face = cel.getface('button'):new {
       fillcolor = cel.color.encodef(1, 0, 0),
     }
 

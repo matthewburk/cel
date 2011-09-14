@@ -45,6 +45,7 @@ return function(_ENV, M)
   function celfacemt:register(name)
     assert(name)
     self[_variations][name] = self
+    return self
   end
 
   local celface = {
@@ -58,7 +59,7 @@ return function(_ENV, M)
       ['cel'] = setmetatable(celface, celfacemt)
     }
 
-    function M.getmetaface(metacelname)
+    local function getmetaface(metacelname)
       assert(type(metacelname) == 'string')
 
       local metaface = metafaces[metacelname]
@@ -77,6 +78,16 @@ return function(_ENV, M)
       assert(metaface)
 
       return metaface
+    end
+
+    function M.getface(metacelname, name)
+      local face = getmetaface(metacelname)
+
+      if name then
+        return face[_variations][name]
+      else
+        return face
+      end
     end
 
     --called when a new metacel is created

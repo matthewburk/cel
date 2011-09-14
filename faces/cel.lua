@@ -32,7 +32,7 @@ return function(_ENV)
     end
   end
 
-  local face = cel.getmetaface('cel')
+  local face = cel.getface('cel')
 
   face.font = cel.loadfont('code')
   face.textcolor = cel.color.encodef(1, 1, 1)

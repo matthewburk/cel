@@ -3,7 +3,7 @@ local cel = require 'cel'
 return function(_ENV)
   setfenv(1, _ENV)
 
-  local face = cel.getmetaface('label')
+  local face = cel.getface('label')
   face.textcolor = cel.color.encodef(.8, .8, .8)
   face.fillcolor = false
   face.linecolor = false

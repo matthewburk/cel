@@ -98,7 +98,7 @@ end
 --reflex becuase the flex ratio of a slot changes
 --which means total flex changes or a sinlge slot flex changes
 --relex if the *excess* height of a col changes
-local function reflex(col, force, wreflex, hreflex)
+local function reflex(col, force, hreflex)
   if col[_flux] > 0 and not force then 
     return 'influx' 
   end
@@ -113,14 +113,12 @@ local function reflex(col, force, wreflex, hreflex)
   end
 
   
-  wreflex = links.wreflex
-
   event:wait()
 
   if links.n > 0 then
     local nloops = 0
     repeat
-      wreflex = links.wreflex
+      local wreflex = links.wreflex
       nloops = nloops + 1
       if nloops > 2 then
         print('XOMFASDF#@$!@FDSAFSAFAFSAFSDFAAF')
@@ -260,7 +258,7 @@ function colformation:moved(col, x, y, w, h, ox, oy, ow, oh)
     links.w = w
     links.wreflex = links.wreflex or w ~= ow
     if col[_flux] == 0 then
-      reflex(col, false, links.wreflex, links.flex > 0 and h ~= oh) --TODO do same in _row
+      reflex(col, false, links.flex > 0 and h ~= oh) --TODO do same in _row
     end
     if col[_metacel].__resize then
       col[_metacel]:__resize(col, ow, oh)
@@ -324,6 +322,7 @@ do --colformation.link
       if edge > links.minw then 
         links.brace = link 
         links.minw = edge
+        links.wreflex = true
         if links.w < edge then links.w = edge end
       end
     else 
@@ -331,6 +330,7 @@ do --colformation.link
       if edge > links.minw then 
         links.brace = link 
         links.minw = edge
+        links.wreflex = true
         if links.w < edge then links.w = edge end
       end
       link[_linker] = linker
@@ -342,7 +342,7 @@ do --colformation.link
     event:onlink(col, link, index)
 
     if col[_flux] == 0 then
-      reflex(col, false, nil, links.flex > 0)
+      reflex(col, false, links.flex > 0)
     end
   end
 end
@@ -365,6 +365,7 @@ function colformation:relink(col, link, linker, xval, yval)
   if edge > links.minw then 
     links.brace = link 
     links.minw = edge
+    links.wreflex = true
     if links.w < edge then 
       links.w = edge 
       doreflex = true
@@ -520,6 +521,7 @@ function colformation:linklimitschanged(col, link, ominw, omaxw, ominh, omaxh)
     if edge > links.minw then
       links.minw = edge
       links.brace = link
+      links.wreflex = true
       if links.w < edge then 
         links.w = edge 
         doreflex = true
@@ -618,6 +620,7 @@ do --colformation.movelink
     if edge > links.minw then
       links.minw = edge
       links.brace = link
+      links.wreflex = true
       if links.w < edge then 
         links.w = edge 
         doreflex = true
@@ -954,6 +957,16 @@ end
 --returns item, index
 function metatable.pick(col, x, y)
   return colformation:pick(col, x, y)
+end
+
+function metatable.sort(col, comp)
+  col:beginflux()
+  local links = col[_links]
+  table.sort(links, comp)
+  links.reform = true
+  col:endflux()
+  col:refresh()
+  return col
 end
 
 --TODO does not quite work

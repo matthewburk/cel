@@ -516,7 +516,7 @@ end
 do --ENV.metacel
   metacel = {}
   metacel[_name] = 'cel'
-  metacel[_face] = M.getmetaface('cel')
+  metacel[_face] = M.getface('cel')
 end
 
 do --metacel.new
@@ -703,6 +703,7 @@ do --metacel.newmetacel
       elseif k == 'R' then
       elseif k == 'T' then
       elseif k == 'B' then
+      elseif k == 'id' then return rawget(t, _celid)
       --else print('looking for ', t, k)
       end
     end
@@ -1108,6 +1109,7 @@ do --metatable.pget
     maxw = _maxw,
     minh = _minh,
     maxh = _maxh,
+    id = _celid,
   }
 
   local resultarrays = {
@@ -1701,6 +1703,7 @@ do --metatable.__index
     elseif k == 'R' then
     elseif k == 'T' then
     elseif k == 'B' then
+    elseif k == 'id' then return rawget(t, _celid)
     end
   end
 end

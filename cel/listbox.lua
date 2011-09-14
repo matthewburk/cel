@@ -32,7 +32,7 @@ local _selected = {}
 local _current = {}
 local _changes = {}
 local _slotface = {}
-local slotface = cel.getmetaface('listbox.slot')
+local slotface = cel.getface('listbox.slot')
 
 local layout = {
   gap = 0,
@@ -55,6 +55,11 @@ function metatable:len()
   return self[_items]:len()
 end
 
+function metatable:sort(comp)
+  self[_items]:sort(comp)
+  return self
+end
+
 function metatable:insert(item, index)
   if type(item) == 'string' then
     item = cel.tocel(item, self)
@@ -69,7 +74,7 @@ function metatable:pick(x, y)
   local list = self[_items]
   local px, py, pw, ph = self:getportalrect()
   if x >= px and x < px + pw and y >= py and y < py + ph then
-    return list:pick(x - list.x, y - list.y)
+    return list:pick(x - list.x - px, y - list.y - py)
   end
 end
 
