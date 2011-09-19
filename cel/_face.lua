@@ -25,17 +25,14 @@ return function(_ENV, M)
   setfenv(1, _ENV)
 
   local _variations = _variations 
+  local _metacelname = {} 
 
   local celfacemt = {
   }
 
-  local nfaces = 1
-
   celfacemt.__index = celfacemt
 
   function celfacemt:new(t)
-    nfaces = nfaces + 1
-    print('nfaces', nfaces)
     t = t or {}
     t.__index = t
     self[_variations][t] = t
@@ -48,7 +45,12 @@ return function(_ENV, M)
     return self
   end
 
+  function celfacemt:gettype()
+    return self[_metacelname]
+  end
+
   local celface = {
+    [_metacelname] = 'cel',
     [_variations] = {},
   }
 
@@ -66,6 +68,7 @@ return function(_ENV, M)
 
       if not metaface then
         metaface = {
+          [_metacelname] = metacelname,
           [_variations]={},
           __index = true,
         }
@@ -100,6 +103,7 @@ return function(_ENV, M)
         setmetatable(metaface,  proto)
       else
         metaface = {
+          [_metacelname] = metacelname,
           [_variations]={},
           __index = true,
         }
@@ -113,3 +117,4 @@ return function(_ENV, M)
     end
   end
 end
+

@@ -740,6 +740,7 @@ do --colformation.describeslot
       flowcontext = false,
       clip = { l=0, r=0, t=0, b=0 },
       index = 0,
+      refresh = false,
     }
 
     dcache[index-dcache.offset]=t
@@ -784,6 +785,7 @@ do --colformation.describeslot
     t.clip.r = gr
     t.clip.t = gt
     t.clip.b = gb
+    t.refresh = link[_refresh]
 
     if col[_metacel].__describeslot then
       col[_metacel]:__describeslot(col, link, index, t)

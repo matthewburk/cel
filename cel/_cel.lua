@@ -60,33 +60,32 @@ end
 
 --TODO use a refresh bit on a cel, don't use the refreshtable
 do --ENV.refresh
-  ---[[
-  local rootdirtyrect = {
-
-  }
-
-  function refreshmove(cel, ox, oy, ow, oh)
-    cel[_refresh] = true
-    --calc full rect
-    --clip to host rect
-    --merge with existing dirty rect of host
-
-  end
-
-  function refreshlink(host, link)
-
-  end
-  --]]
-
   local _refresh = _refresh
   function refresh(cel)
     cel[_refresh] = 'full'
     cel = rawget(cel, _host)
 
-    while cel and cel[_refresh] ~= 'full' do
+    while cel and not cel[_refresh] do
       cel[_refresh] = true 
       cel = rawget(cel, _host)
     end
+  end
+
+  function refreshmove(cel, ox, oy, ow, oh)
+    cel[_refresh] = 'full'
+    cel = rawget(cel, _host)
+
+    if cel then
+      refresh(cel)
+    end
+  end
+
+  function refreshlink(cel, link)
+    return refresh(cel)
+  end
+
+  function refreshunlink(cel, link)
+    return refresh(cel)
   end
 end
 
@@ -234,6 +233,7 @@ do --ENV.describe
       focus = false,
       flowcontext = false,
       clip = { l=0, r=0, t=0, b=0 },
+      refresh = false,
     }
 
     cache[cel]=t
@@ -257,6 +257,7 @@ do --ENV.describe
     t.clip.r = gr
     t.clip.t = gt
     t.clip.b = gb
+    t.refresh = cel[_refresh]
 
     if mouse[_focus][cel] then
       t.mousefocusin = true
@@ -273,6 +274,7 @@ do --ENV.describe
     if cel[_metacel].__describe then cel[_metacel]:__describe(cel, t) end
   end
 
+  local updaterect = _ENV.updaterect
   function describe(cel, host, gx, gy, gl, gt, gr, gb)
     gx = gx + cel[_x] --TODO clamp to maxint
     gy = gy + cel[_y] --TODO clamp to maxint
@@ -287,10 +289,19 @@ do --ENV.describe
 
     local t = getdescription(cel)
 
-    __describe(cel, host, gx, gy, gl, gt, gr, gb, t)
+    if cel[_refresh] or t.id == 0 or t.refresh 
+      or (t.clip.l ~= gl or t.clip.r ~= gr or t.clip.t ~= gt or t.clip.b ~= gb) then
+      __describe(cel, host, gx, gy, gl, gt, gr, gb, t)
 
-    local formation =  rawget(cel, _formation) or stackformation
-    formation:describelinks(cel, t, gx, gy, gl, gt, gr, gb)
+      local formation =  rawget(cel, _formation) or stackformation
+      formation:describelinks(cel, t, gx, gy, gl, gt, gr, gb)
+      if t.refresh == 'full' then
+        if gl < updaterect.l then updaterect.l = gl end
+        if gt < updaterect.t then updaterect.t = gt end
+        if gr > updaterect.r then updaterect.r = gr end
+        if gb > updaterect.b then updaterect.b = gb end
+      end
+    end
 
     cel[_refresh] = false
     return t
@@ -317,6 +328,7 @@ do --ENV.celmoved
   --host is the host of the cel that moved, can be nil
   --link is the cel that moved
   function celmoved(host, link, x, y, w, h, ox, oy, ow, oh)
+    local _link = link
     assert(link)
     if rawget(link, _formation) and link[_formation].moved then
       link[_formation]:moved(link, x, y, w, h, ox, oy, ow, oh)
@@ -343,8 +355,7 @@ do --ENV.celmoved
         event:onlinkmove(host, link, ox, oy, ow, oh)
       end
     end
-    
-    refresh(link, 'move', ox, oy, ow, oh)
+    refreshmove(link, ox, oy, ow, oh)
   end
 end
 
@@ -966,7 +977,7 @@ do --metatable.link
     local formation = rawget(host, _formation) or stackformation
     formation:link(host, cel, linker, xval, yval, option)
 
-    refresh(host, 'link', cel)
+    refreshlink(host, cel)
     event:signal()
     return cel
   end
@@ -1048,7 +1059,7 @@ do --metatable.unlink
         host:takefocus(keyboard)
       end
 
-      refresh(host, 'unlink', cel)
+      refreshunlink(host, cel)
       event:signal()
     end
     return cel
@@ -1480,7 +1491,7 @@ do --metatable.takefocus
       return
     end
 
-    --TODO don't call out through metatable, give opportunity to fuck it up
+    --TODO don't call out through metatable, give opportunity to mess it up
     local z = islinkedto(target, _ENV.root)
       assert(_ENV.root)
 

@@ -63,7 +63,7 @@ return function(_ENV, cel)
 
   --TODO not very elegent to put mouse and keyboard initialization in here
   cel.mouse[_trap] = {trap = root}
-  cel.keyboard[_trap] = {trap = root}
+  --cel.keyboard[_trap] = {trap = root}
 
   root.linkoption = {}
   root.linkoption.popup = function(anchor)

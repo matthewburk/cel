@@ -341,6 +341,12 @@ function driver.changecursor(cursor)
   --noop driver must implement this function and change the systems cursor
 end
 
+function driver.option(opt, value)
+  if opt == 'cachedescriptions' then
+    _ENV.usedescriptioncache = value
+  end
+end
+
 return driver
 end
 

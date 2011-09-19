@@ -105,12 +105,15 @@ M.mouse = require('cel._mouse')(_ENV, M)
 
 M.keyboard = require('cel._keyboard')(_ENV, M)
 
+updaterect = { l = 0, r = 0, t = 0, b = 0 }
+
 require('cel._face')(_ENV, M)
 require('cel._event')(_ENV, M)
 require('cel._driver')(_ENV, M)
 require('cel._cel')(_ENV, M)
 
 _ENV.root = require('cel._root')(_ENV, M)
+_ENV.root:takefocus()
 
 M.match = M.util.match
 
@@ -176,16 +179,32 @@ do --cel.translate
 end
 
 do --cel.describe, cel.printdescription
-  local preamble = {}
+  local preamble = {
+    updaterect = updaterect 
+  }
   local count = 0
 
+  local updaterect = updaterect
   function M.describe()
     local altered = false
     if not preamble.description or root[_refresh] then
+      updaterect.l = 99999
+      updaterect.t = 99999
+      updaterect.r = 0
+      updaterect.b = 0
+
       count = count + 1
-      preamble.timestampdescribe = M.timer()
+      preamble.timer = M.timer()
       preamble.count = count 
       preamble.description = describe(root, nil, 0, 0, 0, 0, root[_w], root[_h])
+
+      if updaterect.r < updaterect.l or updaterect.b < updaterect.t then
+        updaterect.l = 0
+        updaterect.t = 0
+        updaterect.r = 0
+        updaterect.b = 0
+      end
+
       altered = true
     end
     return preamble, altered
@@ -194,7 +213,7 @@ do --cel.describe, cel.printdescription
   local format = string.format
 
   local function printdescription(t, indent)
-    write(indent, format('%d %s[%s] {x:%d y:%d w:%d h:%d id:%s [l:%d t:%d r:%d b:%d]',
+    write(indent, format('%s %d %s[%s] {x:%d y:%d w:%d h:%d id:%s [l:%d t:%d r:%d b:%d]', tostring(t.refresh),
     t.id, t.metacel or 'virtual', tostring(t.face[_name]) or t.metacel or '', t.x, t.y, t.w, t.h, tostring(t.id),
     t.clip.l, t.clip.t, t.clip.r, t.clip.b))
     --[[

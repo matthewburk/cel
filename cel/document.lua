@@ -29,17 +29,12 @@ metacel['.divider'] = cel.newmetacel('document.divider')
 metacel['.section'] = cel.slot.newmetacel('document.section')
 metacel['.hyperlink'] = cel.textbutton.newmetacel('document.hyperlink')
 
-cel.face {
-  metacel = 'document.text',
-  layout = { padding = {l = 1, t = 1}},
-}
-
 local _font = {}
 local _host = {}
 local _facestack = {}
 local _hoststack = {}
 local _stack = {}
-local _seq = {}
+local _col = {}
 local _facename = {} --TODO lame hack to use this, do another way
 local _filename = {} --the name of the document
 
@@ -79,7 +74,7 @@ local function getface(document)
 end
 
 local function getfont(document)
-  return cel.face.get('document.text', face).font
+  return cel.getface('document.text', face).font
 end
 
 local function getpxvalue(document, value, unit)
@@ -94,7 +89,7 @@ local function getpxvalue(document, value, unit)
 end
 
 function metatable.pushface(document, face)
-  face = cel.face.get('document.text', face)
+  face = cel.getface('document.text', face)
   assert(face)
   local facestack = document[_facestack]
   facestack[#facestack + 1] = face
@@ -135,13 +130,14 @@ local function pophost(document)
   return old
 end
 
-local function push(document, acel, linker, xval, yval, option)
+local function push(document, acel, linker, xval, yval)
+  print('option',  document[_host].option and document[_host].option.flex)
   if not acel then
-    acel = cel.sequence.y.new()
-    acel:link(document[_host], linker, xval, yval, option)
-    acel:beginflux()
+    acel = cel.col.new()
+    acel:link(document[_host], linker, xval, yval, document[_host].option)
+    --acel:beginflux()
   else
-    acel:link(document[_host], linker, xval, yval, option)
+    acel:link(document[_host], linker, xval, yval, document[_host].option)
   end
   pushhost(document, acel)
   return document
@@ -151,14 +147,13 @@ local function pop(document, n)
   n = n or 1
   for i = 1, n do
     local old = pophost(document)
-    if old.endflux then old:endflux() end
+    --if old.endflux then old:endflux() end
   end
   return document
 end
 
 do --metatable.pushsection
   local metacel = metacel['.section']
-  local defaultlink = {'edges'}
 
   function metatable.pushsection(document, t)
     local m = getpxvalue(document, parseunit(t.margin))
@@ -167,12 +162,14 @@ do --metatable.pushsection
     local top = getpxvalue(document, parseunit(t.topmargin or m))
     local bottom = getpxvalue(document, parseunit(t.bottommargin or top))
     local face = t.face
-    local link = t.link or defaultlink
+    local link = t.link 
     local w = parseunit(t.w)
     local h = parseunit(t.h)
 
-    local section = metacel:new(left, top, right, bottom, face)
-    push(document, section, link)
+    local section = metacel:new(left, top, right, bottom, nil, nil, face)
+    print('pushing section')
+    push(document, section, link or 'edges')
+    print('pushed section')
     push(document, nil, 'edges')
     section:resize(w, h)
     return document
@@ -192,27 +189,17 @@ do
 end
 
 do
-  local newsequence = cel.sequence.x.new
-  function metatable.pushsequence(document, face, linker, xval, yval)
-    local sequence = newsequence(nil, face)
-    sequence:beginflux()
-    return push(document, sequence, linker, xval, yval)
+  local option = {flex=1, minw=0}
+  local newrow = cel.row.new
+  function metatable.pushrow(document, face, linker, xval, yval)
+    local row = newrow(nil, face)
+    --row:beginflux()
+    row.option = option
+    linker = linker or 'edges'
+    return push(document, row, 'edges', xval, yval)
   end
 
-  function metatable.popsequence(document)
-    return pop(document)
-  end
-end
-
-do
-  local newgrid = cel.grid.new
-  function metatable.pushgrid(document, face, linker, xval, yval)
-    local grid = newgrid(nil, face)
-    sequence:beginflux()
-    return push(document, sequence, linker, xval, yval)
-  end
-
-  function metatable.popsequence(document)
+  function metatable.poprow(document)
     return pop(document)
   end
 end
@@ -226,10 +213,10 @@ end
 function metatable.write(document, s, mode)
   if 'nowrap' == mode then
     local text = newtext(s, mode, getface(document))
-    text:link(document[_host])
+    text:link(document[_host], nil, nil, nil, document[_host].option)
   else
     local text = newtext(s, mode, getface(document))
-    text:link(document[_host], 'width')
+    text:link(document[_host], 'width', nil, nil, document[_host].option)
   end
   return document
 end
@@ -241,7 +228,7 @@ function metatable.put(document, acel, linker, xval, yval)
     
   end
   --]]
-  acel:link(document[_host], linker, xval, yval)
+  acel:link(document[_host], linker or 'edges', xval, yval, document[_host].option)
   return document
 end
 
@@ -267,25 +254,24 @@ do
   end
 end
 
---don't expose sequence
 metatable.get = nil
 
 function metacel:__link(document, link, ...)
-  local seq = document[_seq]
-  if seq then
-    return seq, ...
+  local col = document[_col]
+  if col then
+    return col, ...
   else
     return document, ...
   end  
 end
 
 function metatable.open(doc)
-  doc[_seq]:beginflux()
+  --doc[_col]:beginflux()
   return doc
 end
 
 function metatable.close(doc)
-  doc[_seq]:endflux()
+  --doc[_col]:endflux()
   return doc
 end
 
@@ -293,12 +279,12 @@ do
   local _new = metacel.new
   function metacel:new(face)
     face = self:getface(face)
-    local seq = cel.sequence.y.new()
-    local document = _new(self, 0, 0, 0, 0, face)
-    seq:link(document, 'edges')
-    document[_seq] = seq
-    document[_host] = seq
-    document[_facestack] = {cel.face.get('document.text')}
+    local col = cel.col.new()
+    local document = _new(self, 0, 0, 0, 0, nil, nil, face)
+    col:link(document, 'edges')
+    document[_col] = col
+    document[_host] = col
+    document[_facestack] = {cel.getface('document.text')}
     return document
   end
 
@@ -311,6 +297,7 @@ end
 
 local document = metacel:newfactory()
 
+--[[
 document.face = setmetatable({}, {__index = function(face, k)
   return function(t)
     t.metacels = nil
@@ -323,6 +310,7 @@ document.face = setmetatable({}, {__index = function(face, k)
   end
 end;
 })
+--]]
 
 function document.newtag(f)
   return setmetatable({}, 
@@ -444,7 +432,6 @@ do --document.usenamesapce
     assert(D)
     elemtype = elemtype or iselement(element)
     if elemtype == 'string' then
-      
       D:write(element:gsub('%s+', ' '):gsub('^%s*(.-)%s*$', '%1'))
     elseif elemtype == 'table' then
       if element == _linebreak then
@@ -542,7 +529,7 @@ do --document.usenamesapce
     end
     local function map(paragraph, element, index, elemtype, D)
       if elemtype == 'string' then
-        D:write(mws(element))D:newline() 
+        D:write(mws(element))--D:newline() 
       else
         callelement(element, D, elemtype)
       end
@@ -586,13 +573,13 @@ do --document.usenamesapce
     factory.section = call
   end
 
-  do--factory.sequence
-    local function call(sequence, D)
-      D:pushsequence()
-      callelementsof(sequence, D)
-      D:popsequence()
+  do--factory.row
+    local function call(row, D)
+      D:pushrow()
+      callelementsof(row, D)
+      D:poprow()
     end
-    factory.sequence = call
+    factory.row = call
   end
 
   function document.newnamespace()
@@ -625,6 +612,14 @@ do --document.usenamesapce
       export = setmetatable({}, mt)
     end
 
+    local function loadfilein(_ENV, name)
+      local f, err = _G._G.loadfile(name)
+      if not f then
+        error (string.format("error loading file `%s' (%s)", name, err))
+      end
+      return setfenv(f, _ENV)
+    end
+
     local function importnamespace(namespace)
       local ns = cel.document.newnamespace()
       ns[namespace] = ns
@@ -634,7 +629,7 @@ do --document.usenamesapce
 
       local chunk 
       --pcall( function()
-        local t = cel.util.loadfilein(ns, namespace)
+        local t = loadfilein(ns, namespace)
         if t then
           t() 
         else
@@ -648,6 +643,8 @@ do --document.usenamesapce
       end
     end
 
+    
+
     function document.loadfile(filename)
       local env = setmetatable({
         export = export,
@@ -657,8 +654,9 @@ do --document.usenamesapce
      
       local chunk 
       --pcall( function()
-        local t = cel.util.loadfilein(env, filename)
+        local t = loadfilein(env, filename)
         if t then
+          print('calling', filename)
           t(filename) 
         else
           error('file not found ['..filename..']')

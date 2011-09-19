@@ -121,8 +121,8 @@ function metatable.getstate(window)
   return window[_state] or 'normal'
 end
 
-function metatable.getclientrect()
-  return self[_client]:pget('x', 'y', 'w', 'h')
+function metatable.getclientrect(window)
+  return window[_client]:pget('x', 'y', 'w', 'h')
 end
 
 local function onrestored(window)
@@ -238,6 +238,7 @@ function metacel:__link(window, link, linker, xval, yval, option)
 end
 
 function metacel:onfocus(window, b)
+  --print(window, 'onfocus', b)
   if b then
     self:activate(window)
   else
@@ -248,16 +249,21 @@ end
 
 function metacel:onmousedown(window, mousebutton, x, y)
   if mousebutton == cel.mouse.buttons.left then
+    --print(window, 'left mouse down')
     self:activate(window)
   end
 end
 
 function metacel:activate(window)
   if not window[_activated] then
-    window[_activated] = true
+    
 
     if not window:hasfocus() then
-      print('window takefocus', window:takefocus())
+      --print('window takefocus')
+      if window:takefocus() then
+        --print('window activated')
+        window[_activated] = true
+      end
     end
 
     window:raise()

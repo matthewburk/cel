@@ -27,43 +27,48 @@ do
   end
 end
 
-local lopt = {flex=1}
 function metatable:addtab(name, subject, ...)
   local tabs = self[_tabs]
   local mutex = self[_mutex]
 
   local tab = metatab:new()
+  tab.align = tabs.align
   tab.tabpanel = self
   tab.subjecthost = cel.slot.new()
   tab.subject = subject
   tabs[name] = tab
 
-  tab:link(tabs, 'edges', nil, nil, lopt)
+  tab:link(tabs, 'edges', nil, nil, {flex=1})
   tab.subjecthost:link(mutex, 'edges')
   subject:link(tab.subjecthost, ...)
 
   if not self[_selected] then
     self:selecttab(name)
   end
-  return self
+  --TODO enable a proxy table to be used for a cel
+  --cel.link, etc would have full access becuase it
+  --has acess to the private key that holds the cel
+  --return metacel:proxyfor(tab, 'link-able', 'event-able')
+  return self, tab
 end
 
 function metatable:removetab(name)
   local tabs = self[_tabs]
   local mutex = self[_mutex]
   local tab = tabs[name]
+
   if tab then
     tabs[name] = nil
 
     if self[_selected] == tab then
       self[_selected] = nil
+      --TODO select new tab 
     end
 
     tab:unlink()
-    mutex:clear(tab.subjecthost)
+    mutex:remove(tab.subjecthost)
     tab.subject:unlink()
   end
-
   return self
 end
 
@@ -73,14 +78,18 @@ function metatable:selecttab(name)
   local tab = tabs[name]
 
   if tab then
-    self[_selected] = tab 
-    mutex:show(tab.subjecthost)
+    if self[_selected] then
+      self[_selected]:refresh()
+    end
+    self[_selected] = tab
+    mutex:select(tab.subjecthost)
+    tab:refresh()
   end
   return self
 end
 
 function metatable:getclientrect()
-  return self:pget('x', 'y', 'w', 'h')
+  return self[_mutex]:pget('x', 'y', 'w', 'h')
 end
 
 function metatable:gettabalign()
@@ -89,7 +98,15 @@ end
 
 --just give direct access to tabs
 function metatable:breakaway()
+  --this assumes slot does not have a get, a slot should not expose any of its links
+  --by default
+  local slot = cel.slot.new()
+  local tabs = self[_tabs]
 
+  local linker, xval, yval = tabs:pget('linker', 'xval', 'yval')
+
+  tabs:link(slot, linker, xval, yval)
+  return slot, linker, xval, yval
 end
 
 function metatabpanel:__link(tabpanel, link, linker, xval, yval, option)

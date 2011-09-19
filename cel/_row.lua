@@ -738,6 +738,7 @@ do --rowformation.describeslot
       flowcontext = false,
       clip = { l=0, r=0, t=0, b=0 },
       index = 0,
+      refresh = false,
     }
 
     dcache[index-dcache.offset]=t
@@ -782,6 +783,7 @@ do --rowformation.describeslot
     t.clip.r = gr
     t.clip.t = gt
     t.clip.b = gb
+    t.refresh = link[_refresh]
 
     if row[_metacel].__describeslot then
       row[_metacel]:__describeslot(row, link, index, t)

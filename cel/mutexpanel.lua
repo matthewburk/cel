@@ -39,34 +39,55 @@ do
   end
 end
 
-function metatable:clear(link)
-  if link and self[_links][link] ~= nil then
-    self[_links][link] = nil
+function metatable:add(name, subject, linker, xval, yval)
+  subject:link(self, linker, xval, yval, name)
+  return self
+end
+
+function metatable:remove(name)
+  local link = self[_links][name]
+  if link then
+    self[_links][name] = nil
     link:unlink()
     if link == self[_subject] then
       self[_subject] = nil
     end
-  else
-    for link in pairs(self[_links]) do
-      self[_links][link] = nil
-      link:unlink()
-    end
-    self[_subject] = nil
   end
   return self
 end
 
-function metatable:show(link)
+function metatable:clear()
+  for name, link in pairs(self[_links]) do
+    self[_links][link] = nil
+    link:unlink()
+  end
+  self[_subject] = nil
+  return self
+end
+
+function metatable:select(name)
+  local link = self[_links][name]
+
+  if not link then
+    return self, false
+  end
+
   if self[_subject] then
     self[_subject]:link(self[_bucket])
   end
+
   self[_subject] = link
   link:link(self, link[_linkparams])
-  return self
+
+  return self, true
 end
 
-function meta:__link(mutexpanel, link, linker, xval, yval, option)
-  mutexpanel[_links][link] = option or link
+function meta:__link(mutexpanel, link, linker, xval, yval, name)
+  if name then
+    mutexpanel[_links][name] = link
+  else
+    mutexpanel[_links][link] = link
+  end
 
   if link ~= mutexpanel[_subject] then
     link[_linkparams] = {linker, xval, yval}
