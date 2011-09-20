@@ -38,13 +38,13 @@ local _handle = {}
 local _grips = {} --border and corners, so we can disable and reenable them, note used yet
 
 local layout = {
-  minw = 30 + 30 + 30 + 5 + 5,
-  minh = 5 + 31 + 5,
+  minw = 30 + 30 + 30 + 10 + 10,
+  minh = 10 + 31 + 10,
   maxw = nil,
   maxh = nil,
 
   border = {
-    size = 5,
+    size = 10,
   },
   corner = {
     size = 20,
@@ -52,12 +52,12 @@ local layout = {
   handle = {
     w = 31,
     h = 31,    
-    link = {'width.top', 5, 5}, --bordersize, bordersize
+    link = {'width.top', 10, 10}, --bordersize, bordersize
   },
   client = {    
     w = 0,
     h = 0,
-    link = {'edges.topunique', 5, 36},
+    link = {'edges.topunique', 10, 41},
   }
 }
 

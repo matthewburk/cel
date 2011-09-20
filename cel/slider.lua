@@ -50,7 +50,7 @@ local function syncvaluetomodel(slider)
   --if the current value would have a differnt modelvalue than the current
   --model, then sync it to the new model position
   if modelvalue ~= math.floor(modelmax * (value/max) + 0.5) then
-    value = math.floor(max * (modelvalue/modelmax) + .5)
+    value = math.floor(max * (modelvalue/modelmax) + min + .5)
     slider[_value] = value/slider[_precision]
   end
 end

@@ -84,8 +84,15 @@ function metatable:selecttab(name)
     self[_selected] = tab
     mutex:select(tab.subjecthost)
     tab:refresh()
+    if self.onselect then
+      self:onselect(name, tab.subject)
+    end
   end
   return self
+end
+
+function metatable:getselected()
+  return self[_selected] and self[_selected].subject
 end
 
 function metatable:getclientrect()
