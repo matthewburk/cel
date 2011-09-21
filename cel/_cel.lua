@@ -289,7 +289,7 @@ do --ENV.describe
 
     local t = getdescription(cel)
 
-    if true or cel[_refresh] or t.id == 0 or t.refresh 
+    if cel[_refresh] or t.id == 0 or t.refresh 
       or (t.clip.l ~= gl or t.clip.r ~= gr or t.clip.t ~= gt or t.clip.b ~= gb) then
       __describe(cel, host, gx, gy, gl, gt, gr, gb, t)
 
