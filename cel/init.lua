@@ -330,30 +330,24 @@ do --loadfont TODO make driver supply path and extension
       return v
     end
 
-    function glyphs(font, s, i, j)
-      i = (i and math.max(i, 1)) or 1
-      j = j or #s
-      return function(j, i)
-        i = i + 1
-        if i > j then return end
-        return i, font.metrics[string_byte(s, i)]
-      end, j, i - 1
-    end
-
     do
       function fontmt.height(font)
         return font.bbox.ymax - font.bbox.ymin
       end
 
-      function fontmt.measure(font, text, i, j)
-        if not text --[[or #text < 1--]] then
+      function fontmt.measure(font, s, i, j)
+        if not s then
           return 0, 0, 0, 0, 0, 0
         end
+
+        i = (i and math.max(i, 1)) or 1
+        j = j or #s
 
         local xmin, xmax, ymin, ymax = 32000, -32000, 32000, -32000
         local penx = 0
 
-        for i, glyph in glyphs(font, text, i, j) do
+        for i=i, j do
+          local glyph = font.metrics[string_byte(s, i)]
           local glyph_xmin = penx + glyph.xmin
           local glyph_xmax = penx + glyph.xmax
 
@@ -381,11 +375,15 @@ do --loadfont TODO make driver supply path and extension
       end
 
       function fontmt.measureadvance(font, s, i, j)
-        if not s --[[or #s < 1--]] then
+        if not s then
           return 0
         end
+
+        i = (i and math.max(i, 1)) or 1
+        j = j or #s
         local advance = 0
-        for i, glyph in glyphs(font, s, i, j) do
+        for i=i, j do
+          local glyph = font.metrics[string_byte(s, i)]
           advance = advance + glyph.advance
         end
         return advance
@@ -395,10 +393,14 @@ do --loadfont TODO make driver supply path and extension
         if not s --[[or #s < 1--]] then
           return 0, 0, 0, 0
         end
+
+        i = (i and math.max(i, 1)) or 1
+        j = j or #s
         local xmin, xmax, ymin, ymax = 32000, -32000, 32000, -32000
         local penx = 0
 
-        for i, glyph in glyphs(font, s, i, j) do
+        for i=i, j do
+          local glyph = font.metrics[string_byte(s, i)]
           local glyph_xmin = penx + glyph.xmin
           local glyph_xmax = penx + glyph.xmax
 
@@ -431,11 +433,10 @@ do --loadfont TODO make driver supply path and extension
 
       ---[[
       local math = math
-      function fontmt.pickpen(font, text, i, j, x)
+      function fontmt.pick(font, s, i, j, x)
         local penx = 0
         i = (i and math.max(i, 1)) or 1
-        j = j or #text
-        local s = text
+        j = j or #s
         for i = i, j do
           local glyph = font.metrics[string_byte(s, i)]
           local nextpenx = penx + glyph.advance
@@ -454,96 +455,77 @@ do --loadfont TODO make driver supply path and extension
       --]]
     end
 
-    --[[
+    ---[[
     do
-      local breakon = {
+      local _breakon = {
         [' '] = ' ',
-        ['\n'] = '\n',
+        ['\n'] = true, --true forces a break
         ['\t'] = '\t',
       }
 
-      function fontmt.wrap(font, text, r, i, j)
+      --on first call, should be font, 'mytext', 1, #'mytext', max
+      --on next should be font, 'mytext', returned i+1, #'mytext', max
+      function fontmt.wrapat(font, text, _i, j, max, breakon)
+        if _i > j then return end
+
         local metrics = font.metrics
         local advance = 0
-        local breaki = i
-        local breakadvance = 0
+        local retadvance
+        local reti
+        local retchar
+        local breakon = breakon or _breakon
 
-        for i = i, j do
+        for i = _i, j do
           local glyph = metrics[string.byte(text, i)]
-          local isbreak = breakon[glyph.char]
-          local char =  and
-          advance = advance + glyph.advance
 
-          if char then
-            return char, i, advance
+          local breakchar = breakon[glyph.char]
+          if breakchar == true then
+            return i, retadvance, glyph.char
+          else
+            if breakchar then
+              reti = i
+              retadvance = advance
+              retchar = glyph.char
+            end
+            advance = advance + glyph.advance
+            if advance > max then
+              if reti then
+                return reti, retadvance, retchar
+              elseif i > _i then
+                return i-1, advance - glyph.advance, nil
+              else
+                --must go on
+              end
+            end
           end
         end
+
+        return j, advance, nil
+      end
+
+      function fontmt.wrap(font, text, _i, j, breakon)
+        if _i > j then return end
+
+        local metrics = font.metrics
+        local advance = 0
+        local breakon = breakon or _breakon
+
+        for i = _i, j do
+          local glyph = metrics[string.byte(text, i)]
+          local breakchar = breakon[glyph.char]
+          if breakchar == true then
+            return i, advance
+          else
+            advance = advance + glyph.advance
+          end
+        end
+
+        return j, advance
       end
     end
     --]]
 
     do
-      local function fencetext(font, text, i, j, fence)
-        local index, advance = font:pickpen(text, i, j, fence)
-
-        if advance > fence then
-          return math.max(i, index -2)
-        end
-        return math.max(i, index-1)
-      end
-
-      --boundaries rightboundary, newline, word
-      --preserves word continuity if possible
-      function fontmt.wordwrap(font, text, rightboundary, mode)
-        local i = 1 
-        local j = #text
-        mode = mode or 'strongwords' --strongwords means they don't get sliced unless there is no other choice
-        --weaklines means lines can be sliced
-        local string = string
-
-        return function()
-          if (not i) or i > j then return end
-          local ri = i
-          local k = fencetext(font, text, i, j, rightboundary)
-
-          if k == j then
-            local lb = string.find(text, '\n', i)
-            if lb and lb - 1 <= k then 
-              i = lb + 1
-              return ri, lb - 1
-            else
-              i = nil
-              return ri, k 
-            end
-          end
-
-          do
-            local lb = string.find(text, '\n', i)
-            if lb and lb - 1 <= k then 
-              i = lb + 1
-              return ri, lb - 1
-            end
-          end
-         
-          if mode ~= 'strongwords' then
-            i = k < j and k + 1 or nil
-            return ri, k
-          end
-
-          do
-            local retj, retk = k, k + 1
-            local wbi, wbj = string.find(text, '%S%s+', i)
-            while wbi and wbi <= k do
-              retj, retk = wbi, wbj + 1
-              wbi, wbj = string.find(text, '%S%s+', wbj + 1)
-            end
-
-            i = retk <= j and retk or nil
-            return ri, retj 
-          end
-        end
-      end
-
       --font is font passed to cel.text.measure
       --layout is where margin is defined
       --w, h, xmin, xmax, ymin, ymax is results returns from cel.text.measure

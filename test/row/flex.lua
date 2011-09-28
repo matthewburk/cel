@@ -13,7 +13,7 @@ return function(root)
             --link = {'edges'},
             {flex=1; 'one',},
             {flex=1; 'two',},
-            {flex=2;  minw=100, link='width', cel.text.new([[I have a whole lot of work to do , this takes so long]]),},
+            {flex=2;  link='width', cel.text.new([[I have a whole lot of work to do , this takes so long]]),},
             {flex=1; 'four',},
             {flex=1; 'five',},
             {flex=1; 'six',},

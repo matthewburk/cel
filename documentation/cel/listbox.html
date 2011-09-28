@@ -534,23 +534,38 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          listbox:items([selected])&nbsp;
+          listbox:items()&nbsp;
           <span class="functiondesc">Returns an iterator function and the listbox.</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Returns an iterator function and the listbox. <div class="code"><pre><code>for item, index in listbox:items() do end</code></pre></div> will iterate over each item in the listbox starting a the first item. <div class="code"><pre><code>for item in listbox:items('selected') do end</code></pre></div> will iterate over each selected item in no particular order.</p>
-                <div class="arguments">
-          <span class="arguments">arguments</span>
-          <dl class="arguments">          <dt><code><span class="paramname">selected</span>&nbsp;<span class="paramtype">string</span></code></dt> 
-          <dd>iff this is 'selected' the iterator function iterates only selected items.</dd>
-          </dl>
-        </div>
+        <p>Returns an iterator function and the listbox. <div class="code"><pre><code>for index, item in listbox:items() do end</code></pre></div> will iterate over each item in the listbox starting a the first item.</p>
+        
                 <div class="returns">
           <span class="returns">returns</span>
           <dl class="returns">          <dt><code>iterator</code></dt> 
           <dd>an iterator function</dd>
                      <dt><code>listbox</code></dt> 
-          <dd>this listbox, iterator function invariant state</dd>
+          <dd>the listbox, iterator function invariant state</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          listbox:selecteditems()&nbsp;
+          <span class="functiondesc">Returns an iterator function and the listbox.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns an iterator function and the listbox. <div class="code"><pre><code>for item in listbox:selecteditems() do end</code></pre></div> will iterate over each selected item in no particular order.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>iterator</code></dt> 
+          <dd>an iterator function</dd>
+                     <dt><code>listbox</code></dt> 
+          <dd>the listbox, iterator function invariant state</dd>
           </dl>
           </div>
         

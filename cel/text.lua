@@ -47,6 +47,32 @@ local layout = {
   },
 }
 
+local breakon = {
+  [' '] = true,
+  ['\t'] = true,
+  ['\n'] = true,
+  ['\r'] = true,
+}
+
+local function findminw(font, str, lpad, rpad)
+  local minw = 0
+  do
+    local len = #str
+    local i = 1
+    while true do
+      local j, advance = font:wrap(str, i, len, breakon)
+      if not j then break end
+      i = j + 1
+      if advance > minw then
+        minw = advance
+      end
+    end
+  end
+  lpad = lpad or 0
+  rpad = rpad or 0
+  return minw + lpad + rpad
+end
+
 function metatable:getbaseline(i)
   i = i or 1
   local line = self[_lines][i]
@@ -118,15 +144,23 @@ local function reflow(text)
 
   local y = text[_padt] or 0
 
-  for i, j in font:wordwrap(str, w) do
-    --TODO get advance back from wordwrap
-    lines[#lines + 1] = {i = i, j = j, penx = penx, peny = peny, y = y, 
-    h = lineheight, 
-    advance=font:measureadvance(str, i, j)
-    }
-    peny = peny + lineheight
-    y = y + lineheight
+  do
+    local len = #str
+    local i = 1
+    while true do
+      local j, advance, char = font:wrapat(str, i, len, w)
 
+      if not j then break end
+
+      lines[#lines + 1] = { i = i, j = j, penx = penx, peny = peny, y = y, h = lineheight, advance=advance }
+      peny = peny + lineheight
+      y = y + lineheight
+      i = j + 1
+
+      while(string.sub(str, i, i) == char) do
+        i = i + 1
+      end 
+    end
   end
 
   if 'center' == justification then
@@ -166,7 +200,8 @@ function metatable:settext(str)
     if self[_wrap] then
       --TODO don't want to reflow twice when chaning the text
       local minh = reflow(self)
-      metacel:setlimits(self, nil, w, minh, minh)
+      local minw = findminw(font, str, l, r)
+      metacel:setlimits(self, minw, w, minh, minh)
     else
       self[_lines] = {{i = 1, j = nil, penx = penx, peny = peny, 
                        y = t or 0, h = font.lineheight, advance=advancew}}
@@ -183,8 +218,7 @@ function metatable:getpadding()
   return self[_padl], self[_padt], self[_padr], self[_padb]
 end
 
---true == wrap
---false == nowrap
+--[[
 function metatable.setwrapmode(text, mode)
   if mode then
     metacel:setlimits(text, nil, nil, nil, nil)
@@ -194,6 +228,7 @@ function metatable.setwrapmode(text, mode)
     metacel:setlimits(text, w)
   end
 end
+--]]
 
 function metacel:__describe(text, t)
   t.text = text[_str]
@@ -212,6 +247,7 @@ do
 end
 
 do
+  
   local math = math
   local _new = metacel.new
   function metacel:new(str, wrapmode, face)
@@ -223,7 +259,8 @@ do
     local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, advancew, fonth, xmin, xmax, ymin, ymax) 
     local text 
     if wrapmode ~= 'nowrap' then
-      text = _new(self, w, h, face, nil, w, h, h)
+      local minw = findminw(font, str, l, r)
+      text = _new(self, w, h, face, minw, w, h, h)
       text[_wrap] = 'word'
     else
       text = _new(self, w, h, face, w, w, h, h)

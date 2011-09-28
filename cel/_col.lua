@@ -738,16 +738,16 @@ do --colformation.describeslot
       mousefocusin = false,
       focus = false,
       flowcontext = false,
-      clip = { l=0, r=0, t=0, b=0 },
       index = 0,
       refresh = false,
+      clip = {l=0,t=0,r=0,b=0},
     }
 
     dcache[index-dcache.offset]=t
     return t
   end
 
-  function colformation:describeslot(col, host, gx, gy, gl, gt, gr, gb, index, link, hasmouse)
+  function colformation:describeslot(col, host, gx, gy, gl, gt, gr, gb, index, link, hasmouse, fullrefresh)
     local slot = link[_slot]
 
     gy = gy + slot.y
@@ -759,33 +759,25 @@ do --colformation.describeslot
 
     local face = slot.face or col[_slotface]
 
-    if not face and not col[_metacel].__describeslot then
-      local y = link[_y] 
-      link[_y] = slot.linky or 0
-      local ret = describe(link, host, gx, gy, gl, gt, gr, gb)
-      link[_y] = y
-      return ret
-    end
-
     local t = getdescription(col, index)
 
     t.id = 0 --virtual, find a way to assign an id
     t.metacel = '['.. index ..']'
     t.face = face
     t.host = host
-    t.x = gx
-    t.y = gy
+    t.x = 0
+    t.y = slot.y
     t.w = col[_w]
     t.h = slot.h
     t.mousefocus = false
     t.mousefocusin = hasmouse --TODO only set if link doesn't have mouse
     t.index = index
     --TODO focus
+    t.refresh = fullrefresh or link[_refresh]
     t.clip.l = gl
-    t.clip.r = gr
     t.clip.t = gt
+    t.clip.r = gr
     t.clip.b = gb
-    t.refresh = link[_refresh]
 
     if col[_metacel].__describeslot then
       col[_metacel]:__describeslot(col, link, index, t)
@@ -794,7 +786,7 @@ do --colformation.describeslot
     do
       local y = link[_y] 
       link[_y] = slot.linky or 0 --TODO bad hack, do this another way 
-      t[1] = describe(link, t, gx, gy, gl, gt, gr, gb)
+      t[1] = describe(link, t, gx, gy, gl, gt, gr, gb, fullrefresh)
       link[_y] = y
     end
 
@@ -802,7 +794,7 @@ do --colformation.describeslot
   end
 
   --colformation.describelinks
-  function colformation:describelinks(col, host, gx, gy, gl, gt, gr, gb)
+  function colformation:describelinks(col, host, gx, gy, gl, gt, gr, gb, fullrefresh)
     local links = col[_links]
     local nlinks = links.n
 
@@ -826,7 +818,7 @@ do --colformation.describeslot
       local n = #host
       initdcache(col, a, b)
       for index = a, b do
-        host[i] = self:describeslot(col, host, gx, gy, gl, gt, gr, gb, index, links[index], vcel == links[index])
+        host[i] = self:describeslot(col, host, gx, gy, gl, gt, gr, gb, index, links[index], vcel == links[index], fullrefresh)
         i = host[i] and i + 1 or i
       end
       for i = i, n do
@@ -1007,7 +999,7 @@ do --metacel.new, metacel.compile
     }
 
     col[_maxh] = 0
-    col[_slotface] = layout.slotface
+    col[_slotface] = layout.slotface or M.getface('col.slot')
     col[_formation] = colformation
     return col
   end

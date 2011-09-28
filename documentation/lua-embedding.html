@@ -1,0 +1,284 @@
+<html> 
+ 
+<head> 
+<title>cel embedding guide</title> 
+</head> 
+ 
+<body> 
+<h1>1 - Introduction</h1>
+
+<p>Cel is a pure Lua library.  It is desigend to be embedded into a host application.
+The host application must provide Cel with input from the user and access to
+system resources, and also provide rendering for Cel.
+ 
+<p> Before Cel is usable we need to install a driver for it, the driver is responsible
+for provding device input, fonts, clipboard access and other miscellaneous functions 
+that are platform specific.  This section is meant to serve as an example on how to
+create the driver and use it to drive Cel.
+
+<h1>The driver module</h1>
+<p>We will create a module for our driver.</p>
+
+<p>To embed Cel. First require the cel module.
+<div><pre><code>
+local cel = require 'cel' 
+</code></pre></div>
+</p>
+
+<p>Call cel.installdriver() to create the driver, a proxytable is 
+returned which will be a bidirectional interface. This function will return raise and error if 
+it is called again.  Cel requires a table that maps the platform key codes and states
+to the names that Cel will use (for the mouse and keyboard).  This mapping has a big advantage,
+all events from Cel will use the plaform codes.  The first parameter to cel.installdriver is a
+table with mouse mappings and the second is a table with keyboard mappings.
+<div><pre><code>
+local driver = cel.installdriver(
+  {
+    buttons = { left = 1, middle = 2, right = 3, },
+    states = { unknown = 'unknown', normal = 'normal', pressed = 'pressed', },
+    wheeldirection = { up = 1, down = -1, },
+  },
+  {
+    keys = setmetatable({}, {__index = function(t, k, v) return k end}),
+    keystates = { unknown = 'unknown', normal = 'normal', pressed = 'pressed', }
+  })
+</code></pre></div> 
+
+<h2>driver interface functions</h2>
+<p>
+The driver interface defines these functions which should be called to provide user input to Cel.
+</p>
+<h3>mousemove</h3>
+<div><pre><code>
+function reactor.mousemove(x, y)
+  driver.mousemove(x, y)
+end
+</code></pre></div>
+
+<h3>mousedown</h3>
+<div><pre><code>
+function reactor.mousepressed(x, y, button, alt, ctrl, shift)
+  driver.mousedown(x, y, button, alt, ctrl, shift)
+end
+</code></pre></div>
+
+<h3>mouseup</h3>
+<div><pre><code>
+function reactor.mousereleased(x, y, button, alt, ctrl, shift)
+  driver.mouseup(x, y, button, alt, ctrl, shift)
+end
+</code></pre></div>
+
+<h3>mousewheel</h3>
+<div><pre><code>
+function reactor.mousewheel(delta, step)
+  local direction 
+
+  if delta > 0 then
+    direction = cel.mouse.wheeldirection.up
+  else
+    direction =  cel.mouse.wheeldirection.down
+  end
+
+  local x, y = cel.mouse:xy()
+
+  delta = math.abs(delta)
+  for i=1,delta do
+    driver.mousewheel(x, y, direction, step)
+  end
+end
+</code></pre></div>
+
+<h3>keydow and keypress</h3>
+<div><pre><code>
+function reactor.keypressed(key, alt, ctrl, shift, autorepeat)
+  if autorepeat then
+    driver.keypress(key, alt, ctrl, shift)
+  else
+    driver.keydown(key, alt, ctrl, shift)
+  end
+end
+</code></pre></div>
+
+<h3>keyup</h3>
+<div><pre><code>
+function reactor.keyreleased(key)
+  driver.keyup(key)
+end
+</code></pre></div>
+
+<h3>char</h3>
+<div><pre><code>
+function reactor.character(c)
+  driver.char(c)
+end
+</code></pre></div>
+
+<h3>command</h3>
+<div><pre><code>
+function reactor.command(c)
+  driver.command(c)
+end
+</code></pre></div>
+
+<h3>timer</h3>
+<p>The value passed to driver.timer() should be a running count of milliseconds.</p>
+<div><pre><code>
+function reactor.update(fps)
+  driver.timer(reactor.timermillis());
+end
+</code></pre></div>
+
+
+<h2>driver callback functions</h2>
+<p>The driver module should define these functions in the driver table retured by cel.installdriver().  They will
+be called by cel if they are provided.</p>
+
+<h3>loadfont</h3>
+<p>The driver is required to implement loadfont.  This is where embedding gets the most difficult if you
+don't already have decent font rendering/metrics.  Cel does not provide this, but expcets some basic font metrics.
+There are many tools and libraries available that will render fonts and supply basic metrics.<p>
+
+<p>cel.loadfont() will call driver.loadfont() to create a new font.  When a font is loaded through cel.loadfont()
+it caches the result, so it is unecesasry to do this in the driver implementation.</p>
+
+<p>The name of the font passed to loadfont is unrestricted, the driver must imlement at least 1 font, but
+should also expect these strings for the font name:</p>
+<ul>
+  <li>code - should be a monospace font that is well suited for coding with</li>
+  <li>monospace - a monspace font</li>
+  <li>serif - a serif font like times new roman</li>
+  <li>sansserif - a sans serif font like arial</li>
+</ul>
+
+<div><pre><code>
+do
+  local celfontfaces = {
+    code = 'fixedsys',
+    monospace = 'courier new',
+    serif = 'times new roman',
+    sansserif = 'arial',
+    default = 'arial'
+  }
+
+  function driver.loadfont(name, weight, slant, size)
+    name = celfontfaces[name] or name 
+
+    local surface = cairo.surface.create(0, 0)
+    local nativefont = cairo.font.face_create(name, slant, weight)
+    local cr = cairo.create(surface)
+
+    cr:set_font_face(nativefont)
+    cr:set_font_size(size)
+
+    local font = {
+      nativefont = nativefont,
+      name=name,
+      weight=weight,
+      slant=slant,
+      size=size,
+    }
+
+    local charset = 
+    [[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghifklmnopqrstuvwxyz`1234567890-=~!@#$%^&*()_+[]\\{}|;:\'"<>?,./]]
+
+    local xbr, ybr, w, h, xadv, yadv = cr:text_extents(charset)
+
+    local ymin = -(ybr + h)
+    local ymax = -ybr
+
+    local xmin = 32000 
+    local xmax = -32000 
+    for i = 1, #charset do
+      local xbr, ybr, w, h, xadv, yadv = cr:text_extents(charset:sub(i, i))
+      if xbr < xmin then xmin = xbr end
+      if xbr + w > xmax then xmax = xbr + w end
+    end
+
+    font.bbox = {
+      xmin = xmin,
+      xmax = xmax,
+      ymin = ymin,
+      ymax = ymax,
+    }
+
+    do
+      local ascent, descent, height = cr:font_extents()
+      font.lineheight = height
+      font.ascent = ascent
+      font.descent = descent
+
+      if ascent > font.bbox.ymax then
+        --this is not acceptable, cel algorithms need to look as ascent instaed of 
+        --looking at bbox alone
+        print('useing ascent as ymax for', name, weight, slant, size)
+        font.bbox.ymax = ascent
+      end
+    end
+
+    font.metrics = setmetatable({}, {__index = function(fontmetrics, glyph)
+      local char = string.char(glyph)
+      local xbr, ybr, w, h, xadv, yadv = cr:text_extents(char)      
+
+      fontmetrics[glyph] = {
+        glyph = glyph,
+        char = char,
+        advance = xadv,
+        xmin = xbr,
+        xmax = xbr + w,
+        ymin = -(ybr + h),
+        ymax = -ybr,
+      }
+
+      return fontmetrics[glyph]
+    end})
+
+    return font 
+  end
+end
+</code></pre></div>
+
+<p>loadfont should return a new font object as a table with the follwing entries:</p>
+<ul>
+  <li>bbox - a table that describes a tight bounding box around the inked portion of all glyphs in the font.
+                   See freetype FT_Face.bbox
+    <ul> 
+      <li>xmin - distance from the pen origin to the left-most inked portion of any glyph in the font</li>
+      <li>xmax - distance from the pen origin to the right-most inked portion of any glyph in the font</li>
+      <li>ymin - distance from the pen origin to the bottom-most inked portion of any glyph in the font(usually negative)</li>
+      <li>ymax - distance from the pen origin to the top-most inked portion of any glyph in the font</li>
+    </ul>
+  </li> 
+  <li>lineheight - See freetype FT_Face.height </li>
+  <li>ascent - See freetype FT_Face.ascender</li>
+  <li>descent - See freetype FT_Face.descender</li>
+  <li>metrics - a table with an entry for each glyph in the font (in a future version this will be a unicode value, for now it is implemented as the value of string.byte('a') where 'a' is the charater the glyph represents. 
+    <ul>
+      <li>glyph - the value of string.byte() for the corresponding char</li> 
+      <li>char - the value of string.char() for the corresponding glyph</li> 
+      <li>advance - the horizontal advance of the pen when this glyph is drawn</li> 
+      <li>xmin - distance from the pen origin to the left-most inked portion of the glyph</li>
+      <li>xmax - distance from the pen origin to the right-most inked portion of the glyph</li>
+      <li>ymin - distance from the pen origin to the bottom-most inked portion of the glyph</li>
+      <li>ymax - distance from the pen origin to the top-most inked portion of the glyph</li>
+    </ul>
+  </li>
+</ul>
+
+<p>A font returned from load font will be included in the description of a cel that uses the font.
+For that reason you should also include any additional information in the font that will be needed
+for your renderer.</p>
+
+<h2>The root cel</h2>
+<p>When the driver is installed it will have a reference to the root cel in driver.root, this can be publised
+or kept private to the driver if you wish to do some kind of sandboxing.  This driver will return a new cel to be
+used as the root cel for the app.  We don't return the real root cel because we want our driver to have sole
+control of it.  
+<div><pre><code>
+return driver.root:newroot():link(driver.root, 'edges')
+</code></pre></div>
+
+
+
+ 
+

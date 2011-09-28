@@ -4,7 +4,7 @@ return {
   'button',
   'textbutton',
   'label',
-  'sequence',
+  'col',
   'scroll',
   'listbox',
   'window',

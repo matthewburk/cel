@@ -215,7 +215,7 @@ do --ENV.describe
   local previous
   local current
 
-  local cache = {}--setmetatable({}, {__mode='kv'})
+  local cache = setmetatable({}, {__mode='kv'})
 
   local function getdescription(cel)
     local t = cache[cel]
@@ -232,8 +232,8 @@ do --ENV.describe
       mousefocusin = false,
       focus = false,
       flowcontext = false,
-      clip = { l=0, r=0, t=0, b=0 },
-      refresh = false,
+      refresh = 'full',
+      clip = {l=0,t=0,r=0,b=0},
     }
 
     cache[cel]=t
@@ -241,23 +241,23 @@ do --ENV.describe
   end
 
   --describe for all cels
-  local function __describe(cel, host, gx, gy, gl, gt, gr, gb, t)
+  local function __describe(cel, host, gx, gy, gl, gt, gr, gb, t, fullrefresh)
     t.host = host
     t.id = cel[_celid]
     t.face = cel[_face] or cel[_metacel][_face]
-    t.x = gx
-    t.y = gy
+    t.x = cel[_x]
+    t.y = cel[_y] 
     t.w = cel[_w]
     t.h = cel[_h]
     t.mousefocus = false
     t.mousefocusin = false
     t.focus = false
     t.flowcontext = flows[cel] and flows[cel].context
+    t.refresh = fullrefresh or cel[_refresh]
     t.clip.l = gl
-    t.clip.r = gr
     t.clip.t = gt
+    t.clip.r = gr
     t.clip.b = gb
-    t.refresh = cel[_refresh]
 
     if mouse[_focus][cel] then
       t.mousefocusin = true
@@ -275,7 +275,7 @@ do --ENV.describe
   end
 
   local updaterect = _ENV.updaterect
-  function describe(cel, host, gx, gy, gl, gt, gr, gb)
+  function describe(cel, host, gx, gy, gl, gt, gr, gb, fullrefresh)
     gx = gx + cel[_x] --TODO clamp to maxint
     gy = gy + cel[_y] --TODO clamp to maxint
 
@@ -289,12 +289,13 @@ do --ENV.describe
 
     local t = getdescription(cel)
 
-    if cel[_refresh] or t.id == 0 or t.refresh 
-      or (t.clip.l ~= gl or t.clip.r ~= gr or t.clip.t ~= gt or t.clip.b ~= gb) then
-      __describe(cel, host, gx, gy, gl, gt, gr, gb, t)
+    if fullrefresh or cel[_refresh] or t.refresh then 
+      __describe(cel, host, gx, gy, gl, gt, gr, gb, t, fullrefresh)
+
+      fullrefresh = fullrefresh or (t.refresh == 'full' and 'full')
 
       local formation =  rawget(cel, _formation) or stackformation
-      formation:describelinks(cel, t, gx, gy, gl, gt, gr, gb)
+      formation:describelinks(cel, t, gx, gy, gl, gt, gr, gb, fullrefresh)
       if t.refresh == 'full' then
         if gl < updaterect.l then updaterect.l = gl end
         if gt < updaterect.t then updaterect.t = gt end
@@ -308,12 +309,12 @@ do --ENV.describe
   end
 
   do --stackformation.describelinks
-    function stackformation:describelinks(cel, host, gx, gy, gl, gt, gr, gb)
+    function stackformation:describelinks(cel, host, gx, gy, gl, gt, gr, gb, fullrefresh)
       local i = 1
       local n = #host
       local link = rawget(cel, _links)
       while link do
-        host[i] = describe(link, host, gx, gy, gl, gt, gr, gb)
+        host[i] = describe(link, host, gx, gy, gl, gt, gr, gb, fullrefresh)
         i = host[i] and i + 1 or i
         link = link[_next]
       end
@@ -784,9 +785,11 @@ do --metacel.setlimits
     --would grow/shrink it if it could
     --
     --
+    --[[
     if cel[_metacel] ~= self then
       return cel[_metacel]:setlimits(cel, minw, maxw, minh, maxh, nw, nh)
     end
+    --]]
 
     minw = max(floor(minw or 0), 0)
     maxw = max(floor(maxw or maxdim), minw)

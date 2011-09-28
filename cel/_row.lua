@@ -736,16 +736,16 @@ do --rowformation.describeslot
       mousefocusin = false,
       focus = false,
       flowcontext = false,
-      clip = { l=0, r=0, t=0, b=0 },
       index = 0,
       refresh = false,
+      clip = {l=0,t=0,r=0,b=0},
     }
 
     dcache[index-dcache.offset]=t
     return t
   end
 
-  function rowformation:describeslot(row, host, gx, gy, gl, gt, gr, gb, index, link, hasmouse)
+  function rowformation:describeslot(row, host, gx, gy, gl, gt, gr, gb, index, link, hasmouse, fullrefresh)
     local slot = link[_slot]
 
     gx = gx + slot.x
@@ -757,33 +757,25 @@ do --rowformation.describeslot
 
     local face = slot.face or row[_slotface]
 
-    if not face and not row[_metacel].__describeslot then
-      local x = link[_x] 
-      link[_x] = slot.linkx or 0
-      local ret = describe(link, host, gx, gy, gl, gt, gr, gb)
-      link[_x] = x
-      return ret
-    end
-
     local t = getdescription(row, index)
 
     t.id = 0 --virtual, find a way to assign an id
     t.metacel = '['.. index ..']'
     t.face = face
     t.host = host
-    t.x = gx
-    t.y = gy
+    t.x = slot.x 
+    t.y = 0 
     t.w = slot.w
     t.h = row[_h]
     t.mousefocus = false
     t.mousefocusin = hasmouse --TODO only set if link doesn't have mouse
     t.index = index
     --TODO focus
+    t.refresh = fullrefresh or link[_refresh]
     t.clip.l = gl
-    t.clip.r = gr
     t.clip.t = gt
+    t.clip.r = gr
     t.clip.b = gb
-    t.refresh = link[_refresh]
 
     if row[_metacel].__describeslot then
       row[_metacel]:__describeslot(row, link, index, t)
@@ -792,7 +784,7 @@ do --rowformation.describeslot
     do
       local x = link[_x] 
       link[_x] = slot.linkx or 0 --TODO bad hack, do this another way 
-      t[1] = describe(link, t, gx, gy, gl, gt, gr, gb)
+      t[1] = describe(link, t, gx, gy, gl, gt, gr, gb, fullrefresh)
       link[_x] = x
     end
 
@@ -800,7 +792,7 @@ do --rowformation.describeslot
   end
 
   --rowformation.describelinks
-  function rowformation:describelinks(row, host, gx, gy, gl, gt, gr, gb)
+  function rowformation:describelinks(row, host, gx, gy, gl, gt, gr, gb, fullrefresh)
     local links = row[_links]
     local nlinks = links.n
 
@@ -824,7 +816,7 @@ do --rowformation.describeslot
       local n = #host
       initdcache(row, a, b)
       for index = a, b do
-        host[i] = self:describeslot(row, host, gx, gy, gl, gt, gr, gb, index, links[index], vcel == links[index])
+        host[i] = self:describeslot(row, host, gx, gy, gl, gt, gr, gb, index, links[index], vcel == links[index], fullrefresh)
         i = host[i] and i + 1 or i
       end
       for i = i, n do
@@ -1005,7 +997,7 @@ do --metacel.new, metacel.compile
     }
 
     row[_maxw] = 0
-    row[_slotface] = layout.slotface
+    row[_slotface] = layout.slotface or M.getface('row.slot')
     row[_formation] = rowformation
     return row
   end

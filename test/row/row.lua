@@ -25,11 +25,11 @@ return function(root)
           { flex = 5;
             win,
           },
-          { link = {linker, nil, nil, {flex = 1, minw = 50}};
-            new'hello row wrapable',
+          { link = {linker, nil, nil, {flex = 1}};
+            new'hello    row wrapable',
           },
-          { link = {linker, nil, nil, {flex = 2, minw = 100}};
-            new'hello row wrapable',
+          { link = {linker, nil, nil, {flex = 1, }};
+            new'hello   row   wrapable',
           },
           cel.window.new():adddefaultcontrols(),
         },
