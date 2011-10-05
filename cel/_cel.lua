@@ -253,7 +253,7 @@ do --ENV.describe
     t.mousefocusin = false
     t.focus = false
     t.flowcontext = flows[cel] and flows[cel].context
-    t.refresh = fullrefresh or cel[_refresh]
+    t.refresh = cel[_refresh]
     t.clip.l = gl
     t.clip.t = gt
     t.clip.r = gr

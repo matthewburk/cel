@@ -619,8 +619,12 @@ setmetatable(M,
 do
   M.flows = {}
 
-  local function interpolate(a, b, p)
+  local function lerp(a, b, p)
     return a + p * (b -a)
+  end
+
+  local function smoothstep(a, b, p)
+    return lerp(a, b, p*p*(3-2*p))
   end
 
   --
@@ -630,19 +634,19 @@ do
     --mode = 'value'|'rect',
     --finalize = false,
     --}
-  local function linearflowrect(maxduration, flow, ox, fx, oy, fy, ow, fw, oh, fh)
+  local function flowrect(interp, maxduration, flow, ox, fx, oy, fy, ow, fw, oh, fh)
     if flow.duration >= maxduration then return fx, fy, fw, fh end
     local dt = flow.duration/maxduration
-    local x = interpolate(ox, fx, dt)
-    local y = interpolate(oy, fy, dt) 
-    local w = interpolate(ow, fw, dt)
-    local h = interpolate(oh, fh, dt)
+    local x = interp(ox, fx, dt)
+    local y = interp(oy, fy, dt) 
+    local w = interp(ow, fw, dt)
+    local h = interp(oh, fh, dt)
     return x, y, w, h, true
   end
 
-  local function linearflowvalue(maxduration, flow, ov, fv)
+  local function flowvalue(interp, maxduration, flow, ov, fv)
     if flow.duration > maxduration then return fv end
-    return interpolate(ov, fv, flow.duration/maxduration), true
+    return interp(ov, fv, flow.duration/maxduration), true
   end
  
   do
@@ -654,9 +658,26 @@ do
       if not f then
         f = function(flow, ...)
           if flow.mode == 'rect' then
-            return linearflowrect(millis, flow, ...)
+            return flowrect(lerp, millis, flow, ...)
           else
-            return linearflowvalue(millis, flow, ...)
+            return flowvalue(lerp, millis, flow, ...)
+          end
+        end
+        flows[millis] = f
+      end
+
+      return f
+    end
+
+    function M.flows.smooth(millis, mode)
+      local f = flows[millis]
+
+      if not f then
+        f = function(flow, ...)
+          if flow.mode == 'rect' then
+            return flowrect(smoothstep, millis, flow, ...)
+          else
+            return flowvalue(smoothstep, millis, flow, ...)
           end
         end
         flows[millis] = f
