@@ -178,6 +178,21 @@ do --cel.translate
   end
 end
 
+do --cel.translate
+  function M.translate_(from, x, y, to) 
+    while from do
+      x = x + from[_x]
+      y = y + from[_y]
+
+      if to == from[_host] then
+        return x, y
+      end
+
+      from = from[_host] 
+    end
+  end
+end
+
 do --cel.describe, cel.printdescription
   local preamble = {
     updaterect = updaterect 
@@ -373,6 +388,27 @@ do --loadfont TODO make driver supply path and extension
 
         return penx, font.bbox.ymax - font.bbox.ymin, xmin, xmax, ymin, ymax
       end
+      --[==[
+        static ptrdiff_t posrelat (ptrdiff_t pos, size_t len) {
+          /* relative string position: negative means back from end */
+          return (pos>=0) ? pos : (ptrdiff_t)len+pos+1;
+        }
+
+
+        static int str_sub (lua_State *L) {
+          size_t l;
+          const char *s = luaL_checklstring(L, 1, &l);
+          ptrdiff_t start = posrelat(luaL_checkinteger(L, 2), l);
+          ptrdiff_t end = posrelat(luaL_optinteger(L, 3, -1), l);
+          if (start < 1) start = 1;
+          if (end > (ptrdiff_t)l) end = (ptrdiff_t)l;
+          if (start <= end)
+            lua_pushlstring(L, s+start-1, end-start+1);
+          else lua_pushliteral(L, "");
+          return 1;
+        }
+      --
+      --]==]
 
       function fontmt.measureadvance(font, s, i, j)
         if not s then
@@ -382,8 +418,13 @@ do --loadfont TODO make driver supply path and extension
         i = (i and math.max(i, 1)) or 1
         j = j or #s
         local advance = 0
+
         for i=i, j do
-          local glyph = font.metrics[string_byte(s, i)]
+          local b = string_byte(s, i)
+
+          if not b then return 0 end
+
+          local glyph = font.metrics[b]
           advance = advance + glyph.advance
         end
         return advance
@@ -400,7 +441,10 @@ do --loadfont TODO make driver supply path and extension
         local penx = 0
 
         for i=i, j do
-          local glyph = font.metrics[string_byte(s, i)]
+          local b = string_byte(s, i)
+          if not b then return 0, 0, 0, 0 end
+
+          local glyph = font.metrics[b]
           local glyph_xmin = penx + glyph.xmin
           local glyph_xmax = penx + glyph.xmax
 
@@ -433,7 +477,7 @@ do --loadfont TODO make driver supply path and extension
 
       ---[[
       local math = math
-      function fontmt.pick(font, s, i, j, x)
+      function fontmt.pick(font, x, s, i, j)
         local penx = 0
         i = (i and math.max(i, 1)) or 1
         j = j or #s
@@ -443,14 +487,14 @@ do --loadfont TODO make driver supply path and extension
           if nextpenx > x then
             local mid = interpolate(penx, nextpenx, .5)
             if x < mid then
-              return i, penx
+              return i-1, penx
             else
-              return i + 1, nextpenx
+              return i, nextpenx
             end
           end
           penx = nextpenx
         end 
-        return j + 1, penx
+        return j, penx
       end
       --]]
     end
@@ -536,12 +580,12 @@ do --loadfont TODO make driver supply path and extension
 
         if 'default' == fitx then
           xmin = math.min(xmin, 0) --left is lesser of penx of xmin
-          w = math.max(w, xmax - xmin) --right greater of advance or rightmost pixel as drawn
+          w = math.max(-xmin+w, xmax - xmin) --right greater of advance or rightmost pixel as drawn
         elseif 'bbox' == fitx then
           w = xmax - xmin
         elseif 'multiline' == fitx then --TODO what is multiline for, is this really needed
           xmin = math.min(font.bbox.xmin, 0) --left is lesser of penx or xmin for font
-          w = math.max(w, xmax - xmin) --right greater of advance or rightmost pixel as drawn
+          w = math.max(-xmin+w, xmax - xmin) --right greater of advance or rightmost pixel as drawn
         end
 
         if 'bbox' == fity then

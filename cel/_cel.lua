@@ -772,6 +772,7 @@ do --metacel.compileentry
   end
 end
 
+---[=[ TODO remove this function
 do --metacel.setlimits
   local floor = math.floor
   local function max(a, b) if a >= b then return a else return b end end
@@ -841,6 +842,7 @@ do --metacel.setlimits
     event:signal()
   end
 end
+--]=]
 
 do --metacel.metatable
     --[[
@@ -856,6 +858,67 @@ do --metacel.metatable
 end
 
 local metatable = metacel.metatable
+
+do --metatable.setlimits
+  local floor = math.floor
+  local function max(a, b) if a >= b then return a else return b end end
+
+  function metatable.setlimits(cel, minw, maxw, minh, maxh, nw, nh)
+
+    if cel[_metacel].__setlimits then
+      minw, maxw, minh, maxh = cel[_metacel]:__setlimits(cel, minw, maxw, minh, maxh, nw, nh)
+    end
+
+    minw = max(floor(minw or 0), 0)
+    maxw = max(floor(maxw or maxdim), minw)
+    minh = max(floor(minh or 0), 0)
+    maxh = max(floor(maxh or maxdim), minh)
+
+    local ominw = cel[_minw]
+    local omaxw = cel[_maxw]
+    local ominh = cel[_minh]
+    local omaxh = cel[_maxh]
+
+    cel[_minw] = minw
+    cel[_maxw] = maxw
+    cel[_minh] = minh
+    cel[_maxh] = maxh
+
+    if not (ominw ~= minw or omaxw ~= maxw or ominh ~= minh or omaxh ~= maxh) then
+      return
+    end
+
+    local w = nw or cel[_w]
+    local h = nh or cel[_h]
+
+    if w < minw then w = minw end
+    if h < minh then h = minh end
+    if w > maxw then w = maxw end
+    if h > maxh then h = maxh end
+
+    event:wait()
+
+    local host = rawget(cel, _host)
+    if host then
+      local formation = rawget(host, _formation)
+      if formation and formation.linklimitschanged then
+        formation:linklimitschanged(host, cel, ominw, omaxw, ominh, omaxh)
+      end
+    end
+
+    --this resizes the cel if the limits now constrain it
+    --but also need to resize if the limits unconstrain it
+    --if i always resize it makes it really slow under certain conditions
+    --like a sequence of wrapping text
+    --don't do this, the formation should handle it only, so just do it for the stackformation
+    --or do it when there is no host
+    if w ~= cel[_w] or h ~= cel[_h] or rawget(cel, _linker) then
+      cel:resize(w, h)
+    end
+
+    event:signal()
+  end
+end
 
 do --metatable.__tostring
   function metatable.__tostring(cel)

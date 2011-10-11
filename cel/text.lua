@@ -250,7 +250,7 @@ do
   
   local math = math
   local _new = metacel.new
-  function metacel:new(str, wrapmode, face)
+  function metacel:new(str, face)
     face = self:getface(face)
 
     local font = face.font
@@ -258,11 +258,11 @@ do
     local advancew, fonth, xmin, xmax, ymin, ymax = font:measure(str)
     local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, advancew, fonth, xmin, xmax, ymin, ymax) 
     local text 
-    if wrapmode ~= 'nowrap' then
+    if true then
       local minw = findminw(font, str, l, r)
       text = _new(self, w, h, face, minw, w, h, h)
       text[_wrap] = 'word'
-    else
+    else --this is nowrapping
       text = _new(self, w, h, face, w, w, h, h)
       text[_wrap] = nil 
     end
@@ -289,7 +289,7 @@ do
 
   local _compile = metacel.compile
   function metacel:compile(t, text)
-    return _compile(self, t, text or metacel:new(t.text, t.wrapmode, t.face))
+    return _compile(self, t, text or metacel:new(t.text, t.face))
   end
 end
 

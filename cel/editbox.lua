@@ -24,9 +24,7 @@ THE SOFTWARE.
 local cel = require 'cel'
 
 local metacel, metatable = cel.newmetacel('editbox') 
-local textmetacel = cel.text.newmetacel('editbox.text')
-
-metacel['.text'] = textmetacel
+metacel['.text'] = cel.label.newmetacel('editbox.text')
 
 local _font = {} 
 local _text = {} 
@@ -36,96 +34,32 @@ local _padt = {}
 local _padb = {}
 local _caret = {}
 local _multiline = {}
+local _selection = {}
 
 local keyboard = cel.keyboard
+local mouse = cel.mouse
 
 local layout = {
-  text =  {
-    face = nil
-  }
+  text = cel.getface('editbox.text')
 }
 
-do
-  --[[
-  function metacel:onmousemove(text, x, y)
-    local mouse = text.mouse
 
-    if text:hasmousetrapped() and 1 == mouse:buttonstate(1) then
-      local newcaretpos, newcaret = nearestpenx(text, x)
-      text:movecaret(newcaret, 'select')
-      text[_caret]:select(index, penx, peny)
-    end
-  end
-  --]]
-
-  local _settext = textmetacel.metatable.settext
-  function textmetacel.metatable:settext(str)
-    _settext(self, str)
-    if not str or #str == 0 then
-      local linepenx, linepeny = self:getbaseline(1)
-      assert(linepenx)
-      assert(linepeny)
-      self[_caret].i = 1
-      self[_caret].penx = linepenx
-      self[_caret].peny = linepeny
-      self[_caret].lineindex = 1
-      self:refresh()
-    end    
-    --self[_caret] = nil
-  end
-
-  function textmetacel:onmouseup(text, button, x, y, intercepted)
-    text:freemouse()
-  end
-
-  function textmetacel:onmousedown(text, state, button, x, y, intercepted)
-    if intercepted then return end
-
-    local buttons = cel.mouse.buttons
-
-    if cel.match(button, buttons.left, buttons.right, buttons.middle) then
-      text:trapmouse()
-      text:takefocus()
-      do 
-        local lineindex = text:pickline(y)
-        
-        if lineindex then
-          local i, j = text:getlinerange(lineindex)
-          local linepenx, linepeny = text:getbaseline(lineindex)
-          local caretindex, caretpenx = text:getfont():pickpen(text:gettext(), i, j, x-linepenx)
-
-          text[_caret] = {
-            i = caretindex,
-            penx = caretpenx + linepenx,
-            peny = linepeny,
-            lineindex = lineindex,
-          }
-        end
-      end
-      return true
-    end
-  end
-
+do --editbox.text
+  local textmetacel = metacel['.text']
   local __describe = textmetacel.__describe
   function textmetacel:__describe(text, t)
     __describe(self, text, t)
-
-    local caret = text[_caret]
-    if caret and 1 == text:hasfocus() then
-      t.caret = caret.i
-      t.caretx = caret.penx
-      t.carety = caret.peny
-      t.caretline = caret.lineindex
-    else
-      t.caret = false
-      t.caretx = 0
-      t.carety = 0
-      t.caretline = false
-    end
+    t.selectioni = text.selection.i
+    t.selectionj = text.selection.j
+    t.selectionx = text.selection.x
+    t.selectiony = text.selection.y
+    t.selectionw = text.selection.w
+    t.selectionh = text.selection.h
   end
 end
 
 function metatable:settext(str)
+  self:select(false)
   return self[_text]:settext(str)
 end
 
@@ -137,92 +71,156 @@ function metatable:isfull()
   return false
 end
 
---metacel functions
 function metacel:__describe(editbox, t)
   t.font = editbox[_font]
 end
 
-do
-  local function movecaret(text, i)
-    local caret = text[_caret]
-    local str = text:gettext()
-    local font = text:getfont()
+function metatable:movecaret(i)
+  local text = self[_text]
+  local caret = self[_caret]
+  local str = text:gettext()
+  local font = text:getfont()
 
-    if i < 1 then i = 1 end
-    if i > #str then i = #str + 1 end
+  if i < 0 then i = 0 end
+  if i > #str then i = #str end
 
-    if caret.i ~= i then
-      caret.i = i
+    caret.i = i
+    local penx, peny = text:getbaseline()
+    local a = font:measureadvance(str, 0, i)
+    local b = 2 --math.max(font:measureadvance(str, i+1, i+1), 2)
+    caret:move(penx + a, 0, b, text.h)
 
-      local penx, peny = text:getbaseline(1)
+    local selection = text.selection
 
-      if i > 1 then
-        penx = penx + font:measureadvance(str, 1, i-1)
-      end
+    selection.pivot = false
+    selection.x = false
+    selection.y = false
+    selection.w = false
+    selection.h = false
+  
+  text:refresh()
+  return self:showcaret():select(false)
+end
 
-      caret.penx = penx
-      
-      text:refresh()
-    end
+function metatable:showcaret()
+  local text = self[_text]
+  local caret = self[_caret]
+  local left = self[_padl]
+  local right = self.w - self[_padr]
+  local caretleft = cel.translate_(text, caret.x, caret.y, self)
+  local caretright = caretleft + caret.w
 
-    return caret.i, caret.penx
+  if caret.i == 0 then
+    text:move(math.huge)
+  elseif caretleft < left then
+    text:move(-caret.l + left)
+  elseif caretright > right then        
+    text:move(-caret.r + right)
+  end 
+
+  return self
+end
+
+function metatable:dragcaret(i)
+  local text = self[_text]
+  local caret = self[_caret]
+  local str = text:gettext()
+  local font = text:getfont()
+  local selection = text.selection
+
+  local pivot = selection.pivot or caret.i 
+
+  self:movecaret(i)
+
+  selection.pivot = pivot 
+    
+  local len = caret.i-pivot
+
+  if len > 0 then
+    self:select(selection.pivot+1, caret.i)
+  elseif len < 0 then
+    self:select(caret.i+1, selection.pivot)
+  else
+    --select none
+  end
+end
+
+function metatable:select(i, j)
+  local selection = self[_text].selection
+  local text = self[_text]  
+  local str = text:gettext()
+  local font = text:getfont()
+  local penx = text:getbaseline()
+
+  j = j or i
+  selection.i = i
+  selection.j = j
+
+  if i then
+    selection.x = penx + font:measureadvance(str, 0, i-1)
+    selection.y = 0
+    selection.w = font:measureadvance(str, i, j)
+    selection.h = text.h 
+  else
+    selection.pivot = false
+    selection.x = false
+    selection.y = false
+    selection.w = false
+    selection.h = false
   end
 
-  function metatable:movecaret(i)
-    local text = self[_text]
-    local n = i - text[_caret].i
-    local peni, penx = movecaret(text, i)
+  text:refresh()
 
-    local left = self[_padl]
-    local right = self.w - self[_padr]
+  return self
+end
 
-    --put penx in editbox space
-    penx = penx + text.x
-
-    --make caret visible
-    if peni == 1 then
-      text:move(math.huge)
-    elseif n < 0 then
-      if penx < left then
-        local newpenx = (left+((right-left)*.33))
-        text:moveby(math.abs(penx-newpenx))
-      end
-    elseif n > 0 then
-      if penx > right then
-        local newpenx = (left+((right-left)*.66))
-        text:moveby(-math.abs(penx-newpenx))
-      end
-    end
-  end
+function metatable:dragcaretby(n)
+  return self:dragcaret(n + (self[_caret].i or 0))
 end
 
 function metatable:movecaretby(n)
-  local text = self[_text]
-  return self:movecaret(n + text[_caret].i)
+  return self:movecaret(n + (self[_caret].i or 0))
 end
 
 function metatable:getcaret()
-  if self[_text][_caret] then
-    return self[_text][_caret].i
+  if self[_caret] then
+    return self[_caret].i
   end
 end
 
---deletes from string at index of caret
-function metatable:delete()
+function metatable:getselection()
+  local selection = self[_text].selection
+  return selection.i, selection.j
+end
+
+function metatable:deleteselection()
+  local selection = self[_text].selection
+  local i, j = selection.i, selection.j
+  self:select(false)
+  return self:delete(i, j)
+end
+
+function metatable:delete(i, j)
+  if not i then return self end
+
   local text = self[_text]
   local str = text:gettext()
-  local i = text[_caret].i
+  j = j or i
   
-  str = str:sub(0, i-1) .. str:sub(i+1, -1)
-  text:settext(str)
+  if i > 0 then
+    str = str:sub(0, i-1) .. str:sub(j+1, -1)
+    text:settext(str)
+  end
+  return self
 end
 
 function metacel:onchar(editbox, char, intercepted)
   if intercepted then return end
   local text = editbox[_text]
-  local i = text[_caret].i
+  local i = editbox[_caret].i
+  editbox:deleteselection()
   local str = text:gettext()
-  text:settext(str:sub(0, i-1) .. char .. str:sub(i, -1))
+  editbox:settext(str:sub(0, i) .. char .. str:sub(i+1, -1))
   editbox:movecaret(i+1)
   return true
 end
@@ -231,35 +229,81 @@ function metacel:onkeypress(editbox, key, intercepted)
   if intercepted then return end
 
   local keys = cel.keyboard.keys
+  local caret = editbox[_caret]
+  local selection = editbox[_text].selection
+  local movecaret = keyboard:isdown(keys.shift) and editbox.dragcaret or editbox.movecaret
+
   if key == keys.left then
-    editbox:movecaretby(-1)
+    movecaret(editbox, caret.i-1)
     return true
   elseif key == keys.right then
-    editbox:movecaretby(1)
+    movecaret(editbox, caret.i+1)
     return true
   elseif key == keys.home then
-    editbox:movecaret(1)
+    movecaret(editbox, 0)
     return true
   elseif key == keys['end'] then
-    editbox:movecaret(#editbox[_text]:gettext() + 1)
+    movecaret(editbox, math.huge)
     return true
   elseif key == keys.backspace then
-    if editbox:getcaret() > 1 then
+    if editbox:getselection() then
+      local i = selection.i
+      editbox:deleteselection()
+      editbox:movecaret(i-1)
+    else
+      editbox:delete(caret.i)
       editbox:movecaretby(-1)
-      editbox:delete()
     end
     return true
   elseif key == keys.delete then
-    editbox:delete()
+    if editbox:getselection() then
+      editbox:deleteselection()
+    else
+      editbox:delete(caret.i+1)
+    end
+    editbox:movecaret(caret.i)
     return true
   end
 end
 
 function metacel:onmousemove(editbox, x, y)
+  local text = editbox[_text]
+
+  if editbox:hasmousetrapped() and mouse:isdown(mouse.buttons.left) then
+    x = x - text.x --translate x to text
+    local penx = text:getbaseline()
+    local caretindex = text:getfont():pick(x-penx, text:gettext())
+    editbox:dragcaret(caretindex)
+  end
 end
 
-function metacel:onmousedown(editbox, state, button, x, y, intercepted)
-  return true
+function metacel:onmouseup(editbox, button, x, y, intercepted)
+  local text = editbox[_text]
+  if button == cel.mouse.buttons.left then
+    editbox:freemouse()
+  end
+end
+
+function metacel:onmousedown(editbox, button, x, y, intercepted)
+  if intercepted then return end
+
+  local text = editbox[_text]
+
+  if button == cel.mouse.buttons.left then
+    x = x - text.x --translate x to text
+
+    editbox:trapmouse()
+    editbox:takefocus()
+    local penx = text:getbaseline()
+    local caretindex = text:getfont():pick(x-penx, text:gettext())
+
+    if keyboard:isdown(keyboard.keys.shift) then
+      editbox:dragcaret(caretindex)
+    else
+      editbox:movecaret(caretindex)
+    end
+    return true
+  end
 end
 
 function metacel:onfocus(editbox, focus)
@@ -274,9 +318,6 @@ end
 function metacel:oncommand(editbox, command, data,  intercepted)
 end
 
-function metacel:__dump(editbox)
-  editbox[_text]:dump()
-end
 --TODO document that the font of a cel should always check the 
 --description for the font used
 do
@@ -288,52 +329,36 @@ do
   local _new = metacel.new
   function metacel:new(str, w, face)
     face = self:getface(face)
-    local font = face.font 
     local layout = face.layout or layout
 
-      --TODO somehow make a font useable as an alias for a face thats name is the font
-      local text = self['.text']:new(str, 'nowrap', layout.text.face or face.font)
+    --TODO somehow make a font useable as an alias for a face thats name is the font
+    local text = self['.text']:new(str, layout.text.face)
+    local font = text:getfont() 
 
-      --TODO set editbox font to text:getfont()
+    --TODO set editbox font to text:getfont()
 
-      local h = 2 + text.h --padt + padb + h
+    local h = 2 + text.h --padt + padb + h
 
-      local editbox = _new(self, w, h, face, nil, nil, h, h)
-      editbox[_text] = text
-      editbox[_font] = font
-      editbox[_padl] = 1
-      editbox[_padt] = 1
-      editbox[_padr] = 1
-      editbox[_padb] = 1
+    local editbox = _new(self, w, h, face, nil, nil, h, h)
+    text.editbox = editbox
+    text.selection = {i=false, j=false}
+    editbox[_text] = text
+    editbox[_caret] = cel.new(2, text.h, '@caret'):link(text)
+    editbox[_caret].i = 0
+    editbox[_font] = font
+    editbox[_padl] = 1
+    editbox[_padt] = 1
+    editbox[_padr] = 1
+    editbox[_padb] = 1
 
-      text:link(editbox, linker, editbox[_padl], editbox[_padt]):move(editbox[_padl], editbox[_padt])
-      return editbox
-    
-
+    text:link(editbox, linker, editbox[_padl], editbox[_padt]):move(editbox[_padl], editbox[_padt])
+    return editbox
   end
 
   local _compile = metacel.compile
   function metacel:construct(t, editbox)
-    return _compile(self, t, editbox or metacel:new(t.text, t.w, t.h, t.face))
+    return _compile(self, t, editbox or metacel:new(t.text, t.w, t.face))
   end
 end
 
 return metacel:newfactory()
---[[
-local function synccaret(text, caret)
-  if caret then
-    local lines = text[_lines]
-    --TODO tablex.bsearch
-    for index, line in ipairs(lines) do
-      if line.i > caret.i then
-        break
-      end
-      caret.lineindex = index
-      caret.peny = line.peny
-    end
-    local line = lines[caret.lineindex]
-    --print(string.format('caret.i %d, line.i %d, line.j %d', caret.i, line.i, line.j))
-    caret.penx = text[_font]:measureadvance(text[_str], line.i, caret.i - 1) + (text[_padl] or 0)
-  end
-end
---]]

@@ -236,7 +236,6 @@ function driver.keydown(key, alt, ctrl, shift)
       while focus do
         --TODO don't use same trigger for keydown and keypress, or maybe it is good to do that
         event:onkeydown(focus, key, trigger)
-        event:onkeypress(focus, key, trigger)
         focus = focus[_host]
       end
     else

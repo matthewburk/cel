@@ -70,7 +70,7 @@ function metatable.settext(label, text)
   label[_peny] = math.floor(peny)
   label[_textw] = textw
   label[_texth] = texth
-  metacel:setlimits(label, w, w, h, h)
+  label:setlimits(w, w, h, h)
   label:refresh()
   return label
 end
