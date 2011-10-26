@@ -7,11 +7,9 @@ export['cel.scroll'] {
 
     [[A scroll is a container cel with vertical and horizontal scrollbars]];
     [[A scroll is composed of a vertical scrollbar, horizontal scrollbar, and a portal.
-    The subject is the cel that is controlled by the scrollbars, and is linked to the portal.
-    Additional cels can be lined to the portal, but only one will be the subject.
+    The subject is the cel that is controlled by the scrollbars, and is linked to the portal.    
     ]];
       
-
     --composition values are cel or the metacel
     composition = {
       code[=[
@@ -49,13 +47,14 @@ export['cel.scroll'] {
         stepsize = integer, 
         xbar = { 
           face = face,
-          autohide = boolean,
+          show = boolean,
+          align = string,
           size = integer,
           track = { 
             face = face,
             size = integer,
             link = {linker[, xval[, yval]]} or string,
-            slider = {
+            thumb = {
               face = face,
               size = integer,
               minsize = integer,
@@ -74,13 +73,14 @@ export['cel.scroll'] {
         },
         ybar = {
           face = face,
-          autohide = boolean,
+          show = boolean,
+          align = string,
           size = integer,
           track {
             face = face,
             size = integer,
             link = {linker[, xval[, yval]]} or string,
-            slider = {
+            thumb = {
               face = face,
               size = integer,
               minsize = integer, 
@@ -107,7 +107,8 @@ export['cel.scroll'] {
           [[horizontal scrollbar layout.]];
           tabledef {
             param.face[[face - face or face name.]];
-            param.boolean[[autohide - if true the scrollbar will hide when the portal.w >= subject.w.]];
+            param.string[[align - 'bottom' positions scrollbar at bottom of the portal, 'top' at the top of the portal.]];
+            param.boolean[[show - if true the scrollbar is shown, if false it is not, if nil the scrollbar will show when portal intersects the subject]];
             param.integer[[size - height of the scrollbar.]];
             param.table {
               name='track';
@@ -126,12 +127,12 @@ export['cel.scroll'] {
                 };
                 param.string[[link - linker name passed to cel:link()]];
                 param.table {
-                  name='slider';
-                  [[scrollbar slider layout.]];
+                  name='thumb';
+                  [[scrollbar thumb layout.]];
                   tabledef {
                     param.face[[face - face or face name.]];
-                    param.integer[[size - height of the slider.]];
-                    param.integer[[minsize - minimum width of the slider.]];
+                    param.integer[[size - height of the thumb.]];
+                    param.integer[[minsize - minimum width of the thumb.]];
                   };
                 };
               };
@@ -179,7 +180,8 @@ export['cel.scroll'] {
           [[vertical scrollbar layout.]];
           tabledef {
             param.face[[face - face or face name.]];
-            param.boolean[[autohide - if true the scrollbar will hide when the portal.h >= subject.h.]];
+            param.string[[align - 'right' positions scrollbar at right of the portal, 'left' at the left of the portal.]];
+            param.boolean[[show - if true the scrollbar is shown, if false it is not, if nil the scrollbar will show when portal intersects the subject]];
             param.integer[[size - width of the scrollbar.]];
             param.table {
               name='track';
@@ -198,12 +200,12 @@ export['cel.scroll'] {
                 };
                 param.string[[link - linker name passed to cel:link()]];
                 param.table {
-                  name='slider';
-                  [[scrollbar slider layout.]];
+                  name='thumb';
+                  [[scrollbar thumb layout.]];
                   tabledef {
                     param.face[[face - face or face name.]];
-                    param.integer[[size - width of the slider.]];
-                    param.integer[[minsize - minimum height of the slider.]];
+                    param.integer[[size - width of the thumb.]];
+                    param.integer[[minsize - minimum height of the thumb.]];
                   };
                 };
               };
@@ -296,7 +298,6 @@ export['cel.scroll'] {
 
     description = {
       [[A vertical or horizontal scrollbar.]];
-      [[host is not always a scroll description because the scroll metacel can be extended.]];
 
       code[=[
         axis = string,
@@ -319,16 +320,16 @@ export['cel.scroll'] {
   metaceldef['scroll.bar.track'] { 
     source = 'button'; 
 
-    [[A scroll.bar.track is contains a slider grip.  Clicking on the track, or dragging the slider
+    [[A scroll.bar.track contains the scroll thumb.  Clicking on the track, or dragging the thumb
     will scroll the scroll cels subject.]];
 
     composition = {
       code[=[
-        [slider] = scroll.bar.slider
+        [thumb] = scroll.bar.thumb
       ]=];
 
       params = {
-        param['scroll.bar.slider'][[[slider] - slider grip.]];
+        param['scroll.bar.thumb'][[[thumb] - thumb grip.]];
       };
     };
 
@@ -337,11 +338,11 @@ export['cel.scroll'] {
       [[host is a scroll.bar description]];
 
       code[=[
-        [slider] = scroll.bar.slider,
+        [thumb] = scroll.bar.thumb,
       ]=];
 
       params = {
-        param['scroll.bar.slider'][[[slider] - slider grip.]];
+        param['scroll.bar.thumb'][[[thumb] - thumb grip.]];
       };
     };
   };
@@ -350,7 +351,6 @@ export['cel.scroll'] {
     source = 'button'; 
     description = {
       [[A button description.]];
-      [[host is a scroll.bar description]];
     };
   };
 
@@ -358,15 +358,13 @@ export['cel.scroll'] {
     source = 'button'; 
     description = {
       [[A button description.]];
-      [[host is a scroll.bar description]];
     };
   };
 
-  metaceldef['scroll.bar.slider'] { 
+  metaceldef['scroll.bar.thumb'] { 
     source = 'grip'; 
     description = {
       [[A grip description.]];
-      [[host is a scroll.bar.track description]];
     };
   };
 
@@ -424,7 +422,7 @@ export['cel.scroll'] {
 
   propertydef['cel.scroll.layout'] {
     [[A table defining the internal layout of a scroll cel.]];
-    [[This is the default layout use, define a layout in the face to override.]];
+    [[This is the default layout used, define a layout in the face to override.]];
   };
 
   
@@ -511,10 +509,5 @@ export['cel.scroll'] {
         param.integer[[portal.h]];
       };
     };
-  };
-
-  descriptiondef['scroll.portal'] {
-    [[A cel description.]];
-    [[host is not always a scroll description because the scroll metacel can be extended.]];
   };
 }

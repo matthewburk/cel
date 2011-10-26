@@ -8,14 +8,14 @@ export['cel.listbox'] {
     composition = {
       code[=[
         [portal] = cel
-            [list] = listbox.itemlist
+            [list] = listbox.list
         [xbar] = scroll.bar
         [ybar] = scroll.bar
       ]=];
 
       params = {
         param.cel[[[portal] - listbox portal.]];
-        param['listbox.itemlist'][[[list] - a sequence contianing the items.]];
+        param['listbox.list'][[[list] - a col contianing the items.]];
         param['scroll.bar'][[[xbar] - horizontal scrollbar.]];
         param['scroll.bar'][[[ybar] - vertical scrollbar.]];
       };
@@ -25,14 +25,14 @@ export['cel.listbox'] {
       [[A scroll description.]];
       code[=[
         [portal] = cel,
-            [list] = listbox.itemlist,
+            [list] = listbox.list,
         [xbar] = scroll.bar,
         [ybar] = scroll.bar,
       ]=];
 
       params = {
         param.cel[[[portal] - scroll portal.]];
-        param['listbox.itemlist'][[[list] - a sequence contianing the items.]];
+        param['listbox.list'][[[list] - a sequence contianing the items.]];
         param['scroll.bar'][[[xbar] - horizontal scrollbar.]];
         param['scroll.bar'][[[ybar] - vertical scrollbar.]];
       };
@@ -42,7 +42,7 @@ export['cel.listbox'] {
       [[A table defineing the internal layout of a listbox]];
       code[=[
       layout = {
-        itemlist = {
+        list = {
           face = face,
           gap = integer,
         },
@@ -57,7 +57,7 @@ export['cel.listbox'] {
 
       params = {
         param.table {
-          name='itemlist';
+          name='list';
           tabledef {
             param.face[[face - face or face name]];
             param.integer[[gap - amount of space between each item in the list.]];
@@ -69,7 +69,7 @@ export['cel.listbox'] {
             param.face[[face - face or face name]];
           };
         };
-        param.integer[[stepsize - number of units to move the itemlist in a single step.
+        param.integer[[stepsize - number of units to move the list in a single step.
         This only applies to horizontal steps.]];
         param.table[[xbar - see cel.scroll for layout.]];
         param.table[[ybar - see cel.scroll for layout.]];
@@ -95,10 +95,10 @@ export['cel.listbox'] {
     };
   };
 
-  metaceldef['listbox.itemlist'] {
+  metaceldef['listbox.list'] {
     source = 'sequence.y';
     description = { 
-      [[Each description in listbox.itemlist is for a virtual cel that contains a list item.]];
+      [[Each description in listbox.list is for a virtual cel that contains a list item.]];
       code[=[
         [n] = {
           selected = boolean,
@@ -108,7 +108,7 @@ export['cel.listbox'] {
       ]=];
 
       params = {
-        param.integer[[[n] - index of a description in listbox.itemlist.]];
+        param.integer[[[n] - index of a description in listbox.list.]];
         param.boolean[[[n].selected - true if the item is selected.]];
         param.boolean[[[n].current - true if the item is the current item.]]; 
         param.cel[[[n][1] - a list item.]]; 
@@ -154,8 +154,8 @@ export['cel.listbox'] {
 
   celdef['listbox'] {
     [[A listbox is a container cel with vertical and horizontal scrollbars.]];
-    [[A listbox is a scroll cel with the subject encapsulated.  The subject is an itemlist sequence,
-    when a cel is linked to the listbox it is put in the itemlist.]];
+    [[A listbox is a scroll cel with the subject encapsulated.  The subject is an list sequence,
+    when a cel is linked to the listbox it is put in the list.]];
 
     
 
@@ -253,7 +253,7 @@ export['cel.listbox'] {
     };
 
     functiondef['listbox:getvalues()'] {
-      [[Returns the current x, y values of the itemlist.]];
+      [[Returns the current x, y values of the list.]];
       returns = {
         param.integer[[current x value, which is roughly -subject.x]];
         param.integer[[current y value, which is roughly -subject.y]];
@@ -261,7 +261,7 @@ export['cel.listbox'] {
     };
 
     functiondef['listbox:getmaxvalues()'] {
-      [[Returns the maximum x, y values for the itemlist]];
+      [[Returns the maximum x, y values for the list]];
       returns = {
         param.integer[[max x value, which is math.max(0, subject.w - portal.w)]];
         param.integer[[max y value, which is math.max(0, subject.h - portal.h)]];

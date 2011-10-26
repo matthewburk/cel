@@ -50,7 +50,7 @@ do
     if self:len() > self[_buffersize]  then
       self:remove(1)
     end
-    newlabel(text, nil, self[_textface]):link(self, 'width')
+    newlabel(text, self[_textface]):link(self, 'width')
     self:scrollto(0, math.huge)
   end
 

@@ -37,7 +37,15 @@ local _padb = {}
 local _layout = {}
 local _wrap = {}
 
+local wordwrap = {
+  [' '] = true,
+  ['\t'] = true,
+  ['\n'] = 'force',
+  ['\r'] = 'force',
+}
+
 local layout = {
+  wrap = wordwrap,
   padding = {
     fit = 'default',
     fitx = 'default',
@@ -47,15 +55,10 @@ local layout = {
   },
 }
 
-local breakon = {
-  [' '] = true,
-  ['\t'] = true,
-  ['\n'] = true,
-  ['\r'] = true,
-}
-
-local function findminw(font, str, lpad, rpad)
+local function findminw(font, str, lpad, rpad, breakon)
+  breakon = breakon or wordwrap
   local minw = 0
+
   do
     local len = #str
     local i = 1
@@ -73,6 +76,10 @@ local function findminw(font, str, lpad, rpad)
   return minw + lpad + rpad
 end
 
+function metatable:printf(format, ...)
+  return self:settext(string.format(format, ...))
+end
+
 function metatable:getbaseline(i)
   i = i or 1
   local line = self[_lines][i]
@@ -80,6 +87,8 @@ function metatable:getbaseline(i)
     return line.penx, line.peny
   end
 end
+
+--[==[
 
 --returns x,y,w,h for the line relative to teh top left of the text cel
 function metatable:getlinerect(i)
@@ -106,9 +115,6 @@ function metatable:getlineindex(i, j)
   end
 end
 
-function metatable:getfont()
-  return self[_font]
-end
 
 function metatable.pickline(text, y)
   local lines = text[_lines]
@@ -127,6 +133,14 @@ function metatable.pickline(text, y)
   local index = math.ceil(y / lineh) 
 
   return index
+end
+--]==]
+
+function metatable:getfont()
+  return self[_font]
+end
+
+function metacel:getproperty(text, name)
 end
 
 local function reflow(text)
@@ -148,7 +162,7 @@ local function reflow(text)
     local len = #str
     local i = 1
     while true do
-      local j, advance, char = font:wrapat(str, i, len, w)
+      local j, advance, char = font:wrapat(str, i, len, w, text[_wrap])
 
       if not j then break end
 
@@ -157,6 +171,7 @@ local function reflow(text)
       y = y + lineheight
       i = j + 1
 
+      --TODO too slow probably
       while(string.sub(str, i, i) == char) do
         i = i + 1
       end 
@@ -175,9 +190,9 @@ local function reflow(text)
     end
   end
 
-  text[_lines] = lines 
+  text[_lines] = lines
 
-  return y + (text[_padb] or 0)
+  return font.ascent + font.descent + ((#lines-1)*font.lineheight) + (text[_padt] or 0) + (text[_padb] or 0)
 end
 
 function metatable:settext(str)
@@ -197,10 +212,12 @@ function metatable:settext(str)
     self[_peny] = peny
 
     --TODO delay defining a line until it is described
+    printf('text.wrap %s', tostring(self[_wrap]))
     if self[_wrap] then
       --TODO don't want to reflow twice when chaning the text
       local minh = reflow(self)
-      local minw = findminw(font, str, l, r)
+      local minw = findminw(font, str, l, r, self[_wrap])
+      printf('text.minw %d', minw)
       metacel:setlimits(self, minw, w, minh, minh)
     else
       self[_lines] = {{i = 1, j = nil, penx = penx, peny = peny, 
@@ -208,25 +225,17 @@ function metatable:settext(str)
       metacel:setlimits(self, w, w, h, h)
     end
     self:refresh()
+    return self
 end
 
 function metatable:gettext()
   return self[_str]
 end
 
-function metatable:getpadding()
-  return self[_padl], self[_padt], self[_padr], self[_padb]
-end
-
---[[
-function metatable.setwrapmode(text, mode)
-  if mode then
-    metacel:setlimits(text, nil, nil, nil, nil)
-  else
-    local font, str, layout = text[_font], text[_str], text[_layout]
-    local _, _, w, h = font:pad(layout.padding, font:measure(str))
-    metacel:setlimits(text, w)
-  end
+---[[
+function metatable.setwrap(text, wrap)
+  text[_wrap] = wrap
+  return text:settext(text[_str])
 end
 --]]
 
@@ -258,13 +267,15 @@ do
     local advancew, fonth, xmin, xmax, ymin, ymax = font:measure(str)
     local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, advancew, fonth, xmin, xmax, ymin, ymax) 
     local text 
-    if true then
-      local minw = findminw(font, str, l, r)
+    local wrap = layout.wrap or wordwrap
+
+    if layout.wrap ~= false then
+      local minw = findminw(font, str, l, r, wrap)
       text = _new(self, w, h, face, minw, w, h, h)
-      text[_wrap] = 'word'
-    else --this is nowrapping
-      text = _new(self, w, h, face, w, w, h, h)
-      text[_wrap] = nil 
+      text[_wrap] = wrap
+    else 
+      text = _new(self, w, h, face, w, w, h, h)      
+      text[_wrap] = false
     end
 
     text[_layout] = layout

@@ -35,8 +35,7 @@
         </h3>
         <div class="metaceldeffulldesc">
         <p>A scroll is a container cel with vertical and horizontal scrollbars A scroll is composed of a vertical scrollbar, horizontal scrollbar, and a portal.
-    The subject is the cel that is controlled by the scrollbars, and is linked to the portal.
-    Additional cels can be lined to the portal, but only one will be the subject.
+    The subject is the cel that is controlled by the scrollbars, and is linked to the portal.    
     </p>
         <dl>
                 <div class="metacelcomposition">
@@ -82,13 +81,14 @@
 <code>  stepsize = integer, </code>
 <code>  xbar = { </code>
 <code>    face = face,</code>
-<code>    autohide = boolean,</code>
+<code>    show = boolean,</code>
+<code>    align = string,</code>
 <code>    size = integer,</code>
 <code>    track = { </code>
 <code>      face = face,</code>
 <code>      size = integer,</code>
 <code>      link = {linker[, xval[, yval]]} or string,</code>
-<code>      slider = {</code>
+<code>      thumb = {</code>
 <code>        face = face,</code>
 <code>        size = integer,</code>
 <code>        minsize = integer,</code>
@@ -107,13 +107,14 @@
 <code>  },</code>
 <code>  ybar = {</code>
 <code>    face = face,</code>
-<code>    autohide = boolean,</code>
+<code>    show = boolean,</code>
+<code>    align = string,</code>
 <code>    size = integer,</code>
 <code>    track {</code>
 <code>      face = face,</code>
 <code>      size = integer,</code>
 <code>      link = {linker[, xval[, yval]]} or string,</code>
-<code>      slider = {</code>
+<code>      thumb = {</code>
 <code>        face = face,</code>
 <code>        size = integer,</code>
 <code>        minsize = integer, </code>
@@ -141,8 +142,10 @@
         <dl class="tabledef">
                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
           <dd>face or face name.</dd>
-                    <dt><code><span class="paramname">autohide</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
-          <dd>if true the scrollbar will hide when the portal.w >= subject.w.</dd>
+                    <dt><code><span class="paramname">align</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>'bottom' positions scrollbar at bottom of the portal, 'top' at the top of the portal.</dd>
+                    <dt><code><span class="paramname">show</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>if true the scrollbar is shown, if false it is not, if nil the scrollbar will show when portal intersects the subject</dd>
                     <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
           <dd>height of the scrollbar.</dd>
                     <dt><code><span class="paramname">track</span>&nbsp;<span class="paramtype">table</span></code></dt> 
@@ -168,16 +171,16 @@
       </div></dd>
                     <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
           <dd>linker name passed to cel:link()</dd>
-                    <dt><code><span class="paramname">slider</span>&nbsp;<span class="paramtype">table</span></code></dt> 
-          <dd>scrollbar slider layout.       <div class="tabledef">
+                    <dt><code><span class="paramname">thumb</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar thumb layout.       <div class="tabledef">
         <p class="tabledefname"></p>
         <dl class="tabledef">
                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
           <dd>face or face name.</dd>
                     <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>height of the slider.</dd>
+          <dd>height of the thumb.</dd>
                     <dt><code><span class="paramname">minsize</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>minimum width of the slider.</dd>
+          <dd>minimum width of the thumb.</dd>
           
         </dl>
       </div></dd>
@@ -245,8 +248,10 @@
         <dl class="tabledef">
                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
           <dd>face or face name.</dd>
-                    <dt><code><span class="paramname">autohide</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
-          <dd>if true the scrollbar will hide when the portal.h >= subject.h.</dd>
+                    <dt><code><span class="paramname">align</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>'right' positions scrollbar at right of the portal, 'left' at the left of the portal.</dd>
+                    <dt><code><span class="paramname">show</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>if true the scrollbar is shown, if false it is not, if nil the scrollbar will show when portal intersects the subject</dd>
                     <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
           <dd>width of the scrollbar.</dd>
                     <dt><code><span class="paramname">track</span>&nbsp;<span class="paramtype">table</span></code></dt> 
@@ -272,16 +277,16 @@
       </div></dd>
                     <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
           <dd>linker name passed to cel:link()</dd>
-                    <dt><code><span class="paramname">slider</span>&nbsp;<span class="paramtype">table</span></code></dt> 
-          <dd>scrollbar slider layout.       <div class="tabledef">
+                    <dt><code><span class="paramname">thumb</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>scrollbar thumb layout.       <div class="tabledef">
         <p class="tabledefname"></p>
         <dl class="tabledef">
                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
           <dd>face or face name.</dd>
                     <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>width of the slider.</dd>
+          <dd>width of the thumb.</dd>
                     <dt><code><span class="paramname">minsize</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>minimum height of the slider.</dd>
+          <dd>minimum height of the thumb.</dd>
           
         </dl>
       </div></dd>
@@ -382,7 +387,7 @@
                 <div class="metaceldescription">
           <dt class="metaceldescription">description</dt>
           <dd>
-          A vertical or horizontal scrollbar. host is not always a scroll description because the scroll metacel can be extended. <div class="code"><pre><code>axis = string,</code>
+          A vertical or horizontal scrollbar. <div class="code"><pre><code>axis = string,</code>
 <code>size = integer,</code>
 <code>[inc] = scroll.bar.inc,</code>
 <code>[dec] = scroll.bar.dec,</code>
@@ -411,21 +416,21 @@
       <p class="metaceldefheader">metacel</p>
         <h3 class="metaceldefname">
           scroll.bar.track&nbsp;
-          <span class="metaceldefdesc">A scroll.bar.track is contains a slider grip.  Clicking on the track, or dragging the slider
+          <span class="metaceldefdesc">A scroll.bar.track contains the scroll thumb.  Clicking on the track, or dragging the thumb
     will scroll the scroll cels subject.</span>
         </h3>
         <div class="metaceldeffulldesc">
-        <p>A scroll.bar.track is contains a slider grip.  Clicking on the track, or dragging the slider
+        <p>A scroll.bar.track contains the scroll thumb.  Clicking on the track, or dragging the thumb
     will scroll the scroll cels subject.</p>
         <dl>
                 <div class="metacelcomposition">
           <dt class="metacelcomposition">composition</dt>
           <dd>
-          <div class="code"><pre><code>[slider] = scroll.bar.slider</code></pre></div>
+          <div class="code"><pre><code>[thumb] = scroll.bar.thumb</code></pre></div>
                       <div class="arguments">
               <span class="arguments">cels</span>
-              <dl class="arguments">          <dt><code><span class="paramname">[slider]</span>&nbsp;<span class="paramtype">scroll.bar.slider</span></code></dt> 
-          <dd>slider grip.</dd>
+              <dl class="arguments">          <dt><code><span class="paramname">[thumb]</span>&nbsp;<span class="paramtype">scroll.bar.thumb</span></code></dt> 
+          <dd>thumb grip.</dd>
           </dl>
             </div>
           </dd>
@@ -433,11 +438,11 @@
                 <div class="metaceldescription">
           <dt class="metaceldescription">description</dt>
           <dd>
-          A button description. host is a scroll.bar description <div class="code"><pre><code>[slider] = scroll.bar.slider,</code></pre></div>
+          A button description. host is a scroll.bar description <div class="code"><pre><code>[thumb] = scroll.bar.thumb,</code></pre></div>
                       <div class="arguments">
               <span class="arguments">entries</span>
-              <dl class="arguments">          <dt><code><span class="paramname">[slider]</span>&nbsp;<span class="paramtype">scroll.bar.slider</span></code></dt> 
-          <dd>slider grip.</dd>
+              <dl class="arguments">          <dt><code><span class="paramname">[thumb]</span>&nbsp;<span class="paramtype">scroll.bar.thumb</span></code></dt> 
+          <dd>thumb grip.</dd>
           </dl>
             </div>
           </dd>
@@ -459,7 +464,7 @@
                 <div class="metaceldescription">
           <dt class="metaceldescription">description</dt>
           <dd>
-          A button description. host is a scroll.bar description
+          A button description.
           
           </dd>
         </div>
@@ -480,7 +485,7 @@
                 <div class="metaceldescription">
           <dt class="metaceldescription">description</dt>
           <dd>
-          A button description. host is a scroll.bar description
+          A button description.
           
           </dd>
         </div>
@@ -491,7 +496,7 @@
              <div class="metaceldef">
       <p class="metaceldefheader">metacel</p>
         <h3 class="metaceldefname">
-          scroll.bar.slider&nbsp;
+          scroll.bar.thumb&nbsp;
           <span class="metaceldefdesc"></span>
         </h3>
         <div class="metaceldeffulldesc">
@@ -501,7 +506,7 @@
                 <div class="metaceldescription">
           <dt class="metaceldescription">description</dt>
           <dd>
-          A grip description. host is a scroll.bar.track description
+          A grip description.
           
           </dd>
         </div>
@@ -594,7 +599,7 @@
           <span class="propertydefdesc">A table defining the internal layout of a scroll cel.</span>
         </h3>
         <div class="propertydeffulldesc">
-        <p>A table defining the internal layout of a scroll cel. This is the default layout use, define a layout in the face to override.</p>
+        <p>A table defining the internal layout of a scroll cel. This is the default layout used, define a layout in the face to override.</p>
         </div>
       </div>
        <div class="celdef">
@@ -768,17 +773,6 @@
       </div>
       
       
-      </div>       <div class="descriptiondef">
-        <p class="descriptiondefheader">description</p>
-        <h3 class="descriptiondefsig">
-          scroll.portal&nbsp;
-          <span class="descriptiondefdesc">A cel description.</span>
-        </h3>
-        <div class="descriptiondeffulldesc">
-        <p>A cel description. host is not always a scroll description because the scroll metacel can be extended.</p>
-        
-        </div>
       </div>
-      
         </div>
       </body></html>

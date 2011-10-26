@@ -42,6 +42,7 @@ return function(_ENV, M)
   function celfacemt:register(name)
     assert(name)
     self[_variations][name] = self
+    self[_name] = name
     return self
   end
 

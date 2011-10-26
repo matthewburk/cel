@@ -97,7 +97,7 @@ function modes.topright(grip, x, y)
   elseif y > 0 then
     y = 0
   end
-
+  --TODO test linker before moveby, see did i mention linkers tutorial for example
   target:moveby(0, y, x, -y)
   mouse:pick()
 end

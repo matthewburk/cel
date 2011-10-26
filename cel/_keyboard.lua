@@ -28,11 +28,10 @@ return function(_ENV, M)
 
   keyboard = { 
     keys = {},
-    keystates = {},
+    states = {},
 
     [_focus] = {n = 0},
     [_keys] = {},
-    [_keystates] = {}
   }
  
   do

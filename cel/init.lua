@@ -77,8 +77,7 @@ do
   _focuslistener = privatekey('_focuslistener')
   _timerlistener = privatekey('_timerlistener')
   _keys = privatekey('_keys') 
-  _buttonstates = privatekey('_buttonstates')
-  _keystates = privatekey('_keystates')
+  _states = privatekey('_states') 
   _celid = privatekey('_celid')
   _disabled = privatekey('_disabled')
   _refresh = privatekey('_refresh')
@@ -124,11 +123,10 @@ do --cel.installdriver
     end
 
     M.util.readonly(mousetable.buttons, M.mouse.buttons)
-    M.util.readonly(mousetable.buttonstates, M.mouse.buttonstates)
-    M.util.readonly(mousetable.wheeldirection, M.mouse.wheeldirection)
-
+    M.util.readonly(mousetable.states, M.mouse.states)
+    M.util.readonly(mousetable.wheel, M.mouse.wheel)
     M.util.readonly(keyboardtable.keys, M.keyboard.keys)
-    M.util.readonly(keyboardtable.keystates, M.keyboard.keystates)
+    M.util.readonly(keyboardtable.states, M.keyboard.states)
 
     driver.root = _ENV.root
     return driver
@@ -228,9 +226,11 @@ do --cel.describe, cel.printdescription
   local format = string.format
 
   local function printdescription(t, indent)
+    --[[
     write(indent, format('%s %d %s[%s] {x:%d y:%d w:%d h:%d id:%s [l:%d t:%d r:%d b:%d]', tostring(t.refresh),
     t.id, t.metacel or 'virtual', tostring(t.face[_name]) or t.metacel or '', t.x, t.y, t.w, t.h, tostring(t.id),
     t.clip.l, t.clip.t, t.clip.r, t.clip.b))
+    --]]
     --[[
     if t.mouse then write(',mouse') end
     if t.keyboard then write(',keyboard') end
@@ -242,6 +242,7 @@ do --cel.describe, cel.printdescription
     end
     --]]
 
+    t.face:print(t, indent)
     if #t > 0 then
         write('\n')
       local subindent = indent .. '  '
@@ -254,11 +255,9 @@ do --cel.describe, cel.printdescription
     end
   end
 
-  function M.printdescription(t, destination)
-    write = destination or io.write
+  function M.printdescription(t)
     t = t or M.getdescription() 
     printdescription(t, '')
-    write = io.write
     io.flush()
   end
 
@@ -347,7 +346,8 @@ do --loadfont TODO make driver supply path and extension
 
     do
       function fontmt.height(font)
-        return font.bbox.ymax - font.bbox.ymin
+        --return font.bbox.ymax - font.bbox.ymin
+        return font.ascent + font.descent
       end
 
       function fontmt.measure(font, s, i, j)
@@ -383,10 +383,10 @@ do --loadfont TODO make driver supply path and extension
         end
 
         if xmin > xmax then
-          return penx, font.bbox.ymax - font.bbox.ymin, 0, 0, 0, 0
+          return penx, font.ascent + font.descent, 0, 0, 0, 0
         end
 
-        return penx, font.bbox.ymax - font.bbox.ymin, xmin, xmax, ymin, ymax
+        return penx, font.ascent + font.descent, xmin, xmax, ymin, ymax
       end
       --[==[
         static ptrdiff_t posrelat (ptrdiff_t pos, size_t len) {
@@ -502,9 +502,9 @@ do --loadfont TODO make driver supply path and extension
     ---[[
     do
       local _breakon = {
-        [' '] = ' ',
-        ['\n'] = true, --true forces a break
-        ['\t'] = '\t',
+        [' '] = true,
+        ['\n'] = 'force', --true forces a break
+        ['\t'] = true,
       }
 
       --on first call, should be font, 'mytext', 1, #'mytext', max
@@ -523,7 +523,7 @@ do --loadfont TODO make driver supply path and extension
           local glyph = metrics[string.byte(text, i)]
 
           local breakchar = breakon[glyph.char]
-          if breakchar == true then
+          if breakchar == 'force' then
             return i, retadvance, glyph.char
           else
             if breakchar then
@@ -557,7 +557,7 @@ do --loadfont TODO make driver supply path and extension
         for i = _i, j do
           local glyph = metrics[string.byte(text, i)]
           local breakchar = breakon[glyph.char]
-          if breakchar == true then
+          if breakchar then
             return i, advance
           else
             advance = advance + glyph.advance
@@ -583,9 +583,6 @@ do --loadfont TODO make driver supply path and extension
           w = math.max(-xmin+w, xmax - xmin) --right greater of advance or rightmost pixel as drawn
         elseif 'bbox' == fitx then
           w = xmax - xmin
-        elseif 'multiline' == fitx then --TODO what is multiline for, is this really needed
-          xmin = math.min(font.bbox.xmin, 0) --left is lesser of penx or xmin for font
-          w = math.max(-xmin+w, xmax - xmin) --right greater of advance or rightmost pixel as drawn
         end
 
         if 'bbox' == fity then
@@ -594,7 +591,13 @@ do --loadfont TODO make driver supply path and extension
           --ymin = ymin 
         else
           --repurposing ymin to indicate where peny should be
-          ymin = font.bbox.ymin
+          --ymin = font.bbox.ymin
+          --if font.ascent > -font.bbox.ymin then
+            --this is not acceptable, cel algorithms need to look as ascent instaed of 
+            --looking at bbox alone
+            --print('useing ascent as ymax for', name, weight, slant, size)
+            ymin = -font.ascent
+          --end
         end
 
           local l = padding.l or 0
@@ -611,7 +614,7 @@ do --loadfont TODO make driver supply path and extension
           h = h + t + b
 
           --subtractig b from h becuase t and b were both alrady added to h
-          return -xmin + l, (h + ymin - b), w, h, l, t, r, b
+          return -xmin + l, -ymin + b, w, h, l, t, r, b
       end
     end
   end
@@ -694,9 +697,56 @@ do
   end
  
   do
-    local flows = setmetatable({}, {__mode = 'v'})
+    do
+      local flows = setmetatable({}, {__mode = 'v'})
 
-    function M.flows.linear(millis, mode)
+      local function flowrect(speed, flow, ox, fx, oy, fy, ow, fw, oh, fh)
+        local dis = (flow.duration/1000)*speed
+        local fdis = math.max(math.abs(fx-ox), math.abs(fy-oy), math.abs(fw-ow), math.abs(fh-oh))
+
+        if dis >= fdis then
+          return fx, fy, fw, fh 
+        end
+
+        local d = dis/fdis
+        local x = lerp(ox, fx, d)
+        local y = lerp(oy, fy, d) 
+        local w = lerp(ow, fw, d)
+        local h = lerp(oh, fh, d)
+        return x, y, w, h, true
+      end
+
+      local function flowvalue(speed, flow, ov, fv)
+        local dis = (flow.duration/1000)*speed
+        local fdis = math.abs(fv - ov)
+
+        if dis >= fdis then
+          return fv
+        end
+
+        return lerp(ov, fv, dis/fdis), true
+      end
+
+      function M.flows.constant(pixelspersecond, mode)
+        local f = flows[pixelspersecond]
+
+        if not f then
+          f = function(flow, ...)
+            if flow.mode == 'rect' then
+              return flowrect(pixelspersecond, flow, ...)
+            else
+              return flowvalue(pixelspersecond, flow, ...)
+            end
+          end
+          flows[pixelspersecond] = f
+        end
+
+        return f
+      end
+    end
+
+    local flows = setmetatable({}, {__mode = 'v'})
+    function M.flows.linear(millis)
       local f = flows[millis]
 
       if not f then
@@ -713,7 +763,8 @@ do
       return f
     end
 
-    function M.flows.smooth(millis, mode)
+    local flows = setmetatable({}, {__mode = 'v'})
+    function M.flows.smooth(millis)
       local f = flows[millis]
 
       if not f then
@@ -808,6 +859,16 @@ M.sequence = {
 }
 --]]
 
+function M.rgbaface(r, g, b, a)
+  local color = M.color.encodef(r, g, b, a)
+  local face = M.getface('cel', color..'#color#')
+  if not face then 
+    face = M.getface('cel'):new {
+      fillcolor = color
+    }:register(color..'#color#')
+  end
+  return face
+end
 
 M.string = {}
 

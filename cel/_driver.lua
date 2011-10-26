@@ -84,7 +84,7 @@ local function dotasks()
 end
 do --driver.timer
 local mark = 0
-function driver.timer(ms)
+function driver.tick(ms)
   local elapsed = ms - timer.millis 
   timer.millis = ms
 
@@ -158,11 +158,11 @@ function driver.mousedown(x, y, button, alt, ctrl, shift)
   driver.mousemove(x,y)
   event:wait()
 
-  local buttonstates = mouse[_buttonstates]
-  buttonstates[button] = mouse.buttonstates.down
-  buttonstates.alt = alt
-  buttonstates.ctrl = ctrl
-  buttonstates.shift = shift
+  local states = mouse[_states]
+  states[button] = mouse.states.down
+  states.alt = alt
+  states.ctrl = ctrl
+  states.shift = shift
 
   local lx, ly = pick(mouse)
   local target = mouse[_focus].focus or mouse[_trap].trap
@@ -182,11 +182,11 @@ function driver.mouseup(x, y, button, alt, ctrl, shift)
   driver.mousemove(x,y)
   event:wait()
 
-  local buttonstates = mouse[_buttonstates]
-  buttonstates[button] = mouse.buttonstates.normal 
-  buttonstates.alt = alt
-  buttonstates.ctrl = ctrl
-  buttonstates.shift = shift
+  local states = mouse[_states]
+  states[button] = mouse.states.normal 
+  states.alt = alt
+  states.ctrl = ctrl
+  states.shift = shift
 
   local lx, ly = pick(mouse)
   local target = mouse[_focus].focus or mouse[_trap].trap
@@ -224,7 +224,6 @@ end
 function driver.keydown(key, alt, ctrl, shift)
   event:wait()
 
-  keyboard[_keystates][key] = keyboard.keystates.down
   keyboard[_keys][key] = key
 
   local device_focus = keyboard[_focus]
@@ -249,7 +248,6 @@ end
 function driver.keypress(key, alt, ctrl, shift)
   event:wait()
 
-  keyboard[_keystates][key] = keyboard.keystates.down
   keyboard[_keys][key] = key
 
   local device_focus = keyboard[_focus]
@@ -273,7 +271,6 @@ end
 function driver.keyup(key, alt, ctrl, shift)
   event:wait()
 
-  keyboard[_keystates][key] = keyboard.keystates.normal
   keyboard[_keys][key] = nil
 
   local device_focus = keyboard[_focus]

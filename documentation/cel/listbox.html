@@ -40,15 +40,15 @@
           <dt class="metacelcomposition">composition</dt>
           <dd>
           <div class="code"><pre><code>[portal] = cel</code>
-<code>    [list] = listbox.itemlist</code>
+<code>    [list] = listbox.list</code>
 <code>[xbar] = scroll.bar</code>
 <code>[ybar] = scroll.bar</code></pre></div>
                       <div class="arguments">
               <span class="arguments">cels</span>
               <dl class="arguments">          <dt><code><span class="paramname">[portal]</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
           <dd>listbox portal.</dd>
-                     <dt><code><span class="paramname">[list]</span>&nbsp;<span class="paramtype">listbox.itemlist</span></code></dt> 
-          <dd>a sequence contianing the items.</dd>
+                     <dt><code><span class="paramname">[list]</span>&nbsp;<span class="paramtype">listbox.list</span></code></dt> 
+          <dd>a col contianing the items.</dd>
                      <dt><code><span class="paramname">[xbar]</span>&nbsp;<span class="paramtype">scroll.bar</span></code></dt> 
           <dd>horizontal scrollbar.</dd>
                      <dt><code><span class="paramname">[ybar]</span>&nbsp;<span class="paramtype">scroll.bar</span></code></dt> 
@@ -61,14 +61,14 @@
           <dt class="metaceldescription">description</dt>
           <dd>
           A scroll description. <div class="code"><pre><code>[portal] = cel,</code>
-<code>    [list] = listbox.itemlist,</code>
+<code>    [list] = listbox.list,</code>
 <code>[xbar] = scroll.bar,</code>
 <code>[ybar] = scroll.bar,</code></pre></div>
                       <div class="arguments">
               <span class="arguments">entries</span>
               <dl class="arguments">          <dt><code><span class="paramname">[portal]</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
           <dd>scroll portal.</dd>
-                     <dt><code><span class="paramname">[list]</span>&nbsp;<span class="paramtype">listbox.itemlist</span></code></dt> 
+                     <dt><code><span class="paramname">[list]</span>&nbsp;<span class="paramtype">listbox.list</span></code></dt> 
           <dd>a sequence contianing the items.</dd>
                      <dt><code><span class="paramname">[xbar]</span>&nbsp;<span class="paramtype">scroll.bar</span></code></dt> 
           <dd>horizontal scrollbar.</dd>
@@ -82,7 +82,7 @@
           <dt class="metacellayout">layout</dt>
           <dd>
           A table defineing the internal layout of a listbox <div class="code"><pre><code>layout = {</code>
-<code>  itemlist = {</code>
+<code>  list = {</code>
 <code>    face = face,</code>
 <code>    gap = integer,</code>
 <code>  },</code>
@@ -95,7 +95,7 @@
 <code>}</code></pre></div>
                       <div class="arguments">
               <span class="arguments">entries</span>
-              <dl class="arguments">          <dt><code><span class="paramname">itemlist</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+              <dl class="arguments">          <dt><code><span class="paramname">list</span>&nbsp;<span class="paramtype">table</span></code></dt> 
           <dd>      <div class="tabledef">
         <p class="tabledefname"></p>
         <dl class="tabledef">
@@ -116,7 +116,7 @@
         </dl>
       </div></dd>
                      <dt><code><span class="paramname">stepsize</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>number of units to move the itemlist in a single step.
+          <dd>number of units to move the list in a single step.
         This only applies to horizontal steps.</dd>
                      <dt><code><span class="paramname">xbar</span>&nbsp;<span class="paramtype">table</span></code></dt> 
           <dd>see cel.scroll for layout.</dd>
@@ -132,7 +132,7 @@
              <div class="metaceldef">
       <p class="metaceldefheader">metacel</p>
         <h3 class="metaceldefname">
-          listbox.itemlist&nbsp;
+          listbox.list&nbsp;
           <span class="metaceldefdesc"></span>
         </h3>
         <div class="metaceldeffulldesc">
@@ -142,7 +142,7 @@
                 <div class="metaceldescription">
           <dt class="metaceldescription">description</dt>
           <dd>
-          Each description in listbox.itemlist is for a virtual cel that contains a list item. <div class="code"><pre><code>[n] = {</code>
+          Each description in listbox.list is for a virtual cel that contains a list item. <div class="code"><pre><code>[n] = {</code>
 <code>  selected = boolean,</code>
 <code>  current = boolean,</code>
 <code>  [1] = cel,</code>
@@ -150,7 +150,7 @@
                       <div class="arguments">
               <span class="arguments">entries</span>
               <dl class="arguments">          <dt><code><span class="paramname">[n]</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>index of a description in listbox.itemlist.</dd>
+          <dd>index of a description in listbox.list.</dd>
                      <dt><code><span class="paramname">[n].selected</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
           <dd>true if the item is selected.</dd>
                      <dt><code><span class="paramname">[n].current</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
@@ -225,8 +225,8 @@
       </div>
        <div class="celdef">
       <h1>listbox<p class="celdefdesc">(cel)<br><br>A listbox is a container cel with vertical and horizontal scrollbars.</p></h1>
-      A listbox is a container cel with vertical and horizontal scrollbars. A listbox is a scroll cel with the subject encapsulated.  The subject is an itemlist sequence,
-    when a cel is linked to the listbox it is put in the itemlist.       <div title="function" class="functiondef">
+      A listbox is a container cel with vertical and horizontal scrollbars. A listbox is a scroll cel with the subject encapsulated.  The subject is an list sequence,
+    when a cel is linked to the listbox it is put in the list.       <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
           listbox:len()&nbsp;
@@ -402,10 +402,10 @@
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
           listbox:getvalues()&nbsp;
-          <span class="functiondesc">Returns the current x, y values of the itemlist.</span>
+          <span class="functiondesc">Returns the current x, y values of the list.</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Returns the current x, y values of the itemlist.</p>
+        <p>Returns the current x, y values of the list.</p>
         
                 <div class="returns">
           <span class="returns">returns</span>
@@ -422,10 +422,10 @@
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
           listbox:getmaxvalues()&nbsp;
-          <span class="functiondesc">Returns the maximum x, y values for the itemlist</span>
+          <span class="functiondesc">Returns the maximum x, y values for the list</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Returns the maximum x, y values for the itemlist</p>
+        <p>Returns the maximum x, y values for the list</p>
         
                 <div class="returns">
           <span class="returns">returns</span>

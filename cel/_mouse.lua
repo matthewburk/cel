@@ -27,15 +27,15 @@ return function(_ENV, M)
   mouse = {
     scrolllines = 1,
     buttons = {},
-    buttonstates = {},
-    wheeldirection = {},
+    states = {},
+    wheel = {},
 
     [_x] = 0,
     [_y] = 0,
     [_vectorx] = 0,
     [_vectory] = 0,
     [_focus] = {},
-    [_buttonstates] = {},
+    [_states] = {},
   }
 
   function mouse:pick()
@@ -59,7 +59,7 @@ return function(_ENV, M)
   --returns last known button state or self.state.unknown if button state has never been provided
   --was ispressed
   function mouse:isdown(button)
-    return self[_buttonstates][button] == self.buttonstates.pressed 
+    return self[_states][button] == self.states.down 
   end
 
   local function getdepth(cel)

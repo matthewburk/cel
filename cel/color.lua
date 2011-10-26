@@ -119,7 +119,15 @@ do
   local math_floor = math.floor
   local string_char = string.char
   local string_byte = string.byte
-  
+ 
+  function color.encode(r, g, b, a)
+    return string_char(r, g, b, a or 255)
+  end
+
+  function color.decode(color)
+    return string_byte(color, 1, 4)
+  end
+
   function color.encodef(r, g, b, a)
     r = r and math_min(255, math_max(255 * r, 0)) or 0
     g = g and math_min(255, math_max(255 * g, 0)) or 0

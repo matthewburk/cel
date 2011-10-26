@@ -259,9 +259,7 @@ function metacel:activate(window)
     
 
     if not window:hasfocus() then
-      --print('window takefocus')
-      if window:takefocus() then
-        --print('window activated')
+      if select(2, window:takefocus()) then
         window[_activated] = true
       end
     end

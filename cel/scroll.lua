@@ -46,13 +46,13 @@ do
   metacel['.track'] = cel.button.newmetacel('scroll.bar.track')
   metacel['.inc'] = cel.button.newmetacel('scroll.bar.inc')
   metacel['.dec'] = cel.button.newmetacel('scroll.bar.dec')
-  metacel['.slider'] = cel.grip.newmetacel('scroll.bar.slider')
+  metacel['.thumb'] = cel.grip.newmetacel('scroll.bar.thumb')
 end
 
 local _scroll = {}
 local _scrollbar = {}
 local _track = {}
-local _slider = {}
+local _thumb = {}
 local _portal = {}
 local _subject = {}
 local _xdim = {}
@@ -76,19 +76,19 @@ do
       track = {
         size = size,
         link = {'edges', nil, size},
-        slider = {
-          --TODO allow link, but constrain it so it acts like a slider
+        thumb = {
+          --TODO allow link, but constrain it so it acts like a thumb
           minsize = 10,
           size = size,
         };
       },
       decbutton = {
         size = size,
-        link = {'width.top'},
+        link = 'width.top',
       },
       incbutton = {
         size = size,
-        link = {'width.bottom'},
+        link = 'width.bottom',
       },
     },
     xbar = {
@@ -98,7 +98,7 @@ do
       track = {
         size = size,
         link = {'edges', size, nil},
-        slider = {
+        thumb = {
           minsize = 10,
           size = size,
         },
@@ -367,7 +367,7 @@ do
     if xbar then
       local dim = scroll[_xdim]
       local modelsize, modelvalue = updatemodel(xbar, dim.range, dim.value, dim.max, dim.size)
-      xbar[_slider]:move(modelvalue, nil, modelsize, nil)
+      xbar[_thumb]:move(modelvalue, nil, modelsize, nil)
 
       if dim.size >= dim.range then
         xbar:disable() --TODO not enough, make sure we don't try to scroll without a subject
@@ -380,7 +380,7 @@ do
     if ybar then
       local dim = scroll[_ydim]
       local modelsize, modelvalue = updatemodel(ybar, dim.range, dim.value, dim.max, dim.size)
-      ybar[_slider]:move(nil, modelvalue, nil, modelsize)
+      ybar[_thumb]:move(nil, modelvalue, nil, modelsize)
 
       if dim.size >= dim.range then
         ybar:disable() 
@@ -427,8 +427,8 @@ local function decpressed(button)
   end
 end
 
-local function sliderdragged(slider, dx, dy)
-  local scrollbar = slider[_scrollbar]
+local function thumbdragged(thumb, dx, dy)
+  local scrollbar = thumb[_scrollbar]
   local scroll = scrollbar[_scroll]
   local modelvalue
   local dim
@@ -436,13 +436,13 @@ local function sliderdragged(slider, dx, dy)
 
   if scrollbar.axis == 'y' then
     dim = scroll[_ydim]
-    modelvalue = slider.y + dy
+    modelvalue = thumb.y + dy
     if scrollbar.modelmax > 0 then
       value = math.floor(dim.max * (modelvalue/scrollbar.modelmax) + .5)
     end
   else
     dim = scroll[_xdim]
-    modelvalue = slider.x + dx
+    modelvalue = thumb.x + dx
     if scrollbar.modelmax > 0 then
       value = math.floor(dim.max * (modelvalue/scrollbar.modelmax) + .5)
     end
@@ -695,7 +695,7 @@ do
     scrollbar.autohide = layout.show == nil and 'hide' or false 
     scrollbar.modelrange = 0
     scrollbar.modelmax = 0
-    scrollbar.minmodelsize = layout.track.slider.minsize
+    scrollbar.minmodelsize = layout.track.thumb.minsize
 
     do
       local layout = layout.track
@@ -704,10 +704,10 @@ do
       scrollbar[_track].onpress = trackpressed
       scrollbar[_track].onhold = trackpressed
       do
-        local layout = layout.slider
-        scrollbar[_slider] = self['.slider']:new(layout.size, layout.size, layout.face)
-        scrollbar[_slider][_scrollbar] = scrollbar
-        scrollbar[_slider].ondrag = sliderdragged
+        local layout = layout.thumb
+        scrollbar[_thumb] = self['.thumb']:new(layout.size, layout.size, layout.face)
+        scrollbar[_thumb][_scrollbar] = scrollbar
+        scrollbar[_thumb].ondrag = thumbdragged
       end
     end
 
@@ -730,7 +730,7 @@ do
     end
 
     scrollbar[_track]:link(scrollbar, layout.track.link)
-    scrollbar[_slider]:link(scrollbar[_track], nil, nil, 'fence')
+    scrollbar[_thumb]:link(scrollbar[_track], nil, nil, 'fence')
     return scrollbar
   end
 end
@@ -1000,9 +1000,9 @@ end
 function metacel:onmousewheel(scroll, direction, x, y, intercepted)
   if not intercepted and scroll[_subject] then
     local invalue = scroll[_subject].y
-    if cel.mouse.wheeldirection.down == direction then
+    if cel.mouse.wheel.down == direction then
       scroll:step(nil, cel.mouse.scrolllines or 1)
-    elseif cel.mouse.wheeldirection.up == direction then
+    elseif cel.mouse.wheel.up == direction then
       scroll:step(nil, -(cel.mouse.scrolllines or 1))
     end
     return invalue ~= scroll[_subject].y

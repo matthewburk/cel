@@ -47,6 +47,8 @@ end
     return M.center(hw, hh, x, y, w, h, 0, 0)
   end
 
+  M.fill = M.edges
+
   M.portal = function(hw, hh, x, y, w, h, xval, yval)
     --TODO allow to move freely within host if w, h are samller than host
     --TODO pad hw with xval and hh with yval

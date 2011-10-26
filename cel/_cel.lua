@@ -394,6 +394,11 @@ do --
     end
   end
 
+  function getR(cel)
+    local X = getX(cel)
+    return X and X + cel[_w] 
+  end
+
   function getY(cel)
     local root = _ENV.root
     local y = 0
@@ -405,6 +410,11 @@ do --
       end
       cel = rawget(cel, _host)
     end
+  end
+
+  function getB(cel)
+    local Y = getY(cel)
+    return Y and Y + cel[_h] 
   end
 end
 
@@ -691,31 +701,38 @@ do --metacel.newmetacel
 
     local getX, getY = getX, getY
     local rawget = rawget
+
+    local rawsub = {
+      x = _x, 
+      y = _y,
+      w = _w,
+      h = _h,
+      xval = _xval,
+      yval = _yval,
+      linker = _linker,
+      minw = _minw,
+      maxw = _maxw,
+      minh = _minh,
+      maxh = _maxh,
+      id = _celid,
+      l = _x,
+      t = _y,
+    }
     metatable.__index = function(t, k)
-      local result = metatable[k]
-      if result then return result
-      elseif k == 'x' then return t[_x] 
-      elseif k == 'y' then return t[_y]
-      elseif k == 'w' then return t[_w]
-      elseif k == 'h' then return t[_h]
-      elseif k == 'xval' then return rawget(t, _xval)
-      elseif k == 'yval' then return rawget(t, _yval)
-      elseif k == 'linker' then return rawget(t, _linker)
-      elseif k == 'minw' then return rawget(t, _minw)
-      elseif k == 'maxw' then return rawget(t, _maxw)
-      elseif k == 'minh' then return rawget(t, _minh)
-      elseif k == 'maxh' then return rawget(t, _maxh)
-      elseif k == 'l' then return t[_x]
+      local result = metatable[k]; if result then return result end
+      local raw = rawsub[k]; if raw then return rawget(t, raw) end
+
+      if type(k) ~= 'string' then return
+      elseif k == 'metacel' then return name
       elseif k == 'r' then return t[_x] + t[_w]
-      elseif k == 't' then return t[_y]
       elseif k == 'b' then return t[_y] + t[_h]
       elseif k == 'X' then return getX(t)
       elseif k == 'Y' then return getY(t)
-      elseif k == 'L' then
-      elseif k == 'R' then
-      elseif k == 'T' then
-      elseif k == 'B' then
-      elseif k == 'id' then return rawget(t, _celid)
+      elseif k == 'L' then return getX(t)
+      elseif k == 'R' then return getR(t)
+      elseif k == 'T' then return getY(t)
+      elseif k == 'B' then return getB(t)
+      elseif k == 'face' then return rawget(t, _face) or t[_metacel][_face]
       --else print('looking for ', t, k)
       end
     end
@@ -1217,13 +1234,6 @@ do --metatable.pget
   end
 end
 
-do --metatable.getface --TODO remove this, face is mutable, breaks sandbox
-  local _face, _metacel = _face, _metacel
-  function metatable.getface(cel)
-    return cel[_face] or cel[_metacel][_face]
-  end
-end
-
 do --metatable.flow, metatable.flowvalue, metatable.flowlink
   local addflow
   local addflowvalue
@@ -1378,7 +1388,7 @@ end
 
 do --metatable.getflow
   function metatable.getflow(cel, flow)
-    local celface = cel:getface()
+    local celface = cel[_face] or cel[_metacel][_face]
     if celface.flow then
       return celface.flow[flow]
     end
@@ -1526,7 +1536,7 @@ do --metatable.takefocus
     refresh(cel)
     event:signal()
 
-    return cel:hasfocus(source)
+    return cel, cel:hasfocus(source)
   end
 
   --TODO merge into metatable.takefocus
@@ -1756,31 +1766,36 @@ do --metatable.__index
   --local _minw, _maxw, _minh, _maxh = _minw, _maxw, _minh, _maxh
   --local getX, getY = getX, getY
 
+  local rawsub = {
+    x = _x, 
+    y = _y,
+    w = _w,
+    h = _h,
+    xval = _xval,
+    yval = _yval,
+    linker = _linker,
+    minw = _minw,
+    maxw = _maxw,
+    minh = _minh,
+    maxh = _maxh,
+    id = _celid,
+    l = _x,
+    t = _y,
+  }
   function metatable.__index(t, k)
-    local result = metatable[k]
-    if result then return result
-    elseif k == 'x' then return t[_x] 
-    elseif k == 'y' then return t[_y]
-    elseif k == 'w' then return t[_w]
-    elseif k == 'h' then return t[_h]
-    elseif k == 'xval' then return rawget(t, _xval)
-    elseif k == 'yval' then return rawget(t, _yval)
-    elseif k == 'linker' then return rawget(t, _linker)
-    elseif k == 'minw' then return rawget(t, _minw)
-    elseif k == 'maxw' then return rawget(t, _maxw)
-    elseif k == 'minh' then return rawget(t, _minh)
-    elseif k == 'maxh' then return rawget(t, _maxh)
-    elseif k == 'l' then return t[_x]
+    local result = metatable[k]; if result then return result end
+    local raw = rawsub[k]; if raw then return rawget(t, raw) end
+
+    if type(k) ~= 'string' then return
     elseif k == 'r' then return t[_x] + t[_w]
-    elseif k == 't' then return t[_y]
     elseif k == 'b' then return t[_y] + t[_h]
     elseif k == 'X' then return getX(t)
     elseif k == 'Y' then return getY(t)
-    elseif k == 'L' then
-    elseif k == 'R' then
-    elseif k == 'T' then
-    elseif k == 'B' then
-    elseif k == 'id' then return rawget(t, _celid)
+    elseif k == 'L' then return getX(t)
+    elseif k == 'R' then return getR(t)
+    elseif k == 'T' then return getY(t)
+    elseif k == 'B' then return getB(t)
+    elseif k == 'face' then return rawget(t, _face) or t[_metacel][_face]
     end
   end
 end
