@@ -23,20 +23,8 @@ THE SOFTWARE.
 --]]
 local cel = require 'cel'
 
-local metacel, metatable = cel.text.newmetacel('textbutton')
-local metabutton = cel.button.newmetacel('textbutton.proxybutton')
-
-local layout = {
-  wrap = 'line',
-  justification = 'center',
-  padding = {
-    fit = 'default',
-    fitx = 'default',
-    fity = 'default',
-    l = 2,
-    t = 2,
-  },
-}
+local metacel, metatable = cel.slot.newmetacel('slotbutton')
+local metabutton = cel.button.newmetacel('slotbutton.proxybutton')
 
 metacel.onmouseout = metabutton.onmouseout
 metacel.onmousedown = metabutton.onmousedown
@@ -45,37 +33,29 @@ metacel.ontimer = metabutton.ontimer
 
 do 
   local __describe = metacel.__describe
-  function metacel:__describe(textbutton, t)
-    metabutton:__describe(textbutton, t)
-    __describe(self, textbutton, t)
+  function metacel:__describe(slotbutton, t)
+    metabutton:__describe(slotbutton, t)
+    __describe(self, slotbutton, t)
   end
-end
-
-function metacel:__setlimits(textbutton, minw, maxw, minh, maxh)
-  return minw, nil, minh, nil
-end
-
-function metatable.__tostring(textbutton)
-  return 'textbutton[' .. textbutton:gettext() .. ']'
 end
 
 do 
   local _new = metacel.new
-  function metacel:new(text, face)
+  function metacel:new(l, t, r, b, minw, minh, face)
     face = self:getface(face)
-    local textbutton = _new(self, text, face)
-    return textbutton               
+    local slotbutton = _new(l, t, r, b, minw, minh, face)
+    return slotbutton               
   end
 
   local _compile = metacel.compile
-  function metacel:compile(t, textbutton)
-    textbutton = textbutton or metacel:new(t.text, t.face)
-    textbutton.onclick = t.onclick
-    textbutton.onpress = t.onpress
-    textbutton.onhold = t.onhold
-    return _compile(self, t, textbutton)
+  function metacel:compile(t, slotbutton)
+    slotbutton = slotbutton or metacel:new(t.text, t.face)
+    slotbutton.onclick = t.onclick
+    slotbutton.onpress = t.onpress
+    slotbutton.onhold = t.onhold
+    return _compile(self, t, slotbutton)
   end
 end
 
-return metacel:newfactory({layout = layout})
+return metacel:newfactory()
 

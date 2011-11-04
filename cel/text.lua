@@ -29,23 +29,14 @@ local _font = {}
 local _lines = {}
 local _penx = {}
 local _peny = {}
-local _str = {}
-local _padl = {}
-local _padt = {}
-local _padr = {}
-local _padb = {}
 local _layout = {}
 local _wrap = {}
-
-local wordwrap = {
-  [' '] = true,
-  ['\t'] = true,
-  ['\n'] = 'force',
-  ['\r'] = 'force',
-}
+local _str = {}
+local _hpad = {}
+local _vpad = {}
 
 local layout = {
-  wrap = wordwrap,
+  wrap = 'word',
   padding = {
     fit = 'default',
     fitx = 'default',
@@ -55,189 +46,159 @@ local layout = {
   },
 }
 
-local function findminw(font, str, lpad, rpad, breakon)
-  breakon = breakon or wordwrap
-  local minw = 0
-
-  do
-    local len = #str
-    local i = 1
-    while true do
-      local j, advance = font:wrap(str, i, len, breakon)
-      if not j then break end
-      i = j + 1
-      if advance > minw then
-        minw = advance
-      end
-    end
-  end
-  lpad = lpad or 0
-  rpad = rpad or 0
-  return minw + lpad + rpad
-end
-
-function metatable:printf(format, ...)
-  return self:settext(string.format(format, ...))
-end
-
-function metatable:getbaseline(i)
-  i = i or 1
-  local line = self[_lines][i]
-  if line then
-    return line.penx, line.peny
-  end
-end
-
---[==[
-
---returns x,y,w,h for the line relative to teh top left of the text cel
-function metatable:getlinerect(i)
-  local line = self[_lines][i]
-  if line then
-    return self[_padl], line.y, self.w - self[_padl] - self[_padr], line.h
-  end
-end
-
---returns i, j, portion of the string on the line, string.sub(text:gettext(), i, j) would
---give the string that the line contains
-function metatable:getlinerange(i)
-  local line = self[_lines][i]
-  if line then
-    return line.i, line.j
-  end
-end
-
---returns the index of the line that contains the i'th character in the text string
---and the index of the line that contains the j'th character in the text string
-function metatable:getlineindex(i, j)
-  local ri, rj
-  for index, line in ipairs(self[_lines]) do
-  end
-end
-
-
-function metatable.pickline(text, y)
-  local lines = text[_lines]
-
-  if not lines then return end
-
-  local start = lines[1].y
-  local lineh = lines[1].h
-
-  if lineh < 1 then return end
-  --normalize y
-  y = y - start
-
-  if y < 0 then return end
-
-  local index = math.ceil(y / lineh) 
-
-  return index
-end
---]==]
-
-function metatable:getfont()
-  return self[_font]
-end
-
-function metacel:getproperty(text, name)
-end
-
-local function reflow(text)
-  local w, h = text.w, text.h
-  local font = text[_font]
-  local str = text[_str]
-  local penx = text[_penx]
-  local peny = text[_peny]
-  local lineheight = font.lineheight--:height()
+local function justify(text, w)
+  w = w or text.w
+  local textw = w - text[_hpad]
   local justification = text[_layout].justification
-
-  local lines = {}
-  w = w - (text[_padl] or 0)
-  w = w - (text[_padr] or 0)
-
-  local y = text[_padt] or 0
-
-  do
-    local len = #str
-    local i = 1
-    while true do
-      local j, advance, char = font:wrapat(str, i, len, w, text[_wrap])
-
-      if not j then break end
-
-      lines[#lines + 1] = { i = i, j = j, penx = penx, peny = peny, y = y, h = lineheight, advance=advance }
-      peny = peny + lineheight
-      y = y + lineheight
-      i = j + 1
-
-      --TODO too slow probably
-      while(string.sub(str, i, i) == char) do
-        i = i + 1
-      end 
-    end
-  end
-
+  local lines = text[_lines]
+  local penx = text[_penx]
   if 'center' == justification then
     for i=1, #lines do
       local line = lines[i]
-      line.penx = math.floor(line.penx + ((w-line.advance)/2))
+      line.penx = math.floor(penx + ((textw-line.advance)/2))
     end
   elseif 'right' == justification then
     for i=1, #lines do
       local line = lines[i]
-      line.penx = math.floor(line.penx + (w-line.advance))
+      line.penx = math.floor(penx + (textw-line.advance))
+    end
+  end
+end
+
+local function wrap(text)
+  local lines = {}
+  local font = text[_font]
+  local textw = text.w - text[_hpad]
+
+  do --lines
+    local penx, peny = text[_penx], text[_peny]
+    local str = text[_str]
+    local i = 1
+
+    while true do
+      local j, advance, char = font:wrapat(str, i, #str, textw, text[_wrap])
+      if not j then break end
+      lines[#lines + 1] = { i = i, j = j, penx = penx, peny = peny, advance=advance }
+      peny = peny + font.lineheight
+      i = j + 1
     end
   end
 
   text[_lines] = lines
 
-  return font.ascent + font.descent + ((#lines-1)*font.lineheight) + (text[_padt] or 0) + (text[_padb] or 0)
+  local minh = font.ascent + font.descent + ((#lines-1)*font.lineheight) + text[_vpad]
+  text:setlimits(text.minw, text.maxw, minh, minh)
 end
 
-function metatable:settext(str)
+local function initstr(text, str, font, layout)
   str = str or ''
-  local font = self[_font]
-  local layout = self[_layout]
 
-  self[_str] = str
+  --this removes leading spaces on strings if the string starts with [\n 
+  local pattern = str:match('^%[(\n%s+)')
+  if pattern then
+    str = str:gsub(pattern, '\n'):sub(3)
+  end
 
-    local advancew, fonth, xmin, xmax, ymin, ymax = font:measure(str)
-    local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, advancew, fonth, xmin, xmax, ymin, ymax ) 
-    self[_padl] = l
-    self[_padt] = t
-    self[_padr] = r
-    self[_padb] = b
-    self[_penx] = penx
-    self[_peny] = peny
 
-    --TODO delay defining a line until it is described
-    printf('text.wrap %s', tostring(self[_wrap]))
-    if self[_wrap] then
-      --TODO don't want to reflow twice when chaning the text
-      local minh = reflow(self)
-      local minw = findminw(font, str, l, r, self[_wrap])
-      printf('text.minw %d', minw)
-      metacel:setlimits(self, minw, w, minh, minh)
-    else
-      self[_lines] = {{i = 1, j = nil, penx = penx, peny = peny, 
-                       y = t or 0, h = font.lineheight, advance=advancew}}
-      metacel:setlimits(self, w, w, h, h)
+  local textw, texth, xmin, xmax, ymin, ymax = font:measure(str)
+  local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax ) 
+
+  text[_str] = str
+  text[_penx] = penx
+  text[_peny] = peny
+  text[_hpad] = l + r
+  text[_vpad] = t + b
+
+  local lines = {}
+  text[_lines] = lines
+
+  local maxlines = 0
+  local minw, minh = 0, 0
+ 
+  do --minw
+    local i = 1
+    while true do
+      local j, advance = font:wrap(str, i, #str, text[_wrap])
+      if not j then break end
+      i = j + 1
+      if advance > minw then minw = advance end
+      maxlines = maxlines + 1
     end
-    self:refresh()
-    return self
+  end
+
+  minw = minw + l + r
+
+  local maxlinew = 0
+
+  do --lines
+    local i = 1
+    while true do
+      local j, advance = font:wrap(str, i, #str, 'line')
+      if not j then break end
+      lines[#lines + 1] = {i = i, j = j, penx = penx, peny = peny, advance=advance}
+      peny = peny + font.lineheight
+      i = j + 1
+      if advance > maxlinew then maxlinew = advance end
+    end
+  end
+
+  maxlinew = maxlinew + l + r
+
+  minh = font.ascent + font.descent + ((#lines-1)*font.lineheight) + text[_vpad]
+
+  text:setlimits(minw, maxlinew, minh, minh, maxlinew, minh)
+
+  if text.w < maxlinew then
+    wrap(text)
+  else
+  end
+
+
+  if text.h > minh then --make text always centered vertically, until there is a good reason to offer alternatives
+    local peny = text[_peny] + math.floor((text.h - minh)/2)
+    for i=1, #lines do
+      local line = lines[i]
+      line.peny = peny
+      peny = peny + font.lineheight
+    end
+  end
 end
 
-function metatable:gettext()
-  return self[_str]
+function metatable.getfont(text)
+  return text[_font]
 end
 
----[[
-function metatable.setwrap(text, wrap)
-  text[_wrap] = wrap
-  return text:settext(text[_str])
+function metatable.getbaseline(text)
+  local line = text[_lines][1]
+  return line.penx, line.peny
 end
---]]
+
+function metatable.getline(text, i, property, ...)
+  local line = text[_lines][i]
+  if line then
+    if property then
+      return line[property], text:getline(i, ...)
+    end
+  end
+end
+
+function metatable.settext(text, str)
+  initstr(text, str, text[_font], text[_layout])
+  justify(text)
+  return text:refresh()
+end
+
+function metatable.printf(text, format, ...)
+  return text:settext(string.format(format, ...))
+end
+
+function metatable.gettext(text)
+  return text[_str]
+end
+
+function metatable.__tostring(text)
+  return 'text[' .. text[_str] .. ']'
+end
 
 function metacel:__describe(text, t)
   t.text = text[_str]
@@ -246,55 +207,35 @@ function metacel:__describe(text, t)
 end
 
 --TODO decrease calls to __resize for links in a sequence
-do
-  function metacel:__resize(text, ow, oh)
-    if text.w ~= ow and text[_wrap] then
-      local minh = reflow(text)
-      self:setlimits(text, text.minw, text.maxw, minh, minh, nil, minh)
+function metacel:__resize(text, ow, oh)
+  if text.w ~= ow then
+    wrap(text)
+    justify(text)
+  end
+
+  --make text always centered vertically, until there is a good reason to offer alternatives
+  if text.h > text.minh then
+    local font = text[_font]
+    local lines = text[_lines]
+    local peny = text[_peny] + math.floor((text.h - text.minh)/2)
+    for i=1, #lines do
+      local line = lines[i]
+      line.peny = peny
+      peny = peny + font.lineheight
     end
   end
 end
 
 do
-  
-  local math = math
   local _new = metacel.new
   function metacel:new(str, face)
     face = self:getface(face)
-
-    local font = face.font
-    local layout = face.layout or layout
-    local advancew, fonth, xmin, xmax, ymin, ymax = font:measure(str)
-    local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, advancew, fonth, xmin, xmax, ymin, ymax) 
-    local text 
-    local wrap = layout.wrap or wordwrap
-
-    if layout.wrap ~= false then
-      local minw = findminw(font, str, l, r, wrap)
-      text = _new(self, w, h, face, minw, w, h, h)
-      text[_wrap] = wrap
-    else 
-      text = _new(self, w, h, face, w, w, h, h)      
-      text[_wrap] = false
-    end
-
-    text[_layout] = layout
-    text[_padl] = l
-    text[_padt] = t
-    text[_padr] = r
-    text[_padb] = b
-    text[_font] = font
-    text[_str] = str
-    text[_penx] = penx --TODO this should be an integer already
-    text[_peny] = peny
-
-    do
-      local int, zero = math.modf(penx) assert(zero == 0)
-      local int, zero = math.modf(peny) assert(zero == 0)
-    end
-    --TODO delay defining a line until it is described
-    text[_lines] = {{i = 1, j = nil, penx = penx, peny = peny, y = t or 0, h = font.lineheight, advance=advancew}}
-
+    local text = _new(self, 0, 0, face)
+    text[_layout] = face.layout or layout
+    text[_font] = face.font
+    text[_wrap] = text[_layout].wrap
+    initstr(text, str, text[_font], text[_layout])
+    justify(text)
     return text
   end
 

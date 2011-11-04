@@ -62,6 +62,7 @@ end
 do --ENV.refresh
   local _refresh = _refresh
   function refresh(cel)
+    local _cel = cel 
     cel[_refresh] = 'full'
     cel = rawget(cel, _host)
 
@@ -69,6 +70,7 @@ do --ENV.refresh
       cel[_refresh] = true 
       cel = rawget(cel, _host)
     end
+    return _cel
   end
 
   function refreshmove(cel, ox, oy, ow, oh)
@@ -902,7 +904,7 @@ do --metatable.setlimits
     cel[_maxh] = maxh
 
     if not (ominw ~= minw or omaxw ~= maxw or ominh ~= minh or omaxh ~= maxh) then
-      return
+      return cel
     end
 
     local w = nw or cel[_w]
@@ -934,6 +936,7 @@ do --metatable.setlimits
     end
 
     event:signal()
+    return cel
   end
 end
 

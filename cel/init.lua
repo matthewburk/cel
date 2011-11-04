@@ -501,15 +501,22 @@ do --loadfont TODO make driver supply path and extension
 
     ---[[
     do
-      local _breakon = {
-        [' '] = true,
-        ['\n'] = 'force', --true forces a break
-        ['\t'] = true,
+      local _wrapmode = {
+        word = {
+          [' '] = true,
+          ['\t'] = true,
+          ['\n'] = 'force',
+          ['\r'] = 'force',
+        },
+        line = {
+          ['\n'] = 'force',
+          ['\r'] = 'force',
+        }
       }
 
       --on first call, should be font, 'mytext', 1, #'mytext', max
       --on next should be font, 'mytext', returned i+1, #'mytext', max
-      function fontmt.wrapat(font, text, _i, j, max, breakon)
+      function fontmt.wrapat(font, text, _i, j, max, mode)
         if _i > j then return end
 
         local metrics = font.metrics
@@ -517,14 +524,14 @@ do --loadfont TODO make driver supply path and extension
         local retadvance
         local reti
         local retchar
-        local breakon = breakon or _breakon
+        local breakon = _wrapmode[mode] or _wrapmode.word
 
         for i = _i, j do
           local glyph = metrics[string.byte(text, i)]
 
           local breakchar = breakon[glyph.char]
           if breakchar == 'force' then
-            return i, retadvance, glyph.char
+            return i, advance, glyph.char
           else
             if breakchar then
               reti = i
@@ -547,18 +554,18 @@ do --loadfont TODO make driver supply path and extension
         return j, advance, nil
       end
 
-      function fontmt.wrap(font, text, _i, j, breakon)
+      function fontmt.wrap(font, text, _i, j, mode)
         if _i > j then return end
 
         local metrics = font.metrics
         local advance = 0
-        local breakon = breakon or _breakon
+        local breakon = _wrapmode[mode] or _wrapmode.word
 
         for i = _i, j do
           local glyph = metrics[string.byte(text, i)]
           local breakchar = breakon[glyph.char]
           if breakchar then
-            return i, advance
+            return i, advance, breakchar
           else
             advance = advance + glyph.advance
           end
@@ -576,45 +583,34 @@ do --loadfont TODO make driver supply path and extension
       function fontmt.pad(font, padding, w, h, xmin, xmax, ymin, ymax)
         local fitx = padding.fitx or padding.fit or 'default'
         local fity = padding.fity or padding.fit or 'default'
-        --w is advancew, h is font height
 
+        --w is advancew, h is font height
         if 'default' == fitx then
-          xmin = math.min(xmin, 0) --left is lesser of penx of xmin
-          w = math.max(-xmin+w, xmax - xmin) --right greater of advance or rightmost pixel as drawn
+          xmin = math.min(xmin, 0) --left is lesser of penx and xmin
+          w = math.max(-xmin + w, xmax - xmin) --right greater of advance or rightmost pixel as drawn
         elseif 'bbox' == fitx then
           w = xmax - xmin
         end
 
         if 'bbox' == fity then
           h = ymax - ymin
-          --repurposing ymin to indicate where peny should be
-          --ymin = ymin 
         else
-          --repurposing ymin to indicate where peny should be
-          --ymin = font.bbox.ymin
-          --if font.ascent > -font.bbox.ymin then
-            --this is not acceptable, cel algorithms need to look as ascent instaed of 
-            --looking at bbox alone
-            --print('useing ascent as ymax for', name, weight, slant, size)
-            ymin = -font.ascent
-          --end
+          ymin = -font.ascent
         end
 
-          local l = padding.l or 0
-          local t = padding.t or 0
-          if type(l) == 'function' then l = math.floor(l(w,h,font) + .5) end
-          if type(t) == 'function' then t = math.floor(t(w,h,font) + .5) end
+        local l = padding.l or 0
+        if type(l) == 'function' then l = math.floor(l(w,h,font) + .5) end
+        local t = padding.t or 0
+        if type(t) == 'function' then t = math.floor(t(w,h,font) + .5) end
+        local r = padding.r or l
+        if type(r) == 'function' then r = math.floor(r(w,h,font) + .5) end
+        local b = padding.b or t
+        if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
 
-          local r = padding.r or l
-          local b = padding.b or t
-          if type(r) == 'function' then r = math.floor(r(w,h,font) + .5) end
-          if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
+        w = w + l + r 
+        h = h + t + b
 
-          w = w + l + r 
-          h = h + t + b
-
-          --subtractig b from h becuase t and b were both alrady added to h
-          return -xmin + l, -ymin + b, w, h, l, t, r, b
+        return -xmin + l, -ymin + t, w, h, l, t, r, b
       end
     end
   end
