@@ -757,8 +757,9 @@ do --metacel.getface
   function metacel:getface(face)
     --TODO add _variations to metacel
     if face then
-      local rawface = rawget(self[_face][_variations], face) or rawget(metacel[_face][_variations], face)
-      return rawface or self[_face]
+      --local rawface = rawget(self[_face][_variations], face) or rawget(metacel[_face][_variations], face)
+      --return rawface or self[_face]
+      return self[_face][_variations][face] or metacel[_face][_variations][face] or self[_face]
     else
       return self[_face]
     end
