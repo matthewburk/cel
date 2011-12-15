@@ -559,7 +559,7 @@ do --metacel.new
       [_maxh] = maxh and floor(maxh) or 2^31-1,
       [_metacel] = self,
       --TODO add _variations to metacel to avoid extra lookup
-      [_face] = self[_face][_variations][face],
+      [_face] = self[_face][_variations][face] or metacel[_face][_variations][face],
       [_celid] = celid
     }
     celid = celid + 1
