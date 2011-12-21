@@ -23,6 +23,27 @@ THE SOFTWARE.
 --]]
 local M =  {}
 
+--aspect ratio is w/h
+M.fixedaspectstretch = function(hw, hh, x, y, w, h, aspect, yval)
+  if hw < 1 or hh < 1 then 
+    return 0, 0, aspect, 1
+  end
+
+  local haspect = hw/hh
+
+  if haspect > aspect then
+    w = hh * aspect 
+    h = hh
+  elseif haspect < aspect then
+    w = hw
+    h = hw / aspect
+  else
+    w, h = hw, hh
+  end
+
+  return (hw - w)/2, (hh - h)/2, w, h
+end
+
 M.center = function(hw, hh, x, y, w, h, xval, yval)
   xval = xval or 0
   yval = yval or 0
