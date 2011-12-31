@@ -48,7 +48,6 @@ Features:
     editbox
 
   Layouts:
-    sequence (vertical and horizontal)
     col
     row
     grid
