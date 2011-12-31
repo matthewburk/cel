@@ -32,6 +32,7 @@ local _showtask = {}
 local _layout = {}
 local _root = {}
 
+--TODO this is broke by depending on a root cel, fix that
 local metacel, metatable = cel.col.newmetacel('menu')
 metacel['.slot'] = cel.slot.newmetacel('menu.slot')
 
