@@ -804,9 +804,11 @@ function M.composelinker(a, b)
 end
 
 function M.addlinker(name, linker)
-  assert(linker)
+  if type(name) ~= 'string' then
+    return false, 'name of linker must be a string'
+  end
   if linkers[name] then
-    return false, 'linker with that name already exists'
+    return false, string.format('linker %s already exists', name)
   end
   linkers[name] = linker
   return linker
