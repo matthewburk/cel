@@ -793,7 +793,8 @@ function M.composelinker(a, b)
   --TODO memoize
   return function(hw, hh, x, y, w, h, xvals, yvals, minw, maxw, minh, maxh)
     x, y, w, h = a(hw, hh, x, y, w, h, xvals and xvals[1], yvals and yvals[1], minw, maxw, minh, maxh)
-    assert(x and y and w and h)
+    --TODO why am i clamping to min/max here, shouldn't w/h be able to be outside of min/max then a cel will 
+    --enforce that min/max after executing a linker
     if w > maxw then w = maxw end
     if w < minw then w = minw end
     if h > maxh then h = maxh end
@@ -816,14 +817,13 @@ end
 
 do
   local empty = {}
-  local function recurse(a, b, hw, hh, x, y, w, h, tvals, _, minw, maxw, minh, maxh)
-    tvals = tvals or empty
-    local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, tvals[1], tvals[2], minw, maxw, minh, maxh)
+  local function recurse(a, b, hw, hh, x, y, w, h, xvals, yvals, minw, maxw, minh, maxh)
+    local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, xvals and xvals[1], yvals and yvals[1], minw, maxw, minh, maxh)
     if vhw > maxw then vhw = maxw end
     if vhw < minw then vhw = minw end
     if vhh > maxh then vhh = maxh end
     if vhh < minh then vhh = minh end
-    x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, tvals[3], tvals[4], minw, maxw, minh, maxh)
+    x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, xvals and xvals[2], yvals and yvals[2], minw, maxw, minh, maxh)
     return x + vhx, y + vhy, w, h
   end
 
