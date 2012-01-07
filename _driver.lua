@@ -82,47 +82,50 @@ local function dotasks()
     end
   end
 end
-do --driver.timer
-local mark = 0
-function driver.tick(ms)
-  local elapsed = ms - timer.millis 
-  timer.millis = ms
 
-  if ms - mark > 1 then
-    mark = ms
-  else
-    return
-  end
-
-  event:wait()
-
-  doflows()
-  dotasks()
-
-  local target = mouse[_focus].focus or mouse[_trap].trap
-
-  --TODO pass lx, and ly like in mousepressed
-  while target do
-    event:ontimer(target, ms, mouse)
-    target = target[_host]
-  end
-
-  local device_focus = keyboard[_focus]
-  local focus = device_focus[device_focus.n]
-
-  if type(focus) == 'table' then --this is a lame hack, shouldn't ahve to do this fix it
-    if focus then
-      while focus do
-        event:ontimer(focus, ms, keyboard)
-        focus = focus[_host]
-      end
+do --driver.tick
+  local mark = 0
+  local accumulator = 0
+  function driver.tick(ms, max)
+    if ms - mark > 1 then
+      mark = ms
+    elseif ms - mark < 0 then
+      accumulator = accumulator + max
     else
-      --event:ontimer( the current modal cel, key)
+      return
     end
-  end
 
-  event:signal()
-end
+    timer.millis = accumulator + ms
+
+    event:wait()
+
+    doflows()
+    dotasks()
+
+    local target = mouse[_focus].focus or mouse[_trap].trap
+
+    --TODO pass lx, and ly like in mousepressed
+    while target do
+      event:ontimer(target, ms, mouse)
+      target = target[_host]
+    end
+
+    local device_focus = keyboard[_focus]
+    local focus = device_focus[device_focus.n]
+
+    if type(focus) == 'table' then --this is a lame hack, shouldn't ahve to do this fix it
+      if focus then
+        while focus do
+          event:ontimer(focus, ms, keyboard)
+          focus = focus[_host]
+        end
+      else
+        --event:ontimer( the current modal cel, key)
+      end
+    end
+
+    event:signal()
+  end
 end
 
 function driver.mousemove(x, y)
