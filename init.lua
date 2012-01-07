@@ -149,7 +149,7 @@ function M.new(w, h, face)
 end
 
 function M.iscel(t)
-  return rawget(t, _metacel) ~= nil
+  return type(t) == 'table' and rawget(t, _metacel) ~= nil
 end
 
 function M.tocel(v, host)
