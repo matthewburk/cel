@@ -791,14 +791,14 @@ function M.composelinker(a, b)
   assert(b)
 
   --TODO memoize
-  return function(hw, hh, x, y, w, h, cvals, _, minw, maxw, minh, maxh)
-    x, y, w, h = a(hw, hh, x, y, w, h, cvals and cvals[1], cvals and cvals[2], minw, maxw, minh, maxh)
+  return function(hw, hh, x, y, w, h, xvals, yvals, minw, maxw, minh, maxh)
+    x, y, w, h = a(hw, hh, x, y, w, h, xvals and xvals[1], yvals and yvals[1], minw, maxw, minh, maxh)
     assert(x and y and w and h)
     if w > maxw then w = maxw end
     if w < minw then w = minw end
     if h > maxh then h = maxh end
     if h < minh then h = minh end
-    x, y, w, h = b(hw, hh, x, y, w, h, cvals and cvals[3], cvals and cvals[4], minw, maxw, minh, maxh)
+    x, y, w, h = b(hw, hh, x, y, w, h, xvals and xvals[2], yvals and yvals[2], minw, maxw, minh, maxh)
     return x, y, w, h
   end
 end
