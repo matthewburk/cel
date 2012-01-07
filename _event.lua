@@ -342,10 +342,9 @@ return function(_ENV, M)
   do --onfocus
     local queue = {first = 0, last = -1}
     
-    local function push(event, cel, b)
+    local function push(event, cel)
       local i = queue.last
       i = i + 1; queue[i] = cel
-      i = i + 1; queue[i] = b 
       queue.last = i
       event:push(queue)
     end
@@ -353,21 +352,51 @@ return function(_ENV, M)
     local function pop()
       local i = queue.first
       local cel = queue[i]; queue[i] = nil; i = i + 1
-      local b = queue[i]; queue[i] = nil; i = i + 1
       queue.first = i
-      return cel, b 
+      return cel 
     end
 
     function queue.dispatch()
-      local cel, b = pop() 
-      if cel[_metacel].onfocus then cel[_metacel]:onfocus(cel, b) end
-      if cel.onfocus then cel:onfocus(b) end
-      dispatchtolisteners(cel, _focuslistener, b)
+      local cel = pop() 
+      if cel[_metacel].onfocus then cel[_metacel]:onfocus(cel) end
+      if cel.onfocus then cel:onfocus() end
+      dispatchtolisteners(cel, _focuslistener)
     end
 
-    function event:onfocus(cel, b)
+    function event:onfocus(cel)
       if cel[_metacel].onfocus or cel.onfocus or cel[_focuslistener] then
-        push(self, cel, b) 
+        push(self, cel) 
+      end
+    end
+  end
+
+  do --onblur
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel 
+    end
+
+    function queue.dispatch()
+      local cel = pop() 
+      if cel[_metacel].onblur then cel[_metacel]:onblur(cel) end
+      if cel.onblur then cel:onblur() end
+      dispatchtolisteners(cel, _blurlistener)
+    end
+
+    function event:onblur(cel)
+      if cel[_metacel].onblur or cel.onblur or cel[_blurlistener] then
+        push(self, cel) 
       end
     end
   end

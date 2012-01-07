@@ -585,6 +585,7 @@ do --metacel.compile
     cel.onmouseup = t.onmouseup
     cel.ontimer = t.ontimer
     cel.onfocus = t.onfocus
+    cel.onblur = t.onblur
     cel.onkeydown = t.onkeydown
     cel.onkeyup = t.onkeyup
     --[[
@@ -1006,7 +1007,10 @@ do --metatable.link
     if not host then error('host is nil') end
 
     if cel == host then return cel end
-    if rawget(cel, _host) == host then return cel end
+    if rawget(cel, _host) == host then
+      --TODO cel could be retargeted, test that first then return
+      return cel 
+    end
 
     if linker then
       local typeof = type(linker)
@@ -1558,7 +1562,7 @@ do --metatable.takefocus
     if target == _ENV.root then
       assert(_ENV.root)
       for i = device_focus.n, 1, -1 do
-        event:onfocus(device_focus[i], false)
+        event:onblur(device_focus[i])
         device_focus[device_focus[i]] = nil
         device_focus[i] = nil
       end
@@ -1566,7 +1570,7 @@ do --metatable.takefocus
       device_focus.n = 1
       device_focus[1] = _ENV.root
       device_focus[_ENV.root] = 1
-      event:onfocus(_ENV.root, true)
+      event:onfocus(_ENV.root)
       assert(_ENV.root)
       return
     end
@@ -1591,7 +1595,7 @@ do --metatable.takefocus
     end
 
     for i = device_focus.n, cutoff, -1 do
-      event:onfocus(device_focus[i], false)
+      event:onblur(device_focus[i])
       device_focus[device_focus[i]] = nil
       device_focus[i] = nil
     end
@@ -1599,7 +1603,7 @@ do --metatable.takefocus
     device_focus.n = z
     device_focus[z] = target
     device_focus[target] = z
-    event:onfocus(target, true)
+    event:onfocus(target)
 
     for host in hosts(target) do
       if device_focus[host] then
@@ -1608,7 +1612,7 @@ do --metatable.takefocus
       z = z - 1
       device_focus[z] = host
       device_focus[host] = z
-      event:onfocus(host, true)
+      event:onfocus(host)
     end
   end
 end

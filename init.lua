@@ -270,10 +270,7 @@ end
 do --cel.doafter
   tasks = {} --ENV.tasks
 
-  local function canceltask(task)
-    task.action = nil
-  end
-
+  --TODO optimize, can create a lot of gc churn
   function M.doafter(ms, f)
     if not f then
       error('expected a function', 2)
@@ -282,7 +279,6 @@ do --cel.doafter
     local due = M.timer() + ms
     local task = {
       action = f;
-      cancel = canceltask,
       due = due,
       next = nil,
     }
@@ -300,7 +296,11 @@ do --cel.doafter
     end
 
     prev.next = task
-    return task
+    return function(op)
+      if op == 'cancel' then
+        task.action = nil
+      end
+    end
   end
 end
 

@@ -306,9 +306,6 @@ function metacel:onmousedown(editbox, button, x, y, intercepted)
   end
 end
 
-function metacel:onfocus(editbox, focus)
-end
-
 function metacel:onmouseup(editbox, button, x, y, intercepted)
   if intercepted then return end
   editbox:freemouse()

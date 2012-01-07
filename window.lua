@@ -237,13 +237,13 @@ function metacel:__link(window, link, linker, xval, yval, option)
   return window[_client], linker, xval, yval, option
 end
 
-function metacel:onfocus(window, b)
-  --print(window, 'onfocus', b)
-  if b then
-    self:activate(window)
-  else
-    window[_activated] = false 
-  end
+function metacel:onfocus(window)
+  self:activate(window)
+  window:refresh()
+end
+
+function metacel:onblur(window)
+  window[_activated] = false 
   window:refresh()
 end
 
