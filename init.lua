@@ -162,22 +162,7 @@ function M.tocel(v, host)
 end
 
 do --cel.translate
-  function M.translate(from, to, x, y) 
-    while from do
-      x = x + from[_x]
-      y = y + from[_y]
-
-      if to == from[_host] then
-        return x, y
-      end
-
-      from = from[_host] 
-    end
-  end
-end
-
-do --cel.translate
-  function M.translate_(from, x, y, to) 
+  function M.translate(from, x, y, to) 
     while from do
       x = x + from[_x]
       y = y + from[_y]

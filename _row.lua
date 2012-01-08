@@ -808,7 +808,7 @@ do --rowformation.describeslot
 
       local vcel
       if mouse[_focus][row] then
-        local x, y = M.translate(row, _ENV.root, 0, 0)
+        local x, y = row.X, row.Y
         vcel = self:pick(row, mouse[_x] - x, mouse[_y] - y) --TODO allow pick to accept a search range
       end
 

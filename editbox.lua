@@ -107,7 +107,7 @@ function metatable:showcaret()
   local caret = self[_caret]
   local left = self[_padl]
   local right = self.w - self[_padr]
-  local caretleft = cel.translate_(text, caret.x, caret.y, self)
+  local caretleft = cel.translate(text, caret.x, caret.y, self)
   local caretright = caretleft + caret.w
 
   if caret.i == 0 then
