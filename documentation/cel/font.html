@@ -1,0 +1,271 @@
+      <html>
+      <head>
+        <link rel="stylesheet" type="text/css" href="cel.css" />
+      </head>
+      <body>
+        <div class="typedef">
+      <h1>font<p class="typedefdesc">(type)<br><br>A font is a driver object representing a fontface and size</p></h1>
+      A font is a driver object representing a fontface and size Cel is only concerned with font metrics, how to render the font is not specified. The driver is required to implement font.bbox, font.lineheight, font.ascent, font.descent, and font.metrics Cel provides convenience functions to measure strings, if the driver implements any of these functions the
+    drivers version will be used.  To implement kerning for example the driver would have to implement all
+    of the font functions becuase kerning pairs are not part of the metrics. <div class="tabledef">
+      <h3>bbox</h3>
+      a table describing a tight bounding box around the inked portion of all glyphs in the font.
+      <ul>
+      <li><div class="key"><span>xmin</span> <span>distance from the pen origin to the left-most inked portion of any glyph in the font</span></div></li><li><div class="key"><span>xmax</span> <span>distance from the pen origin to the right-most inked portion of any glyph in the font</span></div></li><li><div class="key"><span>ymin</span> <span>distance from the pen origin to the bottom-most inked portion of any glyph in the
+                font(usually negative)</span></div></li><li><div class="key"><span>ymax</span> <span>distance from the pen origin to the top-most inked portion of any glyph in the font</span></div></li>
+      </ul>
+      </div> <div class="key"><span>lineheight</span> <span>See freetype FT_Face.height</span></div> <div class="key"><span>ascent</span> <span>See freetype FT_Face.ascender</span></div> <div class="key"><span>descent</span> <span>See freetype FT_Face.descender</span></div> <div class="tabledef">
+      <h3>metrics</h3>
+      a table with an entry for each glyph in the font (in a future version this will be a unicode value,
+      for now it is implemented as the value of string.byte('a') where 'a' is the charater the glyph represents.The metrics table is indexed by string.byte('A') where 'A' is the the string.char() value
+      <ul>
+      <li><div class="key"><span>glyph</span> <span>the value of string.byte() for the corresponding char</span></div></li><li><div class="key"><span>char</span> <span>the value of string.char() for the corresponding glyph</span></div></li><li><div class="key"><span>advance</span> <span>the horizontal advance of the pen when this glyph is drawn</span></div></li><li><div class="key"><span>xmin</span> <span>distance from the pen origin to the left-most inked portion of the glyph</span></div></li><li><div class="key"><span>xmax</span> <span>distance from the pen origin to the right-most inked portion of the glyph</span></div></li><li><div class="key"><span>ymin</span> <span>distance from the pen origin to the bottom-most inked portion of the glyph</span></div></li><li><div class="key"><span>ymax</span> <span>distance from the pen origin to the top-most inked portion of the glyph</span></div></li>
+      </ul>
+      </div>       <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          font:height()&nbsp;
+          <span class="functiondesc">Returns the height of the font (font.bbox.ymax - font.bbox.ymin)</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the height of the font (font.bbox.ymax - font.bbox.ymin)</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          font:measure(text, i, j)&nbsp;
+          <span class="functiondesc">Measures a string of text returning horizontal advance, font:height(), xmin, xmax, ymin, ymax</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Measures a string of text returning horizontal advance, font:height(), xmin, xmax, ymin, ymax i and j are used to indicate a substring of the text to measure Driver note: does not depend on other font functions</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the source text to measure</dd>
+                     <dt><code><span class="paramname">i</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>same behaviour as string.sub(text, i, j), a new string is not created however</dd>
+                     <dt><code><span class="paramname">j</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>same behaviour as string.sub(text, i, j), a new string is not created however</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>(horizontal advance) horizontal advance of the pen</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>(font height) font.bbox.ymax - font.bbox.ymin</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>(xmin)distance from the pen origin to the left-most inked portion of the text</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>(xmax)distance from the pen origin to the right-most inked portion of the text</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>(ymin)distance from the pen origin to the bottom-most inked portion of the text</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>(ymax)distance from the pen origin to the top-most inked portion of the text</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          font:measurebbox(text, i, j)&nbsp;
+          <span class="functiondesc">Measures a string of text returning xmin, xmax, ymin, ymax</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Measures a string of text returning xmin, xmax, ymin, ymax i and j are used to indicate a substring of the text to measure Driver note: does not depend on other font functions</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the source text to measure</dd>
+                     <dt><code><span class="paramname">i</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>same behaviour as string.sub(text, i, j), a new string is not created however</dd>
+                     <dt><code><span class="paramname">j</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>same behaviour as string.sub(text, i, j), a new string is not created however</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>(xmin)distance from the pen origin to the left-most inked portion of the text</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>(xmax)distance from the pen origin to the right-most inked portion of the text</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>(ymin)distance from the pen origin to the bottom-most inked portion of the text</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>(ymax)distance from the pen origin to the top-most inked portion of the text</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          font:measureadvance(text, i, j)&nbsp;
+          <span class="functiondesc">Measures a string of text returning horizontal advance of the pen</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Measures a string of text returning horizontal advance of the pen i and j are used to indicate a substring of the text to measure Driver note: does not depend on other font functions</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the source text to measure</dd>
+                     <dt><code><span class="paramname">i</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>same behaviour as string.sub(text, i, j), a new string is not created however</dd>
+                     <dt><code><span class="paramname">j</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>same behaviour as string.sub(text, i, j), a new string is not created however</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>horizontal advance of the pen</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          font:wrap(text, maxadvance, mode)&nbsp;
+          <span class="functiondesc">Returns an iterator that returns a begin and end values of the the substring of text that does not
+      extend past maxadvance</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns an iterator that returns a begin and end values of the the substring of text that does not
+      extend past maxadvance</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the source text to measure</dd>
+                     <dt><code><span class="paramname">maxadvance</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>maximum advance width for a line</dd>
+                     <dt><code><span class="paramname">mode</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>'word' will preserve words, 'line' will only wrap at newlines.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>function</code></dt> 
+          <dd>iterator function</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          font:pickpen(text, i, j, x)&nbsp;
+          <span class="functiondesc">Returns the index, and horizontal advance of the penx nearest to x</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the index, and horizontal advance of the penx nearest to x The pen index starts at 1 and advance starts at 0</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the source text to measure</dd>
+                     <dt><code><span class="paramname">i</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>same behaviour as string.sub(text, i, j), a new string is not created however</dd>
+                     <dt><code><span class="paramname">j</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>same behaviour as string.sub(text, i, j), a new string is not created however</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>horizontal distance from pen origin</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>pen index of the penx nearest to x</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>penx nearest to x</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          font:pad(padding, w, h, xmin, xmax, ymin, ymax)&nbsp;
+          <span class="functiondesc">Applies padding to text measurements, and returns penx, peny, w, h</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Applies padding to text measurements, and returns penx, peny, w, h The values returned by font:measure() correspond to w, h, xmin, xmax, ymin, ymax. Driver note: do not reimplement</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">padding</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd><div class="tabledef">
+      <h3>padding</h3>
+      A table with instructions on how to pad the measurements.
+      <ul>
+      <li><div class="key"><span>fit</span> <span>Can be nil, 'default' or 'bbox', this will be used for fitx if it is nil and for fity 
+            if it is nil.</span></div></li><li><div class="key"><span>fitx</span> <span>If this is 'bbox' the padding is applied to a tight bounding box around the inked
+            portion of the glyphs (horizontally).
+            If this 'default' the padding is applied to a bounding box that includes the horizontal
+            advance and 0.</span></div></li><li><div class="key"><span>fity</span> <span>If this is 'bbox' the padding is applied to a tight bounding box around the inked
+            portion of the glyphs (vertically).
+            If this is 'default' the padding is applied to a bounding box that includes font.bbox.ymin 
+            and font.bbox.ymax.</span></div></li><li><div class="key"><span>l</span> <span>The amount of left padding to apply. If this is a number the value is added to the width
+              and penx returned.  If it is a function, then the padding is calculated by 
+              l = math.floor(l(w,h) + .5) where w and h are the w and h (adjusted by fitx and fity) passed
+              into font:pad()</span></div></li><li><div class="key"><span>t</span> <span>The amount of top padding to apply. If this is a number the value is added to the height 
+              and peny returned.  If it is a function, then the padding is calculated by 
+              t = math.floor(t(w,h) + .5) where w and h are the w and h (adjusted by fitx and fity) passed
+              into font:pad()</span></div></li><li><div class="key"><span>r</span> <span>The amount of right padding to apply. If the is nil, then it will use the same value
+              as padding.l.  If this is a number the value is added to the width
+              returned.  If it is a function, then the padding is calculated by 
+              r = math.floor(r(w,h) + .5) where w and h are the w and h (adjusted by fitx and fity) passed
+              into font:pad()</span></div></li><li><div class="key"><span>b</span> <span>The amount of bottom padding to apply. If the is nil, then it will use the same value
+              as padding.t.  If this is a number the value is added to the height
+              returned.  If it is a function, then the padding is calculated by 
+              b = math.floor(b(w,h) + .5) where w and h are the w and h (adjusted by fitx and fity) passed
+              into font:pad()</span></div></li>
+      </ul>
+      </div></dd>
+                     <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>(horizontal advance) horizontal advance of the pen</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>(font height) font.bbox.ymax - font.bbox.ymin</dd>
+                     <dt><code><span class="paramname">xmin</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>distance from the pen origin to the left-most inked portion of the text</dd>
+                     <dt><code><span class="paramname">xmax</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>distance from the pen origin to the right-most inked portion of the text</dd>
+                     <dt><code><span class="paramname">ymin</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>distance from the pen origin to the bottom-most inked portion of the text</dd>
+                     <dt><code><span class="paramname">ymax</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>distance from the pen origin to the top-most inked portion of the text</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>penx coordinate of pen origin to use when drawing the text</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>peny coordinate of pen origin to use when drawing the text</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>width of the bounding box with left and right padding applied</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>height of the bounding box with top and bottom padding applied</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>the amount of left padding added to bounding box.</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>the amount of top padding added to bounding box.</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>the amount of right padding added to bounding box.</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>the amount of bottom padding added to bounding box.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+      
+      </div>
+      </body></html>

@@ -1,0 +1,480 @@
+      <html>
+      <head>
+        <link rel="stylesheet" type="text/css" href="cel.css" />
+      </head>
+      <body>
+        <div id="navigation">
+        <ul class="nav">
+  <li><a href="cel.html">cel</a> </li>
+  <li><a href="face.html">face</a> </li>
+  <li><a href="mouse.html">cel.mouse</a> </li>
+  <li><a href="keyboard.html">cel.keyboard</a> </li>
+  <li><a href="grip.html">cel.grip</a></li> 
+  <li><a href="button.html">cel.button</a></li> 
+  <li><a href="textbutton.html">cel.textbutton</a></li> 
+  <li><a href="label.html">cel.label</a></li> 
+  <li><a href="scroll.html">cel.scroll</a></li> 
+  <li><a href="listbox.html">cel.listbox</a></li> 
+  <li><a href="window.html">cel.window</a></li> 
+  <li><a href="panel.html">cel.panel</a></li> 
+  <li><a href="mutexpanel.html">cel.mutexpanel</a></li> 
+  <li><a href="text.html">cel.text</a></li> 
+  <li><a href="menu.html">cel.menu</a></li> 
+  <li><a href="row.html">cel.row</a></li> 
+  <li><a href="col.html">cel.col</a></li> 
+</ul>
+
+        </div>
+        <div id="content">
+        <h1>cel.window<p class="factorydesc">(module)<br><br>Factory for the window metacel.</p></h1>
+        Factory for the window metacel.       <div class="metaceldef">
+      <p class="metaceldefheader">metacel</p>
+        <h3 class="metaceldefname">
+          window&nbsp;
+          <span class="metaceldefdesc"></span>
+        </h3>
+        <div class="metaceldeffulldesc">
+        <p></p>
+        <dl>
+                <div class="metacelcomposition">
+          <dt class="metacelcomposition">composition</dt>
+          <dd>
+          <div class="code"><pre><code>[top] = window.border</code>
+<code>[bottom] = window.border</code>
+<code>[left] = window.border</code>
+<code>[right] = window.border</code>
+<code>[topleft] = window.corner</code>
+<code>[topright] = window.corner</code>
+<code>[bottomleft] = window.corner</code>
+<code>[bottomright] = window.corner</code>
+<code>[handle] = window.handle</code>
+<code>[client] = window.client</code></pre></div>
+                      <div class="arguments">
+              <span class="arguments">cels</span>
+              <dl class="arguments">          <dt><code><span class="paramname">[top]</span>&nbsp;<span class="paramtype">window.border</span></code></dt> 
+          <dd>border grip.</dd>
+                     <dt><code><span class="paramname">[bottom]</span>&nbsp;<span class="paramtype">window.border</span></code></dt> 
+          <dd>border grip.</dd>
+                     <dt><code><span class="paramname">[left]</span>&nbsp;<span class="paramtype">window.border</span></code></dt> 
+          <dd>border grip.</dd>
+                     <dt><code><span class="paramname">[right]</span>&nbsp;<span class="paramtype">window.border</span></code></dt> 
+          <dd>border grip.</dd>
+                     <dt><code><span class="paramname">[topleft]</span>&nbsp;<span class="paramtype">window.corner</span></code></dt> 
+          <dd>corner grip.</dd>
+                     <dt><code><span class="paramname">[topright]</span>&nbsp;<span class="paramtype">window.corner</span></code></dt> 
+          <dd>corner grip.</dd>
+                     <dt><code><span class="paramname">[bottomleft]</span>&nbsp;<span class="paramtype">window.corner</span></code></dt> 
+          <dd>corner grip.</dd>
+                     <dt><code><span class="paramname">[bottomright]</span>&nbsp;<span class="paramtype">window.corner</span></code></dt> 
+          <dd>corner grip.</dd>
+                     <dt><code><span class="paramname">[handle]</span>&nbsp;<span class="paramtype">window.handle</span></code></dt> 
+          <dd>handle grip.</dd>
+                     <dt><code><span class="paramname">[client]</span>&nbsp;<span class="paramtype">window.client</span></code></dt> 
+          <dd>client cel.</dd>
+          </dl>
+            </div>
+          </dd>
+        </div>
+                <div class="metaceldescription">
+          <dt class="metaceldescription">description</dt>
+          <dd>
+          A scroll description. <div class="code"><pre><code>activated = boolean,</code>
+<code>state = string,</code>
+<code>title = string,</code>
+<code>[client] = window.client</code>
+<code>[handle] = window.handle</code>
+<code>[bottomright] = window.corner</code>
+<code>[bottomleft] = window.corner</code>
+<code>[topright] = window.corner</code>
+<code>[topleft] = window.corner</code>
+<code>[right] = window.border</code>
+<code>[left] = window.border</code>
+<code>[bottom] = window.border</code>
+<code>[top] = window.border</code></pre></div>
+                      <div class="arguments">
+              <span class="arguments">entries</span>
+              <dl class="arguments">          <dt><code><span class="paramname">activated</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>true if the window is activated.</dd>
+                     <dt><code><span class="paramname">state</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>'minimizing', 'maximizing', 'maximized', 'minimized', 'restoring', 'normal'.</dd>
+                     <dt><code><span class="paramname">title</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the title of the window.</dd>
+                     <dt><code><span class="paramname">[top]</span>&nbsp;<span class="paramtype">window.border</span></code></dt> 
+          <dd>border grip.</dd>
+                     <dt><code><span class="paramname">[bottom]</span>&nbsp;<span class="paramtype">window.border</span></code></dt> 
+          <dd>border grip.</dd>
+                     <dt><code><span class="paramname">[left]</span>&nbsp;<span class="paramtype">window.border</span></code></dt> 
+          <dd>border grip.</dd>
+                     <dt><code><span class="paramname">[right]</span>&nbsp;<span class="paramtype">window.border</span></code></dt> 
+          <dd>border grip.</dd>
+                     <dt><code><span class="paramname">[topleft]</span>&nbsp;<span class="paramtype">window.corner</span></code></dt> 
+          <dd>corner grip.</dd>
+                     <dt><code><span class="paramname">[topright]</span>&nbsp;<span class="paramtype">window.corner</span></code></dt> 
+          <dd>corner grip.</dd>
+                     <dt><code><span class="paramname">[bottomleft]</span>&nbsp;<span class="paramtype">window.corner</span></code></dt> 
+          <dd>corner grip.</dd>
+                     <dt><code><span class="paramname">[bottomright]</span>&nbsp;<span class="paramtype">window.corner</span></code></dt> 
+          <dd>corner grip.</dd>
+                     <dt><code><span class="paramname">[handle]</span>&nbsp;<span class="paramtype">window.handle</span></code></dt> 
+          <dd>handle grip.</dd>
+                     <dt><code><span class="paramname">[client]</span>&nbsp;<span class="paramtype">window.client</span></code></dt> 
+          <dd>client cel.</dd>
+          </dl>
+            </div>
+          </dd>
+        </div>
+                <div class="metacellayout">
+          <dt class="metacellayout">layout</dt>
+          <dd>
+          A table defineing the internal layout of a window <div class="code"><pre><code>minw = integer,</code>
+<code>maxw = integer,</code>
+<code>minh = integer,</code>
+<code>maxh = integer,</code>
+<code></code>
+<code>border = {</code>
+<code>  face = face,</code>
+<code>  size = integer,</code>
+<code>},</code>
+<code>corner = {</code>
+<code>  face = face,</code>
+<code>  size = integer,</code>
+<code>},</code>
+<code>handle = {</code>
+<code>  face = face,</code>
+<code>  w = integer,</code>
+<code>  h = integer,</code>
+<code>  link = {linker[, xval[, yval]]} or string,</code>
+<code>},</code>
+<code>client = {</code>
+<code>  face = face,</code>
+<code>  w = integer,</code>
+<code>  h = integer,</code>
+<code>  link = {linker[, xval[, yval]]} or string,</code>
+<code>},</code></pre></div>
+                      <div class="arguments">
+              <span class="arguments">entries</span>
+              <dl class="arguments">          <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name</dd>
+                     <dt><code><span class="paramname">minw</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>optional min width of window.</dd>
+                     <dt><code><span class="paramname">maxw</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>optional max width of window.</dd>
+                     <dt><code><span class="paramname">minh</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>optional min height of window.</dd>
+                     <dt><code><span class="paramname">maxh</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>optional max height of window.</dd>
+                     <dt><code><span class="paramname">border</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>optional border layout, if nil or false no borders are created.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>the size of the border.</dd>
+          
+        </dl>
+      </div></dd>
+                     <dt><code><span class="paramname">corner</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>optional corner layout, if nil or false no corners are created.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">size</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>the size of the corner width and height.</dd>
+          
+        </dl>
+      </div></dd>
+                     <dt><code><span class="paramname">handle</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>optional handle layout, if nil or false no handle is created.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width of the handle.</dd>
+                    <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>height of the handle.</dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>If link is a table, it contains arguments passed to cel:link().       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">[1]</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name passed to cel:link().</dd>
+                    <dt><code><span class="paramname">[2]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to cel:link()</dd>
+                    <dt><code><span class="paramname">[3]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>linker name passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                     <dt><code><span class="paramname">client</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>client cel layout.       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+                    <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width of the client cel.</dd>
+                    <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>height of the client cel.</dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>If link is a table, it contains arguments passed to cel:link().       <div class="tabledef">
+        <p class="tabledefname"></p>
+        <dl class="tabledef">
+                    <dt><code><span class="paramname">[1]</span>&nbsp;<span class="paramtype">linker</span></code></dt> 
+          <dd>linker function or name passed to cel:link().</dd>
+                    <dt><code><span class="paramname">[2]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>xval param passed to cel:link()</dd>
+                    <dt><code><span class="paramname">[3]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>yval param passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+                    <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>linker name passed to cel:link()</dd>
+          
+        </dl>
+      </div></dd>
+          </dl>
+            </div>
+          </dd>
+        </div>
+        </dl>
+        </div>
+      </div>
+             <div class="metaceldef">
+      <p class="metaceldefheader">metacel</p>
+        <h3 class="metaceldefname">
+          window.border&nbsp;
+          <span class="metaceldefdesc"></span>
+        </h3>
+        <div class="metaceldeffulldesc">
+        <p></p>
+        <dl>
+        
+                <div class="metaceldescription">
+          <dt class="metaceldescription">description</dt>
+          <dd>
+          A grip description.
+          
+          </dd>
+        </div>
+        
+        </dl>
+        </div>
+      </div>
+             <div class="metaceldef">
+      <p class="metaceldefheader">metacel</p>
+        <h3 class="metaceldefname">
+          window.corner&nbsp;
+          <span class="metaceldefdesc"></span>
+        </h3>
+        <div class="metaceldeffulldesc">
+        <p></p>
+        <dl>
+        
+                <div class="metaceldescription">
+          <dt class="metaceldescription">description</dt>
+          <dd>
+          A grip description.
+          
+          </dd>
+        </div>
+        
+        </dl>
+        </div>
+      </div>
+             <div class="metaceldef">
+      <p class="metaceldefheader">metacel</p>
+        <h3 class="metaceldefname">
+          window.handle&nbsp;
+          <span class="metaceldefdesc"></span>
+        </h3>
+        <div class="metaceldeffulldesc">
+        <p></p>
+        <dl>
+        
+                <div class="metaceldescription">
+          <dt class="metaceldescription">description</dt>
+          <dd>
+          A grip description.
+          
+          </dd>
+        </div>
+        
+        </dl>
+        </div>
+      </div>
+             <div class="metaceldef">
+      <p class="metaceldefheader">metacel</p>
+        <h3 class="metaceldefname">
+          window.client&nbsp;
+          <span class="metaceldefdesc"></span>
+        </h3>
+        <div class="metaceldeffulldesc">
+        <p></p>
+        <dl>
+        
+                <div class="metaceldescription">
+          <dt class="metaceldescription">description</dt>
+          <dd>
+          A cel description.
+          
+          </dd>
+        </div>
+        
+        </dl>
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.window(t)&nbsp;
+          <span class="functiondesc">Creates a new window</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new window <div class="code"><pre><code>cel.window {</code>
+<code>  w = number,</code>
+<code>  h = number,</code>
+<code>  title = string,</code>
+<code>  onchange = function,</code>
+<code>  onclose = function,</code>
+<code>}</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width, default is 0.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height, default is 0.</dd>
+                     <dt><code><span class="paramname">title</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>title of the window.</dd>
+                     <dt><code><span class="paramname">onchange</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onclose</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>window</code></dt> 
+          <dd>a new window.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.window.new([w[, h[, title[, face]]]])&nbsp;
+          <span class="functiondesc">Creates a new window</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new window</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>width, default is 0.</dd>
+                     <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>height, default is 0.</dd>
+                     <dt><code><span class="paramname">title</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>title of the window.</dd>
+                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>window</code></dt> 
+          <dd>a new window.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+       <div class="celdef">
+      <h1>window<p class="celdefdesc">(cel)<br><br></p></h1>
+            <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          window:maximize()&nbsp;
+          <span class="functiondesc">Maximizes the window.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Maximizes the window. If the windows state is 'normal' then the current postion, dimensions and linker
+        of the window are saved before the window is 
+        maximized and window:restore() can be called to return to the saved values.
+        When the window is maximized it is relinked in its host using the 'edges' linker.
+        If the window face defines flows.maximize it will be called.  While the window is flowing its state
+        is 'maximizing'.
+        After the window is maximized its state is set to 'maximized' and window:onchange() is called.
+      </p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>window</code></dt> 
+          <dd>self.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          window:minimize()&nbsp;
+          <span class="functiondesc">Minimizes the window.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Minimizes the window. If the windows state is 'normal' then the current postion, dimensions and linker of the window are saved
+        before the window is minimized and window:restore() can be called to return to the saved values.
+        When the window is minimized it is relinked forcing it to its minimum dimensions positioned at the bottom
+        left corner of its host.
+        If the window face defines flows.minimize it will be called.  While the window is flowing its state
+        is 'minimizing'.
+        After the window is minimized its state is set to 'minimized' and window:onchange() is called.
+      </p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>window</code></dt> 
+          <dd>self.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          window:restore()&nbsp;
+          <span class="functiondesc">Restores the window to its normal state.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Restores the window to its normal state. This function is redefined each time the window state changes from 'normal' When the window is restored it is relinked and resized and moved into values saved when it was minimized or 
+        maximized.
+        If the window face defines flows.restore it will be called.  While the window is flowing its state
+        is 'restoring'.
+        After the window is restored its state is set to 'normal' and window:onchange() is called.
+      </p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>window</code></dt> 
+          <dd>self.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+      
+      
+      </div>
+        </div>
+      </body></html>

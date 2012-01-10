@@ -1,0 +1,491 @@
+      <html>
+      <head>
+        <link rel="stylesheet" type="text/css" href="cel.css" />
+      </head>
+      <body>
+        <div id="navigation">
+        <ul class="nav">
+  <li><a href="cel.html">cel</a> </li>
+  <li><a href="face.html">face</a> </li>
+  <li><a href="mouse.html">cel.mouse</a> </li>
+  <li><a href="keyboard.html">cel.keyboard</a> </li>
+  <li><a href="grip.html">cel.grip</a></li> 
+  <li><a href="button.html">cel.button</a></li> 
+  <li><a href="textbutton.html">cel.textbutton</a></li> 
+  <li><a href="label.html">cel.label</a></li> 
+  <li><a href="scroll.html">cel.scroll</a></li> 
+  <li><a href="listbox.html">cel.listbox</a></li> 
+  <li><a href="window.html">cel.window</a></li> 
+  <li><a href="panel.html">cel.panel</a></li> 
+  <li><a href="mutexpanel.html">cel.mutexpanel</a></li> 
+  <li><a href="text.html">cel.text</a></li> 
+  <li><a href="menu.html">cel.menu</a></li> 
+  <li><a href="row.html">cel.row</a></li> 
+  <li><a href="col.html">cel.col</a></li> 
+</ul>
+
+        </div>
+        <div id="content">
+        <h1>cel.col<p class="factorydesc">(module)<br><br>Factory for the col metacel</p></h1>
+        Factory for the col metacel       <div class="metaceldef">
+      <p class="metaceldefheader">metacel</p>
+        <h3 class="metaceldefname">
+          col&nbsp;
+          <span class="metaceldefdesc"></span>
+        </h3>
+        <div class="metaceldeffulldesc">
+        <p></p>
+        <dl>
+        
+                <div class="metaceldescription">
+          <dt class="metaceldescription">description</dt>
+          <dd>
+          A cel linked to a col is contained in a virtual slot.  The slot is described if there is a face
+      for it.  If the slot is described it will describe the link at index 1. <div class="code"><pre><code>[n] = {</code>
+<code>  id = 0,</code>
+<code>  metacel = '[n]',</code>
+<code>  [1] = cel,</code>
+<code>}</code></pre></div>
+                      <div class="arguments">
+              <span class="arguments">entries</span>
+              <dl class="arguments">          <dt><code><span class="paramname">[n]</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>index of a description.</dd>
+                     <dt><code><span class="paramname">[n].id</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>always 0 for a slot, a virtual cel does not have an id.</dd>
+                     <dt><code><span class="paramname">[n].metacel</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>always '['.. n .. ']' for a slot, a virtual cel does not have a metacel.</dd>
+                     <dt><code><span class="paramname">[n][1]</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a cel.</dd>
+          </dl>
+            </div>
+          </dd>
+        </div>
+        
+        </dl>
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.col(t)&nbsp;
+          <span class="functiondesc">Creates a new col.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new col. The col is influx until this function returns. <div class="code"><pre><code>cel.col {</code>
+<code>  gap = number,</code>
+<code>  TODO explain non-cel table entries</code>
+<code>}</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">gap</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>the amount of space to leave between slots in the col. Default is 0.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>col</code></dt> 
+          <dd>a new col.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.col.new([gap [, face]])&nbsp;
+          <span class="functiondesc">Creates a new col.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new col.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">gap</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>amount of space to leave between slots in the col. Default is 0.</dd>
+                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>col</code></dt> 
+          <dd>a new col.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+       <div class="celdef">
+      <h1>col<p class="celdefdesc">(cel)<br><br>A cel that arranges its links into a vertical sequence or column.</p></h1>
+      A cel that arranges its links into a vertical sequence or column. A col is a cel that provides automatic layout.  For each link the top/left is aligned with the
+  bottom/right (with an optional gap) of the link that comes before it in the col.  For a vertical col its
+  height, minh and maxh are always the sum of the heights of its links, and its width is the smallest width necessary
+  to ensure that no part of any of its links are clipped.  A col does support linkers as well as it can, but keep
+  in mind that the dimensions of a col are calculated from the dimensions and positions of its links, and a linker
+  will be enforced when the dimensions of the col change.  Each link is put into a (virtual) slot, for a vertical
+  col the width of the slot is the width of the col, the height of the slot is the height of the link.  The
+  slot w and h are the hostw and hosth that the linker will see.  Because the slot h is the link h, the any change the 
+  y and h returned from a linker are ignored and 0, and slot.h are used.  The height of a link/slot can be changed
+  by explicitly resizing the link.
+   The position(y for vertical, x for horizontal) of a link in the col is the sum of the 
+      link.dimension + gap (dimension is height for vertical, width for horizontal) of the links 
+      that precede it in the col. If the col is in flux then the links position is not
+      enforced until the col is no longer in flux.       <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:get(index)&nbsp;
+          <span class="functiondesc">Get a link by index.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Get a link by index.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>An array index.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the cel that is linked to the col at the specified index, or nil.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:insert(index, link)&nbsp;
+          <span class="functiondesc">links the given cel to the col, inserting it at the given index.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>links the given cel to the col, inserting it at the given index. This is a shortcut for using link, when a linker is not required.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>An array index.  If not provided then link is appended to the end of the col</dd>
+                     <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>The cel to link to the col.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>col</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:insert(link)&nbsp;
+          <span class="functiondesc">links the given cel to the end of the col</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>links the given cel to the end of the col This is a shortcut for using link, when a linker is not required.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>The cel to link to the col.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>col</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:remove(index)&nbsp;
+          <span class="functiondesc">unlinks the cel at the given index.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>unlinks the cel at the given index. If the index is invalid the col remains unmutated.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">index</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>An array index.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>col</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:clear()&nbsp;
+          <span class="functiondesc">effciently unlinks all cels from the col.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>effciently unlinks all cels from the col. The col will be in flux for the duration of clear().</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>col</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:len()&nbsp;
+          <span class="functiondesc">returns number of cels in the col.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>returns number of cels in the col.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>The number of cels in the col.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:next(link)&nbsp;
+          <span class="functiondesc">Get the cel which has an index that is 1 greater than the index of the given link in the col.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Get the cel which has an index that is 1 greater than the index of the given link in the col.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a cel linked to the col, if the cel is not in the col nil is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the link following the given link in the col, or nil</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:prev(link)&nbsp;
+          <span class="functiondesc">Get the cel which has an index that is 1 less than the index of the given link in the col.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Get the cel which has an index that is 1 less than the index of the given link in the col.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a cel linked to the col, if the cel is not in the col nil is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>the link preceding the given link in the col, or nil</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:indexof(link)&nbsp;
+          <span class="functiondesc">Get the array index of the given link in the col.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Get the array index of the given link in the col.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
+          <dd>a cel linked to the col, if the cel is not in the col nil is returned.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>the array index of the given link in the col, or nil.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:flux(callback, ...)&nbsp;
+          <span class="functiondesc">Puts the col into flux and calls the given function.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Puts the col into flux and calls the given function. Before the function is called the col is reconciled, meaning that all links are in
+        col and the col dimensions are the minimum size such that no link is clipped by
+        the col.  After the callback function returns the col is reconciled again.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">callback</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>a callback function, it will be called as callback(...).</dd>
+                     <dt><code><span class="paramname">...</span>&nbsp;<span class="paramtype">...</span></code></dt> 
+          <dd>parameters passed to the callback function.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>col</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:beginflux([reconcile])&nbsp;
+          <span class="functiondesc">Puts the col into flux.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Puts the col into flux. When a col is in flux it will not automatically reconcile. An equal number of calls to endflux are required to take the col out of flux.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">reconcile</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If true the col is reconciled.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>col</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:endflux([reconcile])&nbsp;
+          <span class="functiondesc">Takes a col out of flux and reconciles it.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Takes a col out of flux and reconciles it. An equal number of calls to beginflux/endflux are required to take the col out of flux.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">reconcile</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+          <dd>If false the col will not be reconciled if it is still in flux.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>col</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:pick(x, y)&nbsp;
+          <span class="functiondesc">Returns the link at the give xy coordinate in the col.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the link at the give xy coordinate in the col. x is ignored for a vertical col, y is ignored for a horizontal col. TODO document which link is picked when it falls on a gap</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>For a horizontal col the x coordinate.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>For a vertical col the y coordinate..</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>cel</code></dt> 
+          <dd>The link closest to the x coordinate for a horizontal col, 
+                   or closest to the y coordinate for a vertical col</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          col:ilinks()&nbsp;
+          <span class="functiondesc">Returns an iterator function and the col.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns an iterator function and the col. <div class="code"><pre><code>for index, link in col:ilinks() do end</code></pre></div> will iterate over each link in the col starting a the first link.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>iterator</code></dt> 
+          <dd>an iterator function</dd>
+                     <dt><code>listbox</code></dt> 
+          <dd>the col, iterator function invariant state</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          sort&nbsp;
+          <span class="functiondesc">TODO</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>TODO</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          swap&nbsp;
+          <span class="functiondesc">TODO</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>TODO</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          replace&nbsp;
+          <span class="functiondesc">TODO</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>TODO</p>
+        
+        
+        </div>
+      </div>
+      
+      
+      </div>
+        </div>
+      </body></html>

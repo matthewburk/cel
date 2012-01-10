@@ -1,0 +1,249 @@
+      <html>
+      <head>
+        <link rel="stylesheet" type="text/css" href="cel.css" />
+      </head>
+      <body>
+        <div id="navigation">
+        <ul class="nav">
+  <li><a href="cel.html">cel</a> </li>
+  <li><a href="face.html">face</a> </li>
+  <li><a href="mouse.html">cel.mouse</a> </li>
+  <li><a href="keyboard.html">cel.keyboard</a> </li>
+  <li><a href="grip.html">cel.grip</a></li> 
+  <li><a href="button.html">cel.button</a></li> 
+  <li><a href="textbutton.html">cel.textbutton</a></li> 
+  <li><a href="label.html">cel.label</a></li> 
+  <li><a href="scroll.html">cel.scroll</a></li> 
+  <li><a href="listbox.html">cel.listbox</a></li> 
+  <li><a href="window.html">cel.window</a></li> 
+  <li><a href="panel.html">cel.panel</a></li> 
+  <li><a href="mutexpanel.html">cel.mutexpanel</a></li> 
+  <li><a href="text.html">cel.text</a></li> 
+  <li><a href="menu.html">cel.menu</a></li> 
+  <li><a href="row.html">cel.row</a></li> 
+  <li><a href="col.html">cel.col</a></li> 
+</ul>
+
+        </div>
+        <div id="content">
+        <h1>cel.label<p class="factorydesc">(module)<br><br>Factory for the label metacel</p></h1>
+        Factory for the label metacel       <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.label(t)&nbsp;
+          <span class="functiondesc">Creates a new label</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new label <div class="code"><pre><code>cel.label {</code>
+<code>  text = string,</code>
+<code>  onchange(self) = function, --TODO implement this</code>
+<code>}</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>text.</dd>
+                     <dt><code><span class="paramname">onchange</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>label</code></dt> 
+          <dd>a new label.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.label.new(text[, face])&nbsp;
+          <span class="functiondesc">Creates a new label.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a new label.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>text.</dd>
+                     <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
+          <dd>face or face name. After resolving the face, the 
+      label looks for a font at face.font(required) and a layout at 
+      face.layout(optional).</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>label</code></dt> 
+          <dd>a new label.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="tabledef">
+        <p class="tabledefname">cel.label.layout</p>
+        <dl class="tabledef">
+          <dt class="key">padding</dt><dd class="value">A table defining how to layout space around the text.
+    see font:pad() for definition.</dd>
+        </dl>
+      </div> <div class="celdef">
+      <h1>label<p class="celdefdesc">(cel)<br><br>A label is a cel for displaying a single line of text.</p></h1>
+      A label is a cel for displaying a single line of text. A label in non-interactive and will never have mouse foucs. (label.touch = false) A label has a fixed size which is determined by its text and layout       <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          label:getfont()&nbsp;
+          <span class="functiondesc">Returns the font</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the font</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>font</code></dt> 
+          <dd>font used by the label</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          label:getbaseline()&nbsp;
+          <span class="functiondesc">Returns the pen origin</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the pen origin</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>integer</code></dt> 
+          <dd>'x coordinate of pen origin to use when drawing the text</dd>
+                     <dt><code>integer</code></dt> 
+          <dd>'y coordinate of pen origin to use when drawing the text</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          label:settext(text)&nbsp;
+          <span class="functiondesc">Changes the text displayed.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Changes the text displayed.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>text to display</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>label</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          label:gettext()&nbsp;
+          <span class="functiondesc">Gets the displayed text.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Gets the displayed text.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>string</code></dt> 
+          <dd>text</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          label:printf(format, ...)&nbsp;
+          <span class="functiondesc">Changes the text displayed. Shortcut for
+      label:settext(string.format(format, ...))</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Changes the text displayed. Shortcut for
+      label:settext(string.format(format, ...))</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">format</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>format parameter for string.format</dd>
+                     <dt><code><span class="paramname">...</span>&nbsp;<span class="paramtype">...</span></code></dt> 
+          <dd>additional parameters for string.format</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>label</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div class="eventdef">
+        <p class="eventdefheader">event</p>
+        <h3 class="eventsig">
+          label:onchange()&nbsp;
+          <span class="eventdesc">called when the label text is changed.</span>
+        </h3>
+        <div class="eventfulldesc">
+        <p>called when the label text is changed.</p>
+        
+        
+        </div>
+      </div>
+      
+      
+      </div>       <div class="descriptiondef">
+        <p class="descriptiondefheader">description</p>
+        <h3 class="descriptiondefsig">
+          label&nbsp;
+          <span class="descriptiondefdesc"></span>
+        </h3>
+        <div class="descriptiondeffulldesc">
+        <p><div class="code"><pre><code>{</code>
+<code>  font = font,</code>
+<code>  text = string,</code>
+<code>  penx = integer,</code>
+<code>  peny = integer,</code>
+<code>  textw = integer,</code>
+<code>  texth = integer,</code>
+<code>}</code></pre></div></p>
+                <div class="arguments">
+          <span class="arguments">entries</span>
+          <dl class="arguments">          <dt><code><span class="paramname">font</span>&nbsp;<span class="paramtype">font</span></code></dt> 
+          <dd>font</dd>
+                     <dt><code><span class="paramname">text</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>text</dd>
+                     <dt><code><span class="paramname">penx</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>pen origin to use when rendering text</dd>
+                     <dt><code><span class="paramname">peny</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>pen origin to use when rendering text</dd>
+                     <dt><code><span class="paramname">textw</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>width of text returned from font:measure(text)</dd>
+                     <dt><code><span class="paramname">texth</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
+          <dd>height of text to returned from 
+                              font:measure(text)</dd>
+          </dl>
+        </div>
+        </div>
+      </div>
+      
+        </div>
+      </body></html>

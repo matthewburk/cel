@@ -1,0 +1,373 @@
+<html> 
+ 
+<head> 
+<title>cel embedding guide for love</title> 
+</head> 
+ 
+<body> 
+<h1>Introduction</h1>
+
+<p>Cel is a pure Lua library.  It is desigend to be embedded into a host application.
+The host application is responsible for rendering, providing input, and access to
+system resources.
+ 
+<h1>The driver module</h1>
+<p> Before Cel is usable we need to install a driver for it, the driver is responsible
+for provding device input, fonts, clipboard access and other miscellaneous functions 
+that are reactor specific.  This section is meant to serve as an example on how to
+create a driver for Cel.</p>
+
+<p>This driver is implemented in Lua.  It is generally useful to have direct access to the data needed by cel, so this is the recommened approach.</p>
+
+<p>To embed Cel. First require the cel module.
+<div><pre><code>
+local cel = require 'cel' 
+</code></pre></div>
+</p>
+
+<p>Call cel.installdriver() to create the driver, a proxytable is 
+returned which is a bidirectional interface.  Cel requires a table that maps the reactor key codes and states
+to the names that Cel will use (for the mouse and keyboard).  The first parameter to cel.installdriver is a
+table with mouse mappings and the second is a table with keyboard mappings.
+<div><pre><code>
+local driver = cel.installdriver(
+  {
+    buttons = {
+      left = 'left',
+      middle = 'middle',
+      right = 'right', 
+    },
+    states = {
+      up = 'up',
+      down = 'down',
+    },
+    wheel = {
+      up = 1,
+      down = -1,
+    },
+  },
+  {
+    keys = {
+      ['backspace'] = 'backspace',
+      ['tab'] = 'tab',
+      ['enter'] = 'enter',
+      ['shift'] = 'shift',
+      ['ctrl'] = 'ctrl',
+      ['alt'] = 'alt',
+      ['pause'] = 'pause',
+      ['capslock'] = 'capslock',
+      ['escape'] = 'escape',
+      ['space'] = 'space',
+      ['pageup'] = 'pageup',
+      ['pagedown'] = 'pagedown',
+      ['end'] = 'end',
+      ['home'] = 'home',
+      ['left'] = 'left',
+      ['up'] = 'up',
+      ['right'] = 'right',
+      ['down'] = 'down',
+      ['printscreen'] = 'printscreen',
+      ['insert'] = 'insert',
+      ['delete'] = 'delete',
+      ['0'] = '0',
+      ['1'] = '1',
+      ['2'] = '2',
+      ['3'] = '3',
+      ['4'] = '4',
+      ['5'] = '5',
+      ['6'] = '6',
+      ['7'] = '7',
+      ['8'] = '8',
+      ['9'] = '9',
+      ['a'] = 'a',
+      ['b'] = 'b',
+      ['c'] = 'c',
+      ['d'] = 'd',
+      ['e'] = 'e',
+      ['f'] = 'f',
+      ['g'] = 'g',
+      ['h'] = 'h',
+      ['i'] = 'i',
+      ['j'] = 'j',
+      ['k'] = 'k',
+      ['l'] = 'l',
+      ['m'] = 'm',
+      ['n'] = 'n',
+      ['o'] = 'o',
+      ['p'] = 'p',
+      ['q'] = 'q',
+      ['r'] = 'r',
+      ['s'] = 's',
+      ['t'] = 't',
+      ['u'] = 'u',
+      ['v'] = 'v',
+      ['w'] = 'w',
+      ['x'] = 'x',
+      ['y'] = 'y',
+      ['z'] = 'z',
+      ['numpad0'] = 'numpad0',
+      ['numpad1'] = 'numpad1',
+      ['numpad2'] = 'numpad2',
+      ['numpad3'] = 'numpad3',
+      ['numpad4'] = 'numpad4',
+      ['numpad5'] = 'numpad5',
+      ['numpad6'] = 'numpad6',
+      ['numpad7'] = 'numpad7',
+      ['numpad8'] = 'numpad8',
+      ['numpad9'] = 'numpad9',
+      ['multiply'] = 'multiply',
+      ['add'] = 'add',
+      ['subtract'] = 'subtract',
+      ['decimal'] = 'decimal',
+      ['divide'] = 'divide',
+      ['f1'] = 'f1',
+      ['f2'] = 'f2',
+      ['f3'] = 'f3',
+      ['f4'] = 'f4',
+      ['f5'] = 'f5',
+      ['f6'] = 'f6',
+      ['f7'] = 'f7',
+      ['f8'] = 'f8',
+      ['f9'] = 'f9',
+      ['f10'] = 'f10',
+      ['f11'] = 'f11',
+      ['f12'] = 'f12',
+      ['numlock'] = 'numlock',
+      ['scrolllock'] = 'scrolllock',
+      ['equal'] = 'equal',
+      ['comma'] = 'comma',
+      ['minus'] = 'minus',
+      ['period'] = 'period',
+      ['semicolon'] = 'semicolon',
+      ['slash'] = 'slash',
+      ['graveaccent'] = 'graveaccent',
+      ['openbracket'] = 'openbracket',
+      ['backslash'] = 'backslash',
+      ['closebracket'] = 'closebracket',
+      ['apostrophe'] = 'apostrophe',
+    },
+    states = { 
+      up = 'up', 
+      down = 'down', 
+    }
+  })
+</code></pre></div> 
+
+<h2>driver interface functions</h2>
+<p> The Cel driver interface defines these functions which should be called by the driver.  The reactor.* functions
+are functions called by the host application.</p>
+
+<h3>mousemove</h3>
+<div><pre><code>
+function reactor.mousemove(x, y)
+  driver.mousemove(x, y)
+end
+</code></pre></div>
+
+<h3>mousedown</h3>
+<div><pre><code>
+function reactor.mousedown(x, y, button, alt, ctrl, shift)
+  driver.mousedown(x, y, button, alt, ctrl, shift)
+end
+</code></pre></div>
+
+<h3>mouseup</h3>
+<div><pre><code>
+function reactor.mouseup(x, y, button, alt, ctrl, shift)
+  driver.mouseup(x, y, button, alt, ctrl, shift)
+end
+</code></pre></div>
+
+<h3>mousewheel</h3>
+<div><pre><code>
+function reactor.mousewheel(x, y, delta, step, alt, ctrl, shift)
+  local direction 
+
+  if delta > 0 then
+    direction = cel.mouse.wheel.up
+  else
+    direction =  cel.mouse.wheel.down
+  end
+
+  delta = math.abs(delta)
+  for i=1,delta do
+    driver.mousewheel(x, y, direction, step, alt, ctrl, shift)
+  end
+end
+</code></pre></div>
+
+<h3>keydown</h3>
+<div><pre><code>
+function reactor.keydown(key, alt, ctrl, shift)
+  driver.keydown(key, alt, ctrl, shift)
+end
+</code></pre></div>
+
+<h3>keypress</h3>
+<div><pre><code>
+function reactor.keypress(key, alt, ctrl, shift)
+  driver.keypress(key, alt, ctrl, shift)
+end
+</code></pre></div>
+
+<h3>keyup</h3>
+<div><pre><code>
+function reactor.keyup(key, alt, ctrl, shift)
+  driver.keyup(key, alt, ctrl, shift)
+end
+</code></pre></div>
+
+<h3>char</h3>
+<div><pre><code>
+function reactor.character(c)
+  driver.char(c)
+end
+</code></pre></div>
+
+<h3>command</h3>
+<div><pre><code>
+function reactor.command(c)
+  driver.command(c)
+end
+</code></pre></div>
+
+<h3>tick</h3>
+<p>The value passed to driver.tick() should be a running count of milliseconds.</p>
+<div><pre><code>
+function reactor.tick(millis)
+  driver.tick(millis)
+end
+</code></pre></div>
+
+
+<h2>driver callback functions</h2>
+<p>The driver module should define these functions in the driver table retured by cel.installdriver().  They will
+be called by cel if they are provided.</p>
+
+<h3>loadfont</h3>
+<p>The driver is required to implement loadfont.  This is where embedding gets the most difficult if you
+don't already have decent font rendering and metrics.  There are many tools and libraries available that will render fonts and supply basic metrics.
+<a href="http://code.google.com/p/freetype-gl/">freetype-gl</a>
+<a href="http://www.angelcode.com/products/bmfont/">bmfont</a>
+<p>
+
+<p>cel.loadfont() will call driver.loadfont() to create a new font.  When a font is loaded through cel.loadfont()
+it caches the result, so it is unecesasry to do this in the driver implementation.</p>
+
+<p>The name of the font passed to loadfont is unrestricted, the driver must imlement at least 1 font, but
+should also expect these strings for the font name:</p>
+<ul>
+  <li>code - should be a monospace font that is well suited for coding with</li>
+  <li>monospace - a monspace font</li>
+  <li>serif - a serif font like times new roman</li>
+  <li>sansserif - a sans serif font like arial</li>
+  <li>default - driver defined default font</li>
+</ul>
+
+<div><pre><code>
+do
+  local celfontnames = {
+    code = 'fixedsys',
+    monospace = 'courier new',
+    serif = 'times new roman',
+    sansserif = 'arial',
+    default = 'arial',
+  }
+
+  function driver.loadfont(name, weight, slant, size)
+    name = celfontnames[name] or name 
+
+    local cr = cairo.create(cairo.surface.create(0, 0))
+    local cairofont = cairo.font.face_create(name, slant, weight)
+
+    cr:set_font_face(cairofont)
+    cr:set_font_size(size)
+
+    local ascent, descent, lineheight = cr:font_extents()
+
+    local font = {
+      cairofont = cairofont,
+      name = name,
+      weight = weight,
+      slant = slant,
+      size = size,
+      lineheight = lineheight,
+      ascent = ascent,
+      descent = descent,
+      metrics = setmetatable({}, {__index = function(glyphmetrics, glyph)
+        local char = string.char(glyph)
+        local xbr, ybr, w, h, xadv, yadv = cr:text_extents(char)      
+        glyphmetrics[glyph] = {
+          glyph = glyph,
+          char = char,
+          advance = xadv,
+          xmin = xbr,
+          xmax = xbr + w,
+          ymin = ybr,
+          ymax = ybr + h,
+        }
+        return glyphmetrics[glyph]
+      end})
+    }
+
+    return font 
+  end
+end
+</code></pre></div>
+
+<p>loadfont should return a new font object as a table with the follwing entries:</p>
+<ul>
+  <li>lineheight - the vertical baseline to baseline distance in pixels between consecutive lines of text.</li>
+  <li>ascent - the distance in pixels that the font extends above the baseline.</li>
+  <li>descent - the distance in pixels that the font extends below the baseline.</li>
+  <li>metrics - a table with an entry for each glyph in the font (in a future version this will be a unicode value, for now it is implemented as the value of string.byte('a') where 'a' is the charater the glyph represents. 
+    <ul>
+      <li>glyph - the value of string.byte() for the corresponding char</li> 
+      <li>char - the value of string.char() for the corresponding glyph</li> 
+      <li>advance - the horizontal advance of the pen when this glyph is drawn</li> 
+      <li>xmin - distance from the pen origin to the left-most inked portion of the glyph</li>
+      <li>xmax - distance from the pen origin to the right-most inked portion of the glyph</li>
+      <li>ymin - distance from the pen origin to the top-most inked portion of the glyph</li>
+      <li>ymax - distance from the pen origin to the bottom-most inked portion of the glyph</li>
+    </ul>
+  </li>
+</ul>
+<p>
+Cel font metrics use the same coordinate-system as a cel with the pen origin at (0, 0) and y increasing downwards.
+
+See <a href="http://cairographics.org/manual/cairo-cairo-scaled-font-t.html#cairo-font-extents-t">cairo documentation</a> for a more detailed explanation of ascent, descent and lineheight.  Cel font metrics are based on cairo font metrics.</p>
+
+<p>A font returned from load font will be included in the description of a cel that uses the font.
+For that reason you should also include any additional information in the font that will be needed
+for your renderer.  In this case cairofont is added to the font, for use by the renderer.</p>
+<p>
+Cel provides text measurement functions that use these metrics, but these functions could also be implemented in the driver.  Reasons for doing so would be moving them to C code for better performance, implementing kerning, or creating specialized versions for fixed width fonts.
+</p>
+
+<h2>The root cel</h2>
+<p>When the driver is installed it will have a reference to the root cel in driver.root, this can be publised
+or kept private to the driver if you wish to do some kind of sandboxing.  This driver will return a new cel to be
+used as the root cel for the app.  We don't return the real root cel for two reasons 1. We want our driver to have sole
+control of the root cel.  2. driver.root is a special cel that cannot be linked or unlinked, and special cases are annoying to deal with, so the driver will expose a root cel that can be linked and unlinked.  
+
+<p>The load and resize and tick functions should be called by the driver client.</p> 
+<div><pre><code>
+return {
+  --call once to initialize the driver
+  load = function(w, h)
+    driver.root:resize(w, h)  
+  end,
+
+  --call when the main window is resized
+  resize = function(w, h)
+    driver.root:resize(w, h)
+  end,
+
+  root = driver.root:newroot():link(driver.root, 'edges'):takefocus()
+}
+</code></pre></div>
+
+
+
+ 
+
