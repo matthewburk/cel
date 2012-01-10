@@ -68,8 +68,13 @@ do
         <link rel="stylesheet" type="text/css" href="cel.css" />
       </head>
       <body>
+        <div id="navigation">
+        ${navigation}
+        </div>
+        <div id="content">
         ${content}
-      </body></html>]] % {content=tconcat(t, 'page')}
+        </div>
+      </body></html>]] % {content=tconcat(t, 'page'), navigation = navigation,}
       _writefile(html)
   end
 

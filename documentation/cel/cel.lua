@@ -11,8 +11,6 @@ export['cel'] {
   
   --cel.clipboard
 
-  
-
   functiondef['cel(t)'] {
     [[Creates a new cel]];
 
@@ -58,7 +56,7 @@ export['cel'] {
         name = '[1,n]';
         tabledef {
           [[When the cel is created each entry from 1 to n is evaluated in order 
-          where n is #(table).  The entry is must be on of the following:]];
+          where n is #(table).  The entry must be on of the following:]];
           key.cel[[If the entry is a cel then it is linked to cel being created. cel:link is called
             with cel.linker, cel.xval, cel.yval.]];
           key.string[[If the entry is a string a new cel.label is created with the string and then
@@ -101,7 +99,7 @@ export['cel'] {
   functiondef['cel.installdriver(mouse, keyboard)'] {
     --TODO document the driver interface
     [[Installs the driver for the Cel libarary.]];
-    [[Only one driver is allowed to be installed, installdriver will raise an error after the first call.]];
+    [[Only one driver is allowed to be installed, installdriver will raise an error if called more than once.]];
     [[See ??? for a detailed documentation of the driver interface.]];
 
     params = {
@@ -153,7 +151,8 @@ export['cel'] {
     [[Returns a new copy of the 'cel' metacel.  A metacel defines a new type of cel.]];
     [[The metacel defines the behavior of a cel. The behavior can be changed by eclipsing(overriding) existing
     metacel functions or defining new ones.]];
-    [[The metatable at metacel.metatable defines the interface of a cel created by the metacel.]];
+    [[The metatable at metacel.metatable defines the interface of a cel created by the metacel.  Typically after a
+    new metacel is created new functions are added to the metatable to expose additional functionality.]];
     [[When a new metacel is created a face is created for the metacel if one does not already exist.]];
     params = {
       param.string[[name - The name of the new metacel.]];
@@ -209,63 +208,144 @@ export['cel'] {
   };
 
   functiondef['cel.getlinker(name)'] {
+    [[Returns the linker function associated with the given name.]];
+    params = {
+      param.string[[name - the name of the linker function.]];
+    };
+
+    returns = {
+      param.linker[[a linker function.]];
+    };
   };
-  functiondef['cel.addlinker(name, function)'] {
+  functiondef['cel.addlinker(name, linker)'] {
+    [[Associates the given linker function to the given name]];
+    [[If the given name is already associated to a linker then addlinker fails and returns false
+    and an error message.]];
+    params = {
+      param.string[[name - the name of the linker function.]];
+      param.linker[[linker - the linker function.]];
+    };
+
+    returns = {
+      param.linker[[the linker function.]];
+    };
   };
   functiondef['cel.composelinker(a, b)'] {
+    [[Returns a linker that is composed of 2 existing linkers.]];
+    [[Linker a is executed and the results are
+    passed to b whose results are returned as the result of the composite linker.]]; 
+
+    [[In other words the new linker does this:]];
+    code[=[
+    x, y, w, h = a(hw, hh, x, y, w, h, xval and xval[1], yval and yval[2], ...)
+    return b(hw, hh, x, y, w, h, xval and xval[2], yval and yval[2], ...)
+    ]=];
+
+    params = {
+      param.linker[[a - the first linker or linker name.]];
+      param.linker[[b - the second linker or linker name.]];
+    };
+
+    returns = {
+      param.linker[[a linker function that takes a table for xval and yval.]];
+    };
   };
   functiondef['cel.rcomposelinker(a, b)'] {
+    [[Returns a linker that is composed of 2 existing linkers. This is a recursive composition.]];
+    [[Linker a is executed and the results represent a virtual host cel, linker b is called
+    with the w and h of the virtual host and x, y translated to the position of the virutal host.  
+    The results from b are translated back to the real host space and returned.]];
+
+    [[In other words the new linker does this:]];
+    code[=[
+    local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, xval and xval[1], yval and yval[1], ...)
+    x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, xval and xval[2], yval and yval[2], ...)
+    return x + vhx, y + vhy, w, h
+    ]=];
+
+    params = {
+      param.linker[[a - the first linker or linker name.]];
+      param.linker[[b - the second linker or linker name.]];
+    };
+
+    returns = {
+      param.linker[[a linker function that takes a table for xval and yval.]];
+    };
   };
+
   functiondef['cel.timer()'] {
+    [[A millisecond timer that begins at 0 and, is periodically increased by the driver.]];
+    [[The value of the timer will remain fixed (even if multiple milliseconds elapse) until the driver 
+    updates it.  For any event the timer will remain fixed until all immediate processing
+    for the event is completed.]];
+
+    returns = {
+      param.number[[milliseconds.]];
+    };
   };
-  functiondef['cel.iscel(table)'] {
+
+  functiondef['cel.iscel(value)'] {
+    [[Returns true if value is a cel.]];
+    [[Returns false if value is not a cel.]];
+
+    params = {
+      param.any[[value - value to test.]];
+    };
+    returns = {
+      param.boolean[[true if value is a cel, else false.]];
+    };
   };
-  functiondef['cel.doafter(ms, function)'] {
+
+  functiondef['cel.doafter(ms, f)'] {
+    [[Executes function <em>f</em> after <em>ms</em> milliseconds.]];
+    [[Elapsed milliseconds is based on cel.timer().]];
+
+    params = {
+      param.number[[ms - minimum number of milliseconds to wait before executing f.  If ms is 0 f is executed on
+      the next driver tick.]];
+    };
+    returns = {
+      param['function'][[a function that will cancel the doafter when called.]];
+    };
   };
   --TODO remove
-  functiondef['cel.translate(from, to, x, y)'] {
+  functiondef['cel.translate(from, x, y, to)'] {
+    [[Given a point relative to cel from returns the point relative to cel to.]]; 
+    [[Returns nil if to is not a host of from.]];
+
+    params = {
+      param.cel[[from - a cel.]];
+      param.number[[x - x coordinate of point relative to cel from.]];
+      param.number[[y - y coordinate of point relative to cel from.]];
+      param.cel[[to - a host cel of from.]];
+    };
+    returns = {
+      param.number[[x coordinate of point relative to cel to.]];
+      param.number[[y coordinate of point relative to cel to.]];
+    };
+
   };
   functiondef['cel.tocel(v, host)'] {
   };
 
-  functiondef['cel.face(t)'] {
-    [[Defines the contents of a face, t.metacel and t.name are the unique index of a face.]];
-    [[Even if the metacel's module has not been loaded the face is created.  
-    When the metacel is created the metacel face will __index the metacel face of the metacel it was created from.]];
-    [[A named face will __index the unnamed metacel face.]];
-    [[Note that this function only updates (or creates) a face, and cannot remove existing entries.]];
+  functiondef['cel.getface(metacelname[, name])'] {
+    [[Returns a face for the specified metacel.]];
+    [[If name is present the face registered with name for the specified metacel is returned.]];
 
     code[=[
-    cel.face {
-      metacel = string,
-      name = any,
-      ...
-    }
+    local celface = cel.getface ('cel')
+    local buttonface = cel.getface('button')
     ]=];
 
     params = {
-      param.string[[metacel - name of the metacel for the face, if nil then the face is for 'cel'.]];
-      param.any[[name - name of the face, if nil the face is unamed and is the default face for the metacel.]];
-      param['...'][[... - each additional entry in the table is set on the face.]];
+      param.string[[metacelname - name of the metacel.]];
+      param.any[[name - registered name of the face.]];
     };
 
     returns = {
-      param.face[[the face]];
+      param.face[[the face or nil if a name was given but no face was registered with that name.]];
     };
   };
-
-  functiondef['cel.face.get(metacel, name)'] {
-    [[Returns a face or nil if one does not exist]];
-
-    params = {
-      param.string[[metacel - name of the metacel, if nil then 'cel' is used.]]; 
-      param.any[[name - name of the face, if nil the unnamed face of the metacel is returned.]];
-    };
-    returns = {
-      param.face[[face or nil if no face has been defined.]];
-    };
-  };
-  
 
   functiondef['cel.color.rgb(r, g, b)'] {
   };
@@ -833,6 +913,7 @@ export['cel'] {
       [[An event will be seen by the metacel and/or the cel event callback before the listener sees it.]];
       [[When creating a factory or metacel that needs to see events on other cels using a listener is the best choice,
       becuase the event callback function is for use by the creator of a cel.]];
+      [[Using a listener is not common, typically the event callback will be defined for the cel (or metacel) only.]];
 
       params = {
         param.string[[event - the name of the event.]];
@@ -921,7 +1002,7 @@ export['cel'] {
     };
 
     functiondef['cel:dump'] {
-      [[prints cel state for debuggin purposes.]];
+      [[prints cel state for debugging purposes.]];
 
       returns = {
         param.cel[[self]];

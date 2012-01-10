@@ -10,4 +10,7 @@ return {
   'window',
   'panel',
   'mutexpanel',
+  'face',
+  'mouse',
+  'keyboard',
 }
