@@ -336,6 +336,7 @@ dl.innertabledef {
 }
 
 dt.key {
+  font-family:monospace;
   font-weight:bold;
 }
 

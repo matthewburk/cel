@@ -587,7 +587,10 @@ do --metacel.compile
     cel.onfocus = t.onfocus
     cel.onblur = t.onblur
     cel.onkeydown = t.onkeydown
+    cel.onkeypress = t.onkeypress
     cel.onkeyup = t.onkeyup
+    cel.onchar = t.onchar
+    cel.oncommand = t.oncommand
     --[[
     if t.link then
       local linker, xval, yval
@@ -771,15 +774,13 @@ function M.unpacklink(t, i, j)
 
 end
 do --metacel.compileentry 
-  function metacel:compileentry(host, entry, entrytype)
+  function metacel:compileentry(host, entry, entrytype, linker, xval, yval, option)
     if 'table' == entrytype then
-      local linker, xval, yval, option
-
       if entry.link then
         if type(entry.link) == 'table' then
           linker, xval, yval, option = unpack(entry.link, 1, 4)
         else
-          linker = entry.link
+          linker, xval, yval, option = entry.link, nil, nil, nil
         end
       end
 

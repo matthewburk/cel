@@ -1,16 +1,6 @@
 export['cel'] {
   [[This is the main module for the Cel libarary.]];
 
-  propertydef['cel.mouse'] {
-    [[The mouse]];
-  };
-
-  propertydef['cel.keyboard'] {
-    [[The keyboard]];
-  };
-  
-  --cel.clipboard
-
   functiondef['cel(t)'] {
     [[Creates a new cel]];
 
@@ -19,20 +9,22 @@ export['cel'] {
       w = number,
       h = number,
       face = any,
+      link = table|string|function,
       onresize = function,
       onmousein = function,
       onmouseout = function,
       onmousemove = function,
       onmousedown = function,
       onmouseup = function,
+      ontimer = function,
       onfocus = function,
+      onblur = function,
       onkeydown = function,
       onkeypress = function,
       onkeyup = function,
       onchar = function,
       oncommand = function,
-      ontimer = function,
-      [1,n] = cel or function or string
+      [1,n] = cel|function|string|{link = table|string|function, [1,n] = cel|string}
     }
     ]=];
 
@@ -40,30 +32,56 @@ export['cel'] {
       param.number[[w - width, default is 0.]];
       param.number[[h - height, default is 0.]];
       param.face[[face - face or face name.]];
+      param['function'][[link - a linker function.  Any cel in the array part will be linked to this cel with using
+      this linker function.]];
+      param.table[[link - an array defining the linker function at link[1], xval at link[2], yval at link[3] and 
+      option at link[4].  Any cel in the array part will be linked to this cel with using 
+      this linker function, xval, yval and option.]];
+      param.string[[link - the name of a linker function.  Any cel in the array part will be linked to
+      this cel with using this linker function.]];
       param['function'][[onresize - event callback.]];
       param['function'][[onmousein - event callback.]];
       param['function'][[onmouseout - event callback.]];
       param['function'][[onmousemove - event callback.]];
       param['function'][[onmousedown - event callback.]];
       param['function'][[onmouseup - event callback.]];
+      param['function'][[ontimer - event callback.]];
       param['function'][[onfocus - event callback.]];
+      param['function'][[onblur - event callback.]];
       param['function'][[onkeydown - event callback.]];
       param['function'][[onkeypress - event callback.]];
       param['function'][[onkeyup - event callback.]];
       param['function'][[onchar - event callback.]];
-      param['function'][[ontimer - event callback.]];
+      param['function'][[oncommand - event callback.]];
       param['any'] {
         name = '[1,n]';
-        tabledef {
           [[When the cel is created each entry from 1 to n is evaluated in order 
-          where n is #(table).  The entry must be on of the following:]];
-          key.cel[[If the entry is a cel then it is linked to cel being created. cel:link is called
-            with cel.linker, cel.xval, cel.yval.]];
-          key.string[[If the entry is a string a new cel.label is created with the string and then
-            linked to the cel being created.]];
-          key['function'][[If the entry is a function, it is called with the new cel as its only parameter.  
-            The return value from this function is ignored.]];
-        };
+          where n is #(table).  The entry must be one of the following or it is ignored:]];
+
+          list {
+            key.cel[[If the entry is a cel then it is linked to this cel using the
+              link parameters defined by the link entry of this table.]];
+            key['function'][[If the entry is a function, it is called with the new cel as its only parameter.  
+              The return value from this function is ignored.]];
+            key.string[[If the entry is a string a new cel.label is created with the string and then
+              linked to this cel.]];
+            key.table {
+              [[If the entry is a table all cels or strings in the array part will be linked to this cel using the
+              link parameters defined by the link entry of this table.]];
+              tabledef {
+                code[=[
+                {
+                  link = table|string|function,
+                  [1,n] = cel|string,
+                }
+                ]=];
+                key.link[[Any cels in the array part of this table will use this as the definition of the link 
+                parameters.  If this is nil then the value of link in the enclosing table is used.]];
+                key['[1,n]'][[Each entry from 1 to n is evaluated in order where n is #(table).
+                The entry must be a cel or string or it is ignored.]];
+              };
+            };
+          };
       };
     };
 
@@ -1576,8 +1594,8 @@ export['cel'] {
         y = number,
         w = number,
         h = number,
-        mousein = boolean,
-        mousetouch = boolean,
+        mousefocusin = boolean,
+        mousefocus = boolean,
         focus = (keyboard)boolean,
         clip = {
           l = number,
@@ -1598,12 +1616,12 @@ export['cel'] {
                            this is 0 if the cel has no id (meaning its a virtual cel)]];
 
         param.description[[host - refers to the host description.]];
-        param.number[[x - The absolute x coordinate of the cel. Absolute means not relative to its host cel.]];
-        param.number[[y - The absolute y coordinate of the cel.]];
+        param.number[[x - The x coordinate of the cel.]];
+        param.number[[y - The y coordinate of the cel.]];
         param.number[[w - The width of the cel.]];
         param.number[[h - The height of the cel.]];
-        param.boolean[[mousein - if true then the mouse cursor is in the cel]];
-        param.boolean[[mousetouch - if true then the mouse cursor is touching the cel.]];
+        param.boolean[[mousefocusin - if true then the mouse cursor is in the cel]];
+        param.boolean[[mousefocus - if true then the mouse cursor is touching the cel.]];
         param.boolean[[focus - if true the cel has focus.]];
         param.table{
           name='clip';
@@ -1622,7 +1640,7 @@ export['cel'] {
                    this is the context passed to the flow function. The flow function can put additional
                    information in the context, the suggested usage is event based animations.]];
         param.face[[face - The cel face]];
-        param.string[[metacel - This is the name of the metacel for the cel. The metacel is basically the
+        param.string[[metacel - This is the name of the metacel for the cel. The metacel is the
                       type of cel such as 'button', 'label', 'listbox', 'root']];
         param.boolean[[metacel - If metacel is false, the description is of a virtual cel, 
         that was never actually created.]]; 
@@ -1630,7 +1648,7 @@ export['cel'] {
         (it meets the requirements for the # operator to return its length).
         Any cel that is linked to the cel and is not entirely clipped will
         be described in this array in z order. (The topmost link will be at index 1). For cels that define a layout,
-        such as a sequence, the order is not based on z order]];
+        such as a row, the order is not based on z order]];
       };
     };
   };

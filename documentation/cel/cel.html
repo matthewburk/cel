@@ -27,27 +27,7 @@
         </div>
         <div id="content">
         <h1>cel<p class="factorydesc">(module)<br><br>This is the main module for the Cel libarary.</p></h1>
-        This is the main module for the Cel libarary.       <div class="propertydef">
-      <p class="propertydefheader">property</p>
-        <h3 class="propertydefname">
-          cel.mouse&nbsp;
-          <span class="propertydefdesc">The mouse</span>
-        </h3>
-        <div class="propertydeffulldesc">
-        <p>The mouse</p>
-        </div>
-      </div>
-             <div class="propertydef">
-      <p class="propertydefheader">property</p>
-        <h3 class="propertydefname">
-          cel.keyboard&nbsp;
-          <span class="propertydefdesc">The keyboard</span>
-        </h3>
-        <div class="propertydeffulldesc">
-        <p>The keyboard</p>
-        </div>
-      </div>
-             <div title="function" class="functiondef">
+        This is the main module for the Cel libarary.       <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
           cel(t)&nbsp;
@@ -58,20 +38,22 @@
 <code>  w = number,</code>
 <code>  h = number,</code>
 <code>  face = any,</code>
+<code>  link = table|string|function,</code>
 <code>  onresize = function,</code>
 <code>  onmousein = function,</code>
 <code>  onmouseout = function,</code>
 <code>  onmousemove = function,</code>
 <code>  onmousedown = function,</code>
 <code>  onmouseup = function,</code>
+<code>  ontimer = function,</code>
 <code>  onfocus = function,</code>
+<code>  onblur = function,</code>
 <code>  onkeydown = function,</code>
 <code>  onkeypress = function,</code>
 <code>  onkeyup = function,</code>
 <code>  onchar = function,</code>
 <code>  oncommand = function,</code>
-<code>  ontimer = function,</code>
-<code>  [1,n] = cel or function or string</code>
+<code>  [1,n] = cel|function|string|{link = table|string|function, [1,n] = cel|string}</code>
 <code>}</code></pre></div></p>
                 <div class="arguments">
           <span class="arguments">arguments</span>
@@ -81,6 +63,16 @@
           <dd>height, default is 0.</dd>
                      <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
           <dd>face or face name.</dd>
+                     <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>a linker function.  Any cel in the array part will be linked to this cel with using
+      this linker function.</dd>
+                     <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>an array defining the linker function at link[1], xval at link[2], yval at link[3] and 
+      option at link[4].  Any cel in the array part will be linked to this cel with using 
+      this linker function, xval, yval and option.</dd>
+                     <dt><code><span class="paramname">link</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>the name of a linker function.  Any cel in the array part will be linked to
+      this cel with using this linker function.</dd>
                      <dt><code><span class="paramname">onresize</span>&nbsp;<span class="paramtype">function</span></code></dt> 
           <dd>event callback.</dd>
                      <dt><code><span class="paramname">onmousein</span>&nbsp;<span class="paramtype">function</span></code></dt> 
@@ -93,7 +85,11 @@
           <dd>event callback.</dd>
                      <dt><code><span class="paramname">onmouseup</span>&nbsp;<span class="paramtype">function</span></code></dt> 
           <dd>event callback.</dd>
+                     <dt><code><span class="paramname">ontimer</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
                      <dt><code><span class="paramname">onfocus</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>event callback.</dd>
+                     <dt><code><span class="paramname">onblur</span>&nbsp;<span class="paramtype">function</span></code></dt> 
           <dd>event callback.</dd>
                      <dt><code><span class="paramname">onkeydown</span>&nbsp;<span class="paramtype">function</span></code></dt> 
           <dd>event callback.</dd>
@@ -103,18 +99,34 @@
           <dd>event callback.</dd>
                      <dt><code><span class="paramname">onchar</span>&nbsp;<span class="paramtype">function</span></code></dt> 
           <dd>event callback.</dd>
-                     <dt><code><span class="paramname">ontimer</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+                     <dt><code><span class="paramname">oncommand</span>&nbsp;<span class="paramtype">function</span></code></dt> 
           <dd>event callback.</dd>
                      <dt><code><span class="paramname">[1,n]</span>&nbsp;<span class="paramtype">any</span></code></dt> 
-          <dd>      <div class="tabledef">
+          <dd>When the cel is created each entry from 1 to n is evaluated in order 
+          where n is #(table).  The entry must be one of the following or it is ignored: <div class="list">
+      
+      <ul>
+      <li><dt class="key">cel</dt><dd class="value">If the entry is a cel then it is linked to this cel using the
+              link parameters defined by the link entry of this table.</dd></li><li><dt class="key">function</dt><dd class="value">If the entry is a function, it is called with the new cel as its only parameter.  
+              The return value from this function is ignored.</dd></li><li><dt class="key">string</dt><dd class="value">If the entry is a string a new cel.label is created with the string and then
+              linked to this cel.</dd></li><li>          <dt class="key">table</dt>
+          <dd class="value">
+            <dl class="innertabledef">
+              If the entry is a table all cels or strings in the array part will be linked to this cel using the
+              link parameters defined by the link entry of this table.       <div class="tabledef">
         <p class="tabledefname"></p>
         <dl class="tabledef">
-          When the cel is created each entry from 1 to n is evaluated in order 
-          where n is #(table).  The entry must be on of the following:<dt class="key">cel</dt><dd class="value">If the entry is a cel then it is linked to cel being created. cel:link is called
-            with cel.linker, cel.xval, cel.yval.</dd><dt class="key">string</dt><dd class="value">If the entry is a string a new cel.label is created with the string and then
-            linked to the cel being created.</dd><dt class="key">function</dt><dd class="value">If the entry is a function, it is called with the new cel as its only parameter.  
-            The return value from this function is ignored.</dd>
+          <div class="code"><pre><code>{</code>
+<code>  link = table|string|function,</code>
+<code>  [1,n] = cel|string,</code>
+<code>}</code></pre></div><dt class="key">link</dt><dd class="value">Any cels in the array part of this table will use this as the definition of the link 
+                parameters.  If this is nil then the value of link in the enclosing table is used.</dd><dt class="key">[1,n]</dt><dd class="value">Each entry from 1 to n is evaluated in order where n is #(table).
+                The entry must be a cel or string or it is ignored.</dd>
         </dl>
+      </div>
+            </dl>
+          </dd></li>
+      </ul>
       </div></dd>
           </dl>
         </div>
@@ -2103,8 +2115,8 @@
 <code>  y = number,</code>
 <code>  w = number,</code>
 <code>  h = number,</code>
-<code>  mousein = boolean,</code>
-<code>  mousetouch = boolean,</code>
+<code>  mousefocusin = boolean,</code>
+<code>  mousefocus = boolean,</code>
 <code>  focus = (keyboard)boolean,</code>
 <code>  clip = {</code>
 <code>    l = number,</code>
@@ -2126,16 +2138,16 @@
                      <dt><code><span class="paramname">host</span>&nbsp;<span class="paramtype">description</span></code></dt> 
           <dd>refers to the host description.</dd>
                      <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>The absolute x coordinate of the cel. Absolute means not relative to its host cel.</dd>
+          <dd>The x coordinate of the cel.</dd>
                      <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>The absolute y coordinate of the cel.</dd>
+          <dd>The y coordinate of the cel.</dd>
                      <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
           <dd>The width of the cel.</dd>
                      <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
           <dd>The height of the cel.</dd>
-                     <dt><code><span class="paramname">mousein</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+                     <dt><code><span class="paramname">mousefocusin</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
           <dd>if true then the mouse cursor is in the cel</dd>
-                     <dt><code><span class="paramname">mousetouch</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
+                     <dt><code><span class="paramname">mousefocus</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
           <dd>if true then the mouse cursor is touching the cel.</dd>
                      <dt><code><span class="paramname">focus</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
           <dd>if true the cel has focus.</dd>
@@ -2164,7 +2176,7 @@
                      <dt><code><span class="paramname">face</span>&nbsp;<span class="paramtype">face</span></code></dt> 
           <dd>The cel face</dd>
                      <dt><code><span class="paramname">metacel</span>&nbsp;<span class="paramtype">string</span></code></dt> 
-          <dd>This is the name of the metacel for the cel. The metacel is basically the
+          <dd>This is the name of the metacel for the cel. The metacel is the
                       type of cel such as 'button', 'label', 'listbox', 'root'</dd>
                      <dt><code><span class="paramname">metacel</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
           <dd>If metacel is false, the description is of a virtual cel, 
@@ -2174,7 +2186,7 @@
         (it meets the requirements for the # operator to return its length).
         Any cel that is linked to the cel and is not entirely clipped will
         be described in this array in z order. (The topmost link will be at index 1). For cels that define a layout,
-        such as a sequence, the order is not based on z order</dd>
+        such as a row, the order is not based on z order</dd>
           </dl>
         </div>
         </div>
