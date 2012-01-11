@@ -42,6 +42,7 @@ return function(_ENV, M)
     event:wait()
     pick(self)
     event:signal()
+    return self
   end
 
   function mouse:xy()
@@ -50,10 +51,6 @@ return function(_ENV, M)
 
   function mouse:vector()
     return self[_vectorx], self[_vectory]
-  end
-
-  function mouse:incel(cel)
-    return self[_focus][cel] ~= nil
   end
 
   --returns last known button state or self.state.unknown if button state has never been provided

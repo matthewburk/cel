@@ -77,48 +77,82 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          cel.mouse:pick()&nbsp;
-          <span class="functiondesc"></span>
+          mouse:xy()&nbsp;
+          <span class="functiondesc">Returns the x and y position of the mouse cursor relative to the root cel.</span>
         </h3>
         <div class="functionfulldesc">
-        <p></p>
+        <p>Returns the x and y position of the mouse cursor relative to the root cel.</p>
         
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x position of mouse cursor.</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y position of mouse cursor.</dd>
+          </dl>
+          </div>
         
         </div>
       </div>
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          cel.mouse:xy()&nbsp;
-          <span class="functiondesc"></span>
+          mouse:vector()&nbsp;
+          <span class="functiondesc">Returns the difference of the current mouse cursor position and the previous position.</span>
         </h3>
         <div class="functionfulldesc">
-        <p></p>
+        <p>Returns the difference of the current mouse cursor position and the previous position.</p>
         
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x component of vector.</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y component of vector.</dd>
+          </dl>
+          </div>
         
         </div>
       </div>
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          cel.mouse:vector()&nbsp;
-          <span class="functiondesc"></span>
+          mouse:isdown(button)&nbsp;
+          <span class="functiondesc">Returns true if specified button is down.</span>
         </h3>
         <div class="functionfulldesc">
-        <p></p>
-        
+        <p>Returns true if specified button is down.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">button</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>a value present in the mouse.buttons table.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>boolean</code></dt> 
+          <dd>true if the button is down, else false.</dd>
+          </dl>
+          </div>
         
         </div>
       </div>
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          cel.mouse:isdown(button)&nbsp;
-          <span class="functiondesc"></span>
+          mouse:pick()&nbsp;
+          <span class="functiondesc">Forces picking algorithm that determines which cel(s) the mouse is in to run.</span>
         </h3>
         <div class="functionfulldesc">
-        <p></p>
+        <p>Forces picking algorithm that determines which cel(s) the mouse is in to run. This is normally only run when the mouse cursor is moved or a button state changes.
+      It is too costly to always run when a cel moves, but can be necessary in special cases.</p>
         
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>mouse</code></dt> 
+          <dd>self</dd>
+          </dl>
+          </div>
         
         </div>
       </div>

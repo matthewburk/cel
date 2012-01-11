@@ -75,6 +75,7 @@ do
   _mousedownlistener = privatekey('_mousedownlistener')
   _mouseuplistener = privatekey('_mouseuplistener')
   _focuslistener = privatekey('_focuslistener')
+  _blurlistener = privatekey('_blurlistener')
   _timerlistener = privatekey('_timerlistener')
   _keys = privatekey('_keys') 
   _states = privatekey('_states') 

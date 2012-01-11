@@ -873,8 +873,6 @@ do --metacel.metatable
   metacel.metatable = {
     touch = touch,
     refresh = refresh, 
-    mouse = mouse,
-    keyboard = keyboard,
   }
 end
 
@@ -1649,7 +1647,7 @@ do --metatable.trapmouse
       return false
     end
     --can't trap if mouse is not in cel
-    if not mouse:incel(cel) then
+    if not cel:hasfocus(mouse) then
       if onfail then onfail(cel, mouse, 'mouse not in cel') end
       return false
     end

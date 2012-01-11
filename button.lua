@@ -79,7 +79,7 @@ function metacel:onmouseup(button, mousebutton, x, y, intercepted)
   --if intercepted then return end
 
   button:freemouse()
-  if button[_pressed] and button.mouse:incel(button) and 1 == button:hasfocus(cel.mouse) then
+  if button[_pressed] and 1 == button:hasfocus(cel.mouse) then
     button[_pressed] = nil 
     button:refresh()
     if button.onclick then button:onclick(mousebutton, x, y) end
@@ -107,7 +107,7 @@ function metacel:ontimer(button, ms)
       button[_holding] = ms - duration + 20 --wait 20 ms to fire again
     end
 
-    if button.onhold and button.mouse:incel(button) then
+    if button.onhold and button:hasfocus(cel.mouse) then
       button:onhold()
     end
   end

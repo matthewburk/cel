@@ -32,16 +32,39 @@ export['cel.mouse'] {
 
     --key.scrollines[[The driver assigned value for the number of lines to scroll when the mousewheel is moved.]];
 
-    functiondef['cel.mouse:pick()'] {
+    functiondef['mouse:xy()'] {
+      [[Returns the x and y position of the mouse cursor relative to the root cel.]];
+      returns = {
+        param.number[[x position of mouse cursor.]];
+        param.number[[y position of mouse cursor.]];
+      };
     };
 
-    functiondef['cel.mouse:xy()'] {
+    functiondef['mouse:vector()'] {
+      [[Returns the difference of the current mouse cursor position and the previous position.]];
+      returns = {
+        param.number[[x component of vector.]];
+        param.number[[y component of vector.]];
+      };
     };
 
-    functiondef['cel.mouse:vector()'] {
+    functiondef['mouse:isdown(button)'] {
+      [[Returns true if specified button is down.]];
+      params = {
+        param.any[[button - a value present in the mouse.buttons table.]];
+      };
+      returns = {
+        param.boolean[[true if the button is down, else false.]]
+      };
     };
 
-    functiondef['cel.mouse:isdown(button)'] {
+    functiondef['mouse:pick()'] {
+      [[Forces picking algorithm that determines which cel(s) the mouse is in to run.]];
+      [[This is normally only run when the mouse cursor is moved or a button state changes.
+      It is too costly to always run when a cel moves, but can be necessary in special cases.]];
+      returns = {
+        param.mouse[[self]];
+      };
     };
-  };
-};
+  }
+}
