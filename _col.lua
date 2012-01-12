@@ -1022,7 +1022,7 @@ do --metacel.new, metacel.compile
         if type(entry.link) == 'table' then
           linker, xval, yval, option = unpack(entry.link, 1, 4)
         else
-          linker = entry.link
+          linker, xval, yval, option = entry.link, nil, nil, nil
         end
       end
 

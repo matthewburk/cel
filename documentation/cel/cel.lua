@@ -1,5 +1,82 @@
 export['cel'] {
-  [[This is the main module for the Cel libarary.]];
+  [[The main module of the Cel libarary.]];
+
+  metaceldef['cel'] {
+    source = 'cel';
+
+    description = {
+      [[This table is the description of a cel, which is the information required to render the cel.
+      Every cel will contain this information in its description.]];
+
+      code[=[
+      {
+        celhandle = userdata,
+        id = number,
+        host = description,
+        x = number,
+        y = number,
+        w = number,
+        h = number,
+        mousefocusin = boolean,
+        mousefocus = boolean,
+        focus = (keyboard)boolean,
+        clip = {
+          l = number,
+          r = number,
+          t = number,
+          b = number,
+        },
+        face = face,
+        metacel = string,
+        metacel = boolean,
+        flowcontext = any,
+        [1,n] = description,
+      }
+      ]=];
+
+      params = {
+        param.userdata[[celhandle - a handle unique to a cel.  This is supplied so that a face may use it
+        to as a weak key/value for addressing face resources unique to the cel.]];
+        param.number[[id - a unique id for the cel the cel that is described, 
+                           this is 0 if the cel has no id (meaning its a virtual cel)]];
+
+        param.description[[host - refers to the host description.]];
+        param.number[[x - The x coordinate of the cel.]];
+        param.number[[y - The y coordinate of the cel.]];
+        param.number[[w - The width of the cel.]];
+        param.number[[h - The height of the cel.]];
+        param.boolean[[mousefocusin - if true then the mouse cursor is in the cel]];
+        param.boolean[[mousefocus - if true then the mouse cursor is touching the cel.]];
+        param.boolean[[focus - if true the cel has focus.]];
+        param.table{
+          name='clip';
+          [[defines a rectangle in absolute coordinates, that the cel is cliped to. 
+            This will always be as or more restrictive than the clipping recatangle for the host.
+            If the area defined by clip is <= 0 for a cel then that cel is not described.
+            Which means that clip.l < clip.r is always true and clip.t < clip.b is always true.]];
+          tabledef {
+            param.number[[l - The left of the clipping rectangle, this is always less than the right]];
+            param.number[[r - The right of the clipping rectangle this is always greater than the left side]];
+            param.number[[t - The top of the clipping rectangle, this is always less than the bottom.]];
+            param.number[[b - the bottom of the clipping rectangle, this is always greater than the top.]];
+          };
+        };
+        param.any[[flowcontext - This is nil by default, if present this cel is 'flowing' and
+                   this is the context passed to the flow function. The flow function can put additional
+                   information in the context, the suggested usage is event based animations.]];
+        param.face[[face - The cel face]];
+        param.string[[metacel - This is the name of the metacel for the cel. The metacel is the
+                      type of cel such as 'button', 'label', 'listbox', 'root']];
+        param.boolean[[metacel - If metacel is false, the description is of a virtual cel, 
+        that was never actually created.]]; 
+        param['description'][[[1,n] - This is the array portion of the cels description, 
+        (it meets the requirements for the # operator to return its length).
+        Any cel that is linked to the cel and is not entirely clipped will
+        be described in this array in z order. (The topmost link will be at index 1). For cels that define a layout,
+        such as a row, the order is not based on z order]];
+      };
+    };
+  };
 
   functiondef['cel(t)'] {
     [[Creates a new cel]];
@@ -10,6 +87,7 @@ export['cel'] {
       h = number,
       face = any,
       link = table|string|function,
+      touch = function,
       onresize = function,
       onmousein = function,
       onmouseout = function,
@@ -39,6 +117,7 @@ export['cel'] {
       this linker function, xval, yval and option.]];
       param.string[[link - the name of a linker function.  Any cel in the array part will be linked to
       this cel with using this linker function.]];
+      param['function'][[touch - touch callback.]];
       param['function'][[onresize - event callback.]];
       param['function'][[onmousein - event callback.]];
       param['function'][[onmouseout - event callback.]];
@@ -55,33 +134,32 @@ export['cel'] {
       param['function'][[oncommand - event callback.]];
       param['any'] {
         name = '[1,n]';
-          [[When the cel is created each entry from 1 to n is evaluated in order 
-          where n is #(table).  The entry must be one of the following or it is ignored:]];
-
-          list {
-            key.cel[[If the entry is a cel then it is linked to this cel using the
-              link parameters defined by the link entry of this table.]];
-            key['function'][[If the entry is a function, it is called with the new cel as its only parameter.  
-              The return value from this function is ignored.]];
-            key.string[[If the entry is a string a new cel.label is created with the string and then
-              linked to this cel.]];
-            key.table {
-              [[If the entry is a table all cels or strings in the array part will be linked to this cel using the
-              link parameters defined by the link entry of this table.]];
-              tabledef {
-                code[=[
-                {
-                  link = table|string|function,
-                  [1,n] = cel|string,
-                }
-                ]=];
-                key.link[[Any cels in the array part of this table will use this as the definition of the link 
-                parameters.  If this is nil then the value of link in the enclosing table is used.]];
-                key['[1,n]'][[Each entry from 1 to n is evaluated in order where n is #(table).
-                The entry must be a cel or string or it is ignored.]];
-              };
+        [[When the cel is created each entry from 1 to n is evaluated in order 
+        where n is #(table).  The entry must be one of the following or it is ignored:]];
+        tabledef {
+          key.cel[[If the entry is a cel then it is linked to this cel using the
+            link parameters defined by the link entry of this table.]];
+          key['function'][[If the entry is a function, it is called with the new cel as its only parameter.  
+            The return value from this function is ignored.]];
+          key.string[[If the entry is a string a new cel.label is created with the string and then
+            linked to this cel.]];
+          key.table {
+            [[If the entry is a table all cels or strings in the array part will be linked to this cel using the
+            link parameters defined by the link entry of this table.]];
+            tabledef {
+              code[=[
+              {
+                link = table|string|function,
+                [1,n] = cel|string,
+              }
+              ]=];
+              key.link[[Any cels in the array part of this table will use this as the definition of the link 
+              parameters.  If this is nil then the value of link in the enclosing table is used.]];
+              key['[1,n]'][[Each entry from 1 to n is evaluated in order where n is #(table).
+              The entry must be a cel or string or it is ignored.]];
             };
           };
+        };
       };
     };
 
@@ -196,7 +274,8 @@ export['cel'] {
       param.any {
         name='name';
         [[A formatted string that specifies the facename, weight, and slant of the
-        font: 'facename:weight:slant'. weight and slant may be ommitted.]];
+        font: 'facename:weight:slant'; weight and slant may be ommitted.]];
+
         list {
           header=[[facename is interpreted by the driver, the driver must implement the following face names.]];
           key.code[[A face suitable for displaying lua source code.]];
@@ -369,6 +448,49 @@ export['cel'] {
   };
 
   functiondef['cel.flows.linear()'] {
+  };
+
+  functiondef['cel.describe()'] {
+    [[Returns a table that describes the root cel.]];
+    [[This description table is used to render the cels.]];
+    [[If the description has not changed the most recently produced description is returned.]];
+  
+    returns = {
+      param.table {
+        [[a table contianing a description of the root cel.]];
+
+        tabledef {
+          code[=[
+          {
+            count = number,
+            timer = number,
+            updaterect = {
+              l = number,
+              r = number,
+              t = number,
+              b = number,
+            },
+            description = table,
+          }
+          ]=];
+
+          param.number[[count - a counter that starts at 1 and is incremented when a new description is produced.]];
+          param.number[[timer - the value of cel.timer() when this description was produced.]];
+          param.table {
+            name='updaterect';
+            [[defines a rectangle in absolute coordinates, defining the area that has a different description 
+            from the previous description.]];
+            tabledef {
+              param.number[[l - The left of the rectangle.]];
+              param.number[[r - The right of the rectangle.]];
+              param.number[[t - The top of the rectangle.]];
+              param.number[[b - the bottom of the rectangle.]];
+            };
+          };
+          param.table[[description - The description of the root cel.]];
+        }; 
+      };
+    };
   };
 
   --The name of celdef is the name of its metacel
@@ -1351,16 +1473,6 @@ export['cel'] {
 
     eventdef['cel:onresize(ow, oh)'] {
       [[Triggered by cel width or height changing.]];
-      anync=true;
-
-      params = {
-        param.number[[ow - The width of the cel before it was resized.]];
-        param.number[[oh - The height of the cel before it was resize.]];
-      };
-    };
-
-    eventdef['cel:onresize(ow, oh)'] {
-      [[Triggered by cel width or height changing.]];
 
       params = {
         param.number[[ow - The width of the cel before it was resized.]];
@@ -1583,74 +1695,6 @@ export['cel'] {
       };
     };
 
-    descriptiondef['cel'] {
-      [[This table is the description of a cel intended to be used to render the cel.]];
-
-      code[=[
-      {
-        id = number,
-        host = description,
-        x = number,
-        y = number,
-        w = number,
-        h = number,
-        mousefocusin = boolean,
-        mousefocus = boolean,
-        focus = (keyboard)boolean,
-        clip = {
-          l = number,
-          r = number,
-          t = number,
-          b = number,
-        },
-        face = face,
-        metacel = string,
-        metacel = boolean,
-        flowcontext = any,
-        [1,n] = description,
-      }
-      ]=];
-
-      params = {
-        param.number[[id - a unique id for the cel the cel that is described, 
-                           this is 0 if the cel has no id (meaning its a virtual cel)]];
-
-        param.description[[host - refers to the host description.]];
-        param.number[[x - The x coordinate of the cel.]];
-        param.number[[y - The y coordinate of the cel.]];
-        param.number[[w - The width of the cel.]];
-        param.number[[h - The height of the cel.]];
-        param.boolean[[mousefocusin - if true then the mouse cursor is in the cel]];
-        param.boolean[[mousefocus - if true then the mouse cursor is touching the cel.]];
-        param.boolean[[focus - if true the cel has focus.]];
-        param.table{
-          name='clip';
-          [[defines a rectangle in absolute coordinates, that the cel is cliped to. 
-            This will always be as or more restrictive than the clipping recatangle for the host.
-            If the area defined by clip is <= 0 for a cel then that cel is not described.
-            Which means that clip.l < clip.r is always true and clip.t < clip.b is always true.]];
-          tabledef {
-            param.number[[l - The left of the clipping rectangle, this is always less than the right]];
-            param.number[[r - The right of the clipping rectangle this is always greater than the left side]];
-            param.number[[t - The top of the clipping rectangle, this is always less than the bottom.]];
-            param.number[[b - the bottom of the clipping rectangle, this is always greater than the top.]];
-          };
-        };
-        param.any[[flowcontext - This is nil by default, if present this cel is 'flowing' and
-                   this is the context passed to the flow function. The flow function can put additional
-                   information in the context, the suggested usage is event based animations.]];
-        param.face[[face - The cel face]];
-        param.string[[metacel - This is the name of the metacel for the cel. The metacel is the
-                      type of cel such as 'button', 'label', 'listbox', 'root']];
-        param.boolean[[metacel - If metacel is false, the description is of a virtual cel, 
-        that was never actually created.]]; 
-        param['description'][[[1,n] - This is the array portion of the cels description, 
-        (it meets the requirements for the # operator to return its length).
-        Any cel that is linked to the cel and is not entirely clipped will
-        be described in this array in z order. (The topmost link will be at index 1). For cels that define a layout,
-        such as a row, the order is not based on z order]];
-      };
-    };
   };
 
 }

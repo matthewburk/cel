@@ -423,6 +423,32 @@ do
 end
 
 do
+  local function newkvlist(t)
+    return function(context)
+      if not context then return 'list' end
+      local content = {}
+      for k, v in ipairs(t) do
+        if type(v) == 'function' then v = v('kvlist') end
+        content[k] = v
+      end
+
+      return [[<div class="kvlist">
+      ${header}
+      <dl>
+      ${content}
+      </dl>
+      </div>]] % { 
+        header=t.header or '',
+        content=table.concat(content),
+      }
+    end
+  end
+  kvlist = function(t) 
+    return newkvlist(t)
+  end
+end
+
+do
   local function newfunctiondef(signature, t)
     return function(context)
       if not context then return 'functiondef' end
@@ -620,6 +646,8 @@ do
     return newlist(t)
   end
 end
+
+
 
 do
   local function newkey(name, s)

@@ -805,10 +805,6 @@ do
   local empty = {}
   local function recurse(a, b, hw, hh, x, y, w, h, xvals, yvals, minw, maxw, minh, maxh)
     local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, xvals and xvals[1], yvals and yvals[1], minw, maxw, minh, maxh)
-    if vhw > maxw then vhw = maxw end
-    if vhw < minw then vhw = minw end
-    if vhh > maxh then vhh = maxh end
-    if vhh < minh then vhh = minh end
     x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, xvals and xvals[2], yvals and yvals[2], minw, maxw, minh, maxh)
     return x + vhx, y + vhy, w, h
   end

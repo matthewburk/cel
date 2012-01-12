@@ -1,7 +1,6 @@
 export['cel.col'] {
   [[Factory for the col metacel]];
   
-
   metaceldef['col'] {
     source = 'cel';
     factory = 'cel.col';

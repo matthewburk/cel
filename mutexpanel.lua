@@ -76,10 +76,14 @@ function metatable:select(name)
     self[_subject]:link(self[_bucket])
   end
 
-  self[_subject] = link
+  self[_subject] = nil
   link:link(self, link[_linkparams])
 
   return self, true
+end
+
+function metatable:current()
+  return self[_subject]
 end
 
 function meta:__link(mutexpanel, link, linker, xval, yval, name)
@@ -89,8 +93,11 @@ function meta:__link(mutexpanel, link, linker, xval, yval, name)
     mutexpanel[_links][link] = link
   end
 
-  if link ~= mutexpanel[_subject] then
-    link[_linkparams] = {linker, xval, yval}
+  link[_linkparams] = {linker, xval, yval}
+
+  if not mutexpanel[_subject] then
+    mutexpanel[_subject] = link
+  else
     return mutexpanel[_bucket]
   end
 end
@@ -109,6 +116,26 @@ do
   function meta:compile(t, mutexpanel)
     mutexpanel = mutexpanel or meta:new(t.w, t.h, t.face)
     return _compile(self, t, mutexpanel)
+  end
+
+  function meta:compileentry(mutexpanel, entry, entrytype, linker, xval, yval, option)
+    if 'table' == entrytype then
+      --TODO interpret link how _cel does, need function like { linker, xval, yval, option = cel.decodelink(entry.link) }
+      if entry.link then
+        if type(entry.link) == 'table' then
+          linker, xval, yval, option = unpack(entry.link, 1, 4)
+        else
+          linker, xval, yval, option = entry.link, nil, nil, nil
+        end
+      end
+
+      for i = 1, #entry do
+        local link = cel.tocel(entry[i], mutexpanel)
+        if link then
+          link:link(mutexpanel, linker, xval, yval, option or entry.name)
+        end
+      end 
+    end
   end
 end
 

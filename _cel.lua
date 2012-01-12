@@ -38,6 +38,7 @@ local _linker = _linker
 local _xval = _xval
 local _yval = _yval
 local _formation = _formation
+local _celhandle = {}
 
 flows = {} --ENV.flows
 
@@ -222,6 +223,7 @@ do --ENV.describe
   local function getdescription(cel)
     local t = cache[cel]
     t = t or {
+      celhandle = cel[_celhandle],
       host = false,
       id = 0,
       metacel = cel[_metacel][_name],
@@ -245,6 +247,7 @@ do --ENV.describe
   --describe for all cels
   local function __describe(cel, host, gx, gy, gl, gt, gr, gb, t, fullrefresh)
     t.host = host
+    t.celhandle = cel[_celhandle]
     t.id = cel[_celid]
     t.face = cel[_face] or cel[_metacel][_face]
     t.x = cel[_x]
@@ -560,7 +563,8 @@ do --metacel.new
       [_metacel] = self,
       --TODO add _variations to metacel to avoid extra lookup
       [_face] = self[_face][_variations][face] or metacel[_face][_variations][face],
-      [_celid] = celid
+      [_celid] = celid,
+      [_celhandle] = newproxy()
     }
     celid = celid + 1
     return setmetatable(cel, self.metatable)
@@ -591,25 +595,7 @@ do --metacel.compile
     cel.onkeyup = t.onkeyup
     cel.onchar = t.onchar
     cel.oncommand = t.oncommand
-    --[[
-    if t.link then
-      local linker, xval, yval
-
-      if type(t.link) == 'table' then
-        linker, xval, yval = t.link[1], t.link[2], t.link[3]
-      else
-        linker = t.link
-      end
-
-      if type(linker) ~= 'function' then
-        linker = M.getlinker(linker)
-      end
-
-      cel[_linker] = linker
-      cel[_xval] = xval
-      cel[_yval] = yval
-    end
-    --]]
+    cel.touch = t.touch
     linkall(cel, t)
 
     event:signal()
@@ -1023,6 +1009,12 @@ do --metatable.link
         linker, xval, yval = linker[1], linker[2], linker[3]
       end
     end
+
+    while rawget(host, '__link') do
+      host = rawget(host, '__link')
+    end
+
+    if not host or not host[_x] then error('retargeted host is invalid') end
 
     event:wait()
 
