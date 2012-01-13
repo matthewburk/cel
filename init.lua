@@ -228,6 +228,7 @@ do --cel.describe, cel.printdescription
     end
     --]]
 
+
     t.face:print(t, indent)
     if #t > 0 then
         write('\n')
@@ -243,13 +244,22 @@ do --cel.describe, cel.printdescription
 
   function M.printdescription(t)
     t = t or M.getdescription() 
-    printdescription(t, '')
+    if t == preamble then
+      io.write(string.format('count:%d\ntimer:%d\n', t.count, t.timer))
+      io.write(string.format('updaterect { l:%d t:%d r:%d b:%d }\n',
+                t.updaterect.l, t.updaterect.t, t.updaterect.r, t.updaterect.b))
+
+      t = t.description 
+    end
+    if t then
+      printdescription(t, '')
+    end
     io.flush()
   end
 
   --TODO remove this, its a hack
   function M.getdescription()
-    return preamble.description
+    return preamble.description and preamble
   end
 end
 

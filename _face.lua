@@ -50,6 +50,15 @@ return function(_ENV, M)
     return self[_metacelname]
   end
 
+  function celfacemt.print(f, t, pre)
+    local s = string.format('%s[%d:%s] { x:%d y:%d w:%d h:%d [refresh:%s]',
+      t.metacel, t.id, tostring(t.face[_name]), t.x, t.y, t.w, t.h, tostring(t.refresh))
+    io.write(pre, s)
+    if t.font then
+      io.write('\n', pre, '  @@', string.format('font[%s:%d]', t.font.name, t.font.size))
+    end
+  end
+
   local celface = {
     [_metacelname] = 'cel',
     [_variations] = {},
