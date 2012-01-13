@@ -18,16 +18,8 @@ local color = {}
 -- @param s              saturation (0.0-1.0)
 -- @param l              lightness (0.0-1.0)
 -----------------------------------------------------------------------------
-function color.torgb(h, s, l)
-  h = h/360
-  local m1, m2
-  if l<=0.5 then 
-    m2 = l*(s+1)
-  else 
-    m2 = l+s-l*s
-  end
-  m1 = l*2-m2
 
+do
   local function _h2rgb(m1, m2, h)
     if h<0 then h = h+1 end
     if h>1 then h = h-1 end
@@ -41,8 +33,17 @@ function color.torgb(h, s, l)
       return m1
     end
   end
-
-  return _h2rgb(m1, m2, h+1/3), _h2rgb(m1, m2, h), _h2rgb(m1, m2, h-1/3)
+  function color.torgb(h, s, l)
+    h = h/360
+    local m1, m2
+    if l<=0.5 then 
+      m2 = l*(s+1)
+    else 
+      m2 = l+s-l*s
+    end
+    m1 = l*2-m2
+    return _h2rgb(m1, m2, h+1/3), _h2rgb(m1, m2, h), _h2rgb(m1, m2, h-1/3)
+  end
 end
 
 --(see http://easyrgb.com)
