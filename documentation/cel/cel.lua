@@ -393,16 +393,24 @@ export['cel'] {
     };
   };
 
-  functiondef['cel.doafter(ms, f)'] {
-    [[Executes function <em>f</em> after <em>ms</em> milliseconds.]];
+  functiondef['cel.doafter(ms, task)'] {
+    [[Executes function <em>task</em> after <em>ms</em> milliseconds.]];
     [[Elapsed milliseconds is based on cel.timer().]];
 
     params = {
-      param.number[[ms - minimum number of milliseconds to wait before executing f.  If ms is 0 f is executed on
-      the next driver tick.]];
+      param.number[[ms - minimum number of milliseconds to wait before executing task.
+      If ms is 0, then task is executed on the next driver tick.]];
+      param['function'][[task - task function.]];
     };
     returns = {
-      param['function'][[a function that will cancel the doafter when called.]];
+      param['function'] {
+        callbackdef['function(option)'] {
+        [[a function that will cancel the doafter when called.]];
+          params = {
+            param.string[[option - 'cancel' will unschedule the pending task.]];
+          };
+        };
+      };
     };
   };
   --TODO remove
@@ -444,8 +452,34 @@ export['cel'] {
     };
   };
 
-  functiondef['cel.color.rgb(r, g, b)'] {
+
+  functiondef['cel.color.rbgtohsl(r, g, b)']{
+    'Takes an rgb triplet and returns and hsl triplet';
   };
+  functiondef['cel.color.hsltorgb(h, s, l)']{ 
+    'Takes an rgb triplet and returns and hsl triplet';
+  };
+  functiondef['cel.color.hsl(h, s, l, a)']{ 
+    'Takes hsl triplet and normalized alpaha and returns a color';
+  };
+  functiondef['cel.color.rgb(r, g, b, a)']{ 
+    'Takes rgb triplet and normalized alpaha and returns a color';
+  };
+  functiondef['cel.color.rgb8(r, g, b, a)']{ 
+    'Takes rgb8 triplet and alpaha and returns a color';
+  };
+  functiondef['cel.color.tohsl(color)']{
+    'Takes a color and returns h, s, l, a';
+  };
+  functiondef['cel.color.torgb(color)']{ 
+    'Takes a color and returns r, g, b, a';
+  };
+  functiondef['cel.color.torgb8(color)']{ 
+    'Takes a color and returns r8, g8, b8, a8';
+  };
+  functiondef['cel.color.tint(r, color)']{ 
+  };
+  functiondef['cel.color.shade(r, color)']{ };
 
   functiondef['cel.flows.linear()'] {
   };
@@ -490,6 +524,20 @@ export['cel'] {
           param.table[[description - The description of the root cel.]];
         }; 
       };
+    };
+  };
+
+  functiondef['cel.getdescription()'] {
+    'Returns the current description.';
+    [[The current description is the last one returned by cel.describe()]];
+  };
+
+  functiondef['cel.printdescription([description])'] { 
+    'Prints a description to stdout.';
+    [[If a description is not provided the current description is used.]];
+    
+    params = {
+      param.table[[description - if present this description is printed.]];
     };
   };
 

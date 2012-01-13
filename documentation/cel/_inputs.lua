@@ -13,4 +13,5 @@ return {
   'face',
   'mouse',
   'keyboard',
+  'linker',
 }

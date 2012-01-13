@@ -7,6 +7,7 @@
         <ul class="nav">
   <li><a href="cel.html">cel</a> </li>
   <li><a href="face.html">face</a> </li>
+  <li><a href="linker.html">linker</a> </li>
   <li><a href="mouse.html">cel.mouse</a> </li>
   <li><a href="keyboard.html">cel.keyboard</a> </li>
   <li><a href="grip.html">cel.grip</a></li> 
@@ -559,22 +560,40 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          cel.doafter(ms, f)&nbsp;
-          <span class="functiondesc">Executes function <em>f</em> after <em>ms</em> milliseconds.</span>
+          cel.doafter(ms, task)&nbsp;
+          <span class="functiondesc">Executes function <em>task</em> after <em>ms</em> milliseconds.</span>
         </h3>
         <div class="functionfulldesc">
-        <p>Executes function <em>f</em> after <em>ms</em> milliseconds. Elapsed milliseconds is based on cel.timer().</p>
+        <p>Executes function <em>task</em> after <em>ms</em> milliseconds. Elapsed milliseconds is based on cel.timer().</p>
                 <div class="arguments">
           <span class="arguments">arguments</span>
           <dl class="arguments">          <dt><code><span class="paramname">ms</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>minimum number of milliseconds to wait before executing f.  If ms is 0 f is executed on
-      the next driver tick.</dd>
+          <dd>minimum number of milliseconds to wait before executing task.
+      If ms is 0, then task is executed on the next driver tick.</dd>
+                     <dt><code><span class="paramname">task</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>task function.</dd>
           </dl>
         </div>
                 <div class="returns">
           <span class="returns">returns</span>
           <dl class="returns">          <dt><code>function</code></dt> 
-          <dd>a function that will cancel the doafter when called.</dd>
+          <dd>      <div class="callbackdef">
+        <h4 class="callbacksig">
+          function(option)&nbsp;
+          <span class="callbackdesc">a function that will cancel the doafter when called.</span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p>a function that will cancel the doafter when called.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">option</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>'cancel' will unschedule the pending task.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+      </dd>
           </dl>
           </div>
         
@@ -652,7 +671,115 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          cel.color.rgb(r, g, b)&nbsp;
+          cel.color.rbgtohsl(r, g, b)&nbsp;
+          <span class="functiondesc">Takes an rgb triplet and returns and hsl triplet</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Takes an rgb triplet and returns and hsl triplet</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.hsltorgb(h, s, l)&nbsp;
+          <span class="functiondesc">Takes an rgb triplet and returns and hsl triplet</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Takes an rgb triplet and returns and hsl triplet</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.hsl(h, s, l, a)&nbsp;
+          <span class="functiondesc">Takes hsl triplet and normalized alpaha and returns a color</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Takes hsl triplet and normalized alpaha and returns a color</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.rgb(r, g, b, a)&nbsp;
+          <span class="functiondesc">Takes rgb triplet and normalized alpaha and returns a color</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Takes rgb triplet and normalized alpaha and returns a color</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.rgb8(r, g, b, a)&nbsp;
+          <span class="functiondesc">Takes rgb8 triplet and alpaha and returns a color</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Takes rgb8 triplet and alpaha and returns a color</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.tohsl(color)&nbsp;
+          <span class="functiondesc">Takes a color and returns h, s, l, a</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Takes a color and returns h, s, l, a</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.torgb(color)&nbsp;
+          <span class="functiondesc">Takes a color and returns r, g, b, a</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Takes a color and returns r, g, b, a</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.torgb8(color)&nbsp;
+          <span class="functiondesc">Takes a color and returns r8, g8, b8, a8</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Takes a color and returns r8, g8, b8, a8</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.tint(r, color)&nbsp;
+          <span class="functiondesc"></span>
+        </h3>
+        <div class="functionfulldesc">
+        <p></p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.color.shade(r, color)&nbsp;
           <span class="functiondesc"></span>
         </h3>
         <div class="functionfulldesc">
@@ -725,6 +852,35 @@
       </div></dd>
           </dl>
           </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.getdescription()&nbsp;
+          <span class="functiondesc">Returns the current description.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Returns the current description. The current description is the last one returned by cel.describe()</p>
+        
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.printdescription([description])&nbsp;
+          <span class="functiondesc">Prints a description to stdout.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Prints a description to stdout. If a description is not provided the current description is used.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">description</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>if present this description is printed.</dd>
+          </dl>
+        </div>
         
         </div>
       </div>
