@@ -81,7 +81,6 @@ do
             linker, xval, yval = link:pget('linker', 'xval', 'yval')
           end
           if not (linker or xval or yval) then
-           --linker = 'edges'
           end
           link:link(recordlist, linker, xval, yval, entry)
         end

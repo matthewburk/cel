@@ -57,7 +57,7 @@ local layout = {
   client = {    
     w = 0,
     h = 0,
-    link = {'edges.topunique', 10, 41},
+    link = {cel.rcomposelinker('fill.topmargin', 'fill.margin'), {31, 10}},
   }
 }
 
@@ -169,7 +169,7 @@ do
     end
 
     window[_state] = 'maximizing'
-    window:flowlink('maximize', 'edges', -window[_bordersize], -window[_bordersize], nil, onmaximized)
+    window:flowlink('maximize', 'fill.margin', -window[_bordersize], -window[_bordersize], nil, onmaximized)
     return window
   end
 end

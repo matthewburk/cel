@@ -168,9 +168,9 @@ do --metatable.pushsection
 
     local section = metacel:new(left, top, right, bottom, nil, nil, face)
     print('pushing section')
-    push(document, section, link or 'edges')
+    push(document, section, link or 'fill')
     print('pushed section')
-    push(document, nil, 'edges')
+    push(document, nil, 'fill')
     section:resize(w, h)
     return document
   end
@@ -195,8 +195,8 @@ do
     local row = newrow(nil, face)
     --row:beginflux()
     row.option = option
-    linker = linker or 'edges'
-    return push(document, row, 'edges', xval, yval)
+    linker = linker or 'fill'
+    return push(document, row, 'fill.margin', xval, yval)
   end
 
   function metatable.poprow(document)
@@ -228,7 +228,7 @@ function metatable.put(document, acel, linker, xval, yval)
     
   end
   --]]
-  acel:link(document[_host], linker or 'edges', xval, yval, document[_host].option)
+  acel:link(document[_host], linker or 'fill', xval, yval, document[_host].option)
   return document
 end
 
@@ -281,7 +281,7 @@ do
     face = self:getface(face)
     local col = cel.col.new()
     local document = _new(self, 0, 0, 0, 0, nil, nil, face)
-    col:link(document, 'edges')
+    col:link(document, 'fill')
     document[_col] = col
     document[_host] = col
     document[_facestack] = {cel.getface('document.text')}

@@ -75,7 +75,7 @@ do
       size = size, 
       track = {
         size = size,
-        link = {'edges', nil, size},
+        link = {'fill.margin', 0, size},
         thumb = {
           --TODO allow link, but constrain it so it acts like a thumb
           minsize = 10,
@@ -97,7 +97,7 @@ do
       size = size,
       track = {
         size = size,
-        link = {'edges', size, nil},
+        link = {'fill.margin', size, 0},
         thumb = {
           minsize = 10,
           size = size,
@@ -117,22 +117,6 @@ do
 end
 
 local linkers = {}
-
-function linkers.subject(hw, hh, x, y, w, h, fillx, filly)
-  if x >= 0 or w <= hw then 
-    x = 0
-  elseif x + w < hw then
-    x = hw - w
-  end
-
-  if y >= 0 or h <= hh then
-    y = 0
-  elseif y + h < hh then
-    y = hh - h
-  end
-
-  return x, y, fillx and hw or w, filly and hh or h
-end
 
 local sync = {}
 
@@ -953,13 +937,12 @@ function metatable.setsubject(scroll, subject, fillx, filly)
   assert(scroll)
   assert(subject)
   assert(scroll[_portal])
-  assert(linkers.subject)
   if scroll[_subject] then
     scroll[_subject]:unlink()
   end
 
   scroll[_subject] = subject
-  subject:link(scroll[_portal], linkers.subject, fillx, filly, 'subject') 
+  subject:link(scroll[_portal], 'scroll', fillx, filly, 'subject') 
   return scroll
 end
 

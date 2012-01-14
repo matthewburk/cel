@@ -52,13 +52,13 @@
                      <dt><code><span class="paramname">hh</span>&nbsp;<span class="paramtype">number</span></code></dt> 
           <dd>height of the host rectangle.</dd>
                      <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>current x value of topleft corner of the linked rectangle.</dd>
+          <dd>current x value of topleft corner of the rectangle.</dd>
                      <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>current y value of topleft corner of the linked rectangle.</dd>
+          <dd>current y value of topleft corner of the rectangle.</dd>
                      <dt><code><span class="paramname">w</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>current width of the linked rectangle.</dd>
+          <dd>current width of the rectangle.</dd>
                      <dt><code><span class="paramname">h</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>current height of the linked rectangle.</dd>
+          <dd>current height of the rectangle.</dd>
                      <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">any</span></code></dt> 
           <dd>the meaning of this parameter varies by linker.
         When a cel's linker is run cel.xval is passed for this parameter.</dd>
@@ -66,29 +66,322 @@
           <dd>the meaning of this parameter varies by linker.
         When a cel's linker is run cel.yval is passed for this parameter.</dd>
                      <dt><code><span class="paramname">minw</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>the minimum width of the linked rectangle.  The linker
+          <dd>the minimum width of the rectangle.  The linker
         may exceed this limit, the results of the linker truncated by the caller.</dd>
                      <dt><code><span class="paramname">maxw</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>the maximum width of the linked rectangle.  The linker
+          <dd>the maximum width of the rectangle.  The linker
         may exceed this limit, the results of the linker truncated by the caller.</dd>
                      <dt><code><span class="paramname">minh</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>the minimum height of the linked rectangle.  The linker
+          <dd>the minimum height of the rectangle.  The linker
         may exceed this limit, the results of the linker truncated by the caller.</dd>
                      <dt><code><span class="paramname">maxh</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>the maximum height of the linked rectangle.  The linker
+          <dd>the maximum height of the rectangle.  The linker
         may exceed this limit, the results of the linker truncated by the caller.</dd>
           </dl>
         </div>
                 <div class="returns">
           <span class="returns">returns</span>
           <dl class="returns">          <dt><code>number</code></dt> 
-          <dd>new x value of topleft corner of linked the rectangle.</dd>
+          <dd>new x value of topleft corner of the rectangle.</dd>
                      <dt><code>number</code></dt> 
-          <dd>new y value of topleft corner of linked the rectangle.</dd>
+          <dd>new y value of topleft corner of the rectangle.</dd>
                      <dt><code>number</code></dt> 
-          <dd>new width of the linked rectangle.</dd>
+          <dd>new width of the rectangle.</dd>
                      <dt><code>number</code></dt> 
-          <dd>new height of the linked rectangle.</dd>
+          <dd>new height of the rectangle.</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          fill&nbsp;
+          <span class="functiondesc">The rectangle fills the host rectangle.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>The rectangle fills the host rectangle.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = 0</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = 0</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w = hw</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h = hh</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          fill.margin&nbsp;
+          <span class="functiondesc">The rectangle fills the *padded* host rectangle.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>The rectangle fills the *padded* host rectangle.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>amount of padding between the vertical sides of the of
+        rectangle and the host rectangle.</dd>
+                     <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>amount of padding between the horizontal sides of the of
+        rectangle and the host rectangle.  If not present defaults to xval.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = xval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = yval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w = hw - (xval*2)</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h = hh - (yval*2)</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          fill.leftmargin&nbsp;
+          <span class="functiondesc">The rectangle fills the host rectangle excluding a left margin.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>The rectangle fills the host rectangle excluding a left margin.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>the size of the left margin.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = margin</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = 0</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w = hw-margin</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h = hh</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          fill.topmargin&nbsp;
+          <span class="functiondesc">The rectangle fills the host rectangle excluding a top margin.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>The rectangle fills the host rectangle excluding a top margin.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>the size of the top margin.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = margin</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = 0</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w = hw-margin</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h = hh</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          fill.rightmargin&nbsp;
+          <span class="functiondesc">The rectangle fills the host rectangle excluding a right margin.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>The rectangle fills the host rectangle excluding a right margin.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>the size of the right margin.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = 0</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = 0</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w = hw-margin</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h = hh</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          fill.aspect&nbsp;
+          <span class="functiondesc">The rectangle aspect ratio as defined by xval is maintained and it will 
+      fill the width or height of the host rectangle.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>The rectangle aspect ratio as defined by xval is maintained and it will 
+      fill the width or height of the host rectangle.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>the aspect ratio of the rectangle (width/height).</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = new</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = new</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w = new</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h = new</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          scroll&nbsp;
+          <span class="functiondesc">The corners of the rectangle are kept outside the host rectangle area.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>The corners of the rectangle are kept outside the host rectangle area. If the h < hh then y is set to 0 If the w < hw then x is set to 0</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>if true then the width of the rectangle is set to hw.</dd>
+                     <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>if true then the height of the rectangle is set to hh.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = new</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = new</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w = xval and hw or w</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h = yval and hh or h</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          fence&nbsp;
+          <span class="functiondesc">The corners of the rectangle are kept inside the host rectangle area.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>The corners of the rectangle are kept inside the host rectangle area.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>minimal amount of padding between the vertical sides of the of
+        rectangle and the host rectangle.</dd>
+                     <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>minimal amount of padding between the horizontal sides of the of
+        rectangle and the host rectangle.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = new</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = new</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w = new</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h = new</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          center&nbsp;
+          <span class="functiondesc">Centers the rectangle, then adds xval and yval.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Centers the rectangle, then adds xval and yval.</p>
+        
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = (hw - w)/2 + xval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = (hh - h)/2 + yval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          left&nbsp;
+          <span class="functiondesc">Aligns the rectangle to the left.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Aligns the rectangle to the left.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>amount of padding between the left of the rectangle
+        and the left of the host rectangle.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = xval or 0</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h</dd>
           </dl>
           </div>
         
@@ -105,7 +398,7 @@
                 <div class="arguments">
           <span class="arguments">arguments</span>
           <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>amount of padding between the right of the linked rectangle
+          <dd>amount of padding between the right of the rectangle
         and the right of the host rectangle.</dd>
           </dl>
         </div>
@@ -127,6 +420,160 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
+          top&nbsp;
+          <span class="functiondesc">Aligns the rectangle to the top.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Aligns the rectangle to the top.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>amount of padding between the top of the rectangle
+        and the top of the host rectangle.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = xval or y</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          bottom&nbsp;
+          <span class="functiondesc">Aligns the rectangle to the bottom.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Aligns the rectangle to the bottom.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>amount of padding between the bottom of the rectangle
+        and the bottom of the host rectangle.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = hh - h - yval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          center.top&nbsp;
+          <span class="functiondesc">Centered horizontal alignment and top vertical alignment.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Centered horizontal alignment and top vertical alignment.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>value added to x after centering.</dd>
+                     <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>amount of padding added to the top of the rectangle.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = (hw - w)/2 + xval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = yval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          center.bottom&nbsp;
+          <span class="functiondesc">Centered horizontal alignment and bottom vertical alignment.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Centered horizontal alignment and bottom vertical alignment.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>value added to x after centering.</dd>
+                     <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>amount of padding added to the bottom of the rectangle.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = (hw - w)/2 + xval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = yval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          center.height&nbsp;
+          <span class="functiondesc">Centered horizontal alignment and filled vertical alignment.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Centered horizontal alignment and filled vertical alignment.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>the value added to x after centering.</dd>
+                     <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>the amount of padding added to the top and bottom
+        of the rectangle.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>number</code></dt> 
+          <dd>x = (hw - w)/2 + xval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>y = yval</dd>
+                     <dt><code>number</code></dt> 
+          <dd>w</dd>
+                     <dt><code>number</code></dt> 
+          <dd>h</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
           right.top&nbsp;
           <span class="functiondesc">Aligns the rectangle to the right and top.</span>
         </h3>
@@ -135,7 +582,7 @@
                 <div class="arguments">
           <span class="arguments">arguments</span>
           <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>amount of padding between the right of the linked rectangle
+          <dd>amount of padding between the right of the rectangle
         and the right of the host rectangle.</dd>
                      <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
           <dd>the top of the rectangle.</dd>
@@ -167,10 +614,10 @@
                 <div class="arguments">
           <span class="arguments">arguments</span>
           <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>amount of padding between the right of the linked rectangle
+          <dd>amount of padding between the right of the rectangle
         and the right of the host rectangle.</dd>
                      <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>amount of padding between the bottom of the linked rectangle
+          <dd>amount of padding between the bottom of the rectangle
         and the bottom of the host rectangle.</dd>
           </dl>
         </div>
@@ -200,11 +647,11 @@
                 <div class="arguments">
           <span class="arguments">arguments</span>
           <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>amount of padding between the right of the linked rectangle
+          <dd>amount of padding between the right of the rectangle
         and the right of the host rectangle.</dd>
                      <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
           <dd>amount of padding between the horizontal sides of the of
-        linked rectangle and the host rectangle.</dd>
+        rectangle and the host rectangle.</dd>
           </dl>
         </div>
                 <div class="returns">
@@ -233,7 +680,7 @@
                 <div class="arguments">
           <span class="arguments">arguments</span>
           <dl class="arguments">          <dt><code><span class="paramname">xval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
-          <dd>amount of padding between the right of the linked rectangle
+          <dd>amount of padding between the right of the rectangle
         and the right of the host rectangle.</dd>
                      <dt><code><span class="paramname">yval</span>&nbsp;<span class="paramtype">number</span></code></dt> 
           <dd>amount to vertically off-center.</dd>

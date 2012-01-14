@@ -168,7 +168,7 @@ function rowmetacel:__link(row, link, linker, xval, yval, option)
     slot:link(row, 'height', nil, nil, slotoption)
 
     if not (linker or xval or yval) then
-      return slot--, 'edges'
+      return slot
     end
 
     return slot, linker, xval, yval
@@ -226,7 +226,6 @@ do
             linker, xval, yval = link:pget('linker', 'xval', 'yval')
           end
           if not (linker or xval or yval) then
-           --linker = 'edges'
           end
           link:link(row, linker, xval, yval, entry)
         end

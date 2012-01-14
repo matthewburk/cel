@@ -16,7 +16,7 @@ local layout = {
   },
   client = {
     face = nil,
-    link = {'edges'}
+    link = {'fill'}
   },
 }
 
@@ -38,8 +38,8 @@ function metatable:addtab(name, subject, ...)
   tab.subject = subject
   tabs[name] = tab
 
-  tab:link(tabs, 'edges', nil, nil, {flex=1})
-  tab.subjecthost:link(mutex, 'edges')
+  tab:link(tabs, 'fill', nil, nil, {flex=1})
+  tab.subjecthost:link(mutex, 'fill')
   subject:link(tab.subjecthost, ...)
 
   if not self[_selected] then
