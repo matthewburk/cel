@@ -6,8 +6,9 @@ export['cel.col'] {
     factory = 'cel.col';
 
     description = { 
-      [[A cel linked to a col is contained in a virtual slot.  The slot is described if there is a face
-      for it.  If the slot is described it will describe the link at index 1.]];
+      [[A cel linked to a col is contained in a virtual slot.  The slot is described if
+      there is a face for it.  If the slot is described it will describe the link at
+      index 1.]];
       code[=[
         [n] = {
           id = 0,
