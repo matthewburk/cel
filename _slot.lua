@@ -375,7 +375,7 @@ do --metacel.new, metacel.compile
     if margin then
       slot = slot or metacel:new(margin.l, margin.t, margin.r, margin.b, t.minw, t.minh, t.face)
     else
-      slot = slot or metacel:new(0, 0, 0, 0, 0, 0, t.face)
+      slot = slot or metacel:new(0, 0, 0, 0, t.minw, t.minh, t.face)
     end
     _compile(self, t, slot)
     return slot

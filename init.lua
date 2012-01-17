@@ -177,6 +177,30 @@ do --cel.translate
   end
 end
 
+function M.touchlinksonly(cel, x, y)
+  local metacel = cel[_metacel]
+  local formation = rawget(cel, _formation)
+
+  if formation and formation.pick then
+    local link = formation:pick(cel, x, y)
+    if touch(link, x - link[_x], y - link[_y]) then
+      return true
+    end
+    return false
+  end
+
+  for link in  links(cel) do
+    if touch(link, x - link[_x], y - link[_y]) then
+      return true
+    end
+  end
+  return false
+end
+
+function M.notouch()
+  return false
+end
+
 do --cel.describe, cel.printdescription
   local preamble = {
     updaterect = updaterect 
@@ -849,8 +873,7 @@ M.sequence = {
 }
 --]]
 
-function M.rgbaface(r, g, b, a)
-  local color = M.color.encodef(r, g, b, a)
+function M.colorface(color)
   local face = M.getface('cel', color..'#color#')
   if not face then 
     face = M.getface('cel'):new {
@@ -920,22 +943,4 @@ do
   return proxyM 
 end
 
---[[
-local function touchlinksonly(cel, x, y)
-  local metacel = cel[_metacel]
-  if metacel[_pick] then 
-    local link = metacel[_pick](metacel, cel, x, y)
-    if touch(link, x - link[_x], y - link[_y]) then
-      return true
-    end
-    return false
-  end
 
-  for link in  links(cel) do
-    if touch(link, x - link[_x], y - link[_y]) then
-      return true
-    end
-  end
-  return false
-end
---]]

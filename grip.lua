@@ -201,7 +201,7 @@ function metacel:onmousemove(grip, x, y)
     if grip.ondrag then 
       grip:ondrag(x, y) 
       --TODO only pick if global position of grip actually changes or its width or height
-      mouse:pick()
+      mouse:pick(true) --true for debug this
     end
   end
 end

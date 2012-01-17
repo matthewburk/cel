@@ -8,7 +8,12 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 --]]
 
-local color = {}
+local math_min = math.min
+local math_max = math.max
+local math_floor = math.floor
+local string_char = string.char
+local string_byte = string.byte
+local M = {}
 
 -----------------------------------------------------------------------------
 -- Converts an HSL triplet to RGB
@@ -18,36 +23,33 @@ local color = {}
 -- @param s              saturation (0.0-1.0)
 -- @param l              lightness (0.0-1.0)
 -----------------------------------------------------------------------------
-
-do
-  local function _h2rgb(m1, m2, h)
-    if h<0 then h = h+1 end
-    if h>1 then h = h-1 end
-    if h*6<1 then 
-      return m1+(m2-m1)*h*6
-    elseif h*2<1 then 
-      return m2 
-    elseif h*3<2 then 
-      return m1+(m2-m1)*(2/3-h)*6
-    else
-      return m1
-    end
+local function _h2rgb(m1, m2, h)
+  if h<0 then h = h+1 end
+  if h>1 then h = h-1 end
+  if h*6<1 then 
+    return m1+(m2-m1)*h*6
+  elseif h*2<1 then 
+    return m2 
+  elseif h*3<2 then 
+    return m1+(m2-m1)*(2/3-h)*6
+  else
+    return m1
   end
-  function color.torgb(h, s, l)
-    h = h/360
-    local m1, m2
-    if l<=0.5 then 
-      m2 = l*(s+1)
-    else 
-      m2 = l+s-l*s
-    end
-    m1 = l*2-m2
-    return _h2rgb(m1, m2, h+1/3), _h2rgb(m1, m2, h), _h2rgb(m1, m2, h-1/3)
+end
+function M.hsltorgb(h, s, l)
+  h = h/360
+  local m1, m2
+  if l<=0.5 then 
+    m2 = l*(s+1)
+  else 
+    m2 = l+s-l*s
   end
+  m1 = l*2-m2
+  return _h2rgb(m1, m2, h+1/3), _h2rgb(m1, m2, h), _h2rgb(m1, m2, h-1/3)
 end
 
 --(see http://easyrgb.com)
-function color.tohsl(r, g, b)
+function M.rgbtohsl(r, g, b)
   local min = math.min(r, g, b)
   local max = math.max(r, g, b)
   local delta = max - min
@@ -70,77 +72,46 @@ function color.tohsl(r, g, b)
   return h * 360, s, l
 end
 
-function color.hueoffset(delta, h, s, l)
-  return (h + delta) % 360, s, l
+function M.rgb8(r, g, b, a)
+  return string_char(r, g, b, a or 255)
 end
 
-function color.complementary(h, s, l) 
-  return color.hueoffset(180, h, s, l)
+function M.rgb(r, g, b, a)
+  r = r and math_min(255, math_max(255 * r, 0)) or 0
+  g = g and math_min(255, math_max(255 * g, 0)) or 0
+  b = b and math_min(255, math_max(255 * b, 0)) or 0
+  a = a and math_min(255, math_max(255 * a, 0)) or 255
+  return string_char(r, g, b, a)
 end
 
-function color.tints(n, h, s, l)
-  local t = {}
-  for i =1,n do
-    t[i] = {h, s, l + (1-l)/n*i}    
-  end
-  return t
+function M.hsl(h, s, l, a)
+  local r, g, b = M.hsltorgb(h, s, l)
+  return M.rgb(r, g, b, a)
 end
 
-function color.shades(n, h, s, l)
-  local t = {}
-  for i =1,n do
-    t[i] = {h, s, l - l/n*i}    
-  end
-  return t
+function M.torgb8(color)
+  return string_byte(color, 1, 4)
 end
 
---alpha should not be passed in
-function color.tint(r, h, s, l, a)
-  if type(h) == 'string' then
-    h, s, l, a = color.tohsl(color.decodef(h))
-    local r, b, g = color.torgb(h, s, l + (1-l)*r)
-    return color.encodef(r, g, b, a)
-  end
-  return h, s, l + (1-l)*r
+function M.torgb(color)
+  local r, g, b, a = string_byte(color, 1, 4)
+  return r/255, g/255, b/255, a/255
 end
 
-function color.shade(r, h, s, l, a)
-  if type(h) == 'string' then
-    h, s, l, a = color.tohsl(color.decodef(h))
-    local r, b, g = color.torgb(h, s, l-l*r)
-    return color.encodef(r, g, b, a)
-  end
-  return  h, s, l-l*r
+function M.tohsl(color)
+  local r, g, b, a = M.torgb(color)
+  local h, s, l = M.rgbtohsl(r, g, b)
+  return h, s, l, a
 end
 
-
-do
-  local math_min = math.min
-  local math_max = math.max
-  local math_floor = math.floor
-  local string_char = string.char
-  local string_byte = string.byte
- 
-  function color.encode(r, g, b, a)
-    return string_char(r, g, b, a or 255)
-  end
-
-  function color.decode(color)
-    return string_byte(color, 1, 4)
-  end
-
-  function color.encodef(r, g, b, a)
-    r = r and math_min(255, math_max(255 * r, 0)) or 0
-    g = g and math_min(255, math_max(255 * g, 0)) or 0
-    b = b and math_min(255, math_max(255 * b, 0)) or 0
-    a = a and math_min(255, math_max(255 * a, 0)) or 255
-    return string_char(r, g, b, a)
-  end
-
-  function color.decodef(color)
-    local r, g, b, a = string_byte(color, 1, 4)
-    return r/255, g/255, b/255, a/255
-  end
+function M.tint(color, r)
+  local h, s, l = M.tohsl(color)
+  return M.hsl(h, s, l + (1-l)*r)
 end
 
-return color
+function M.shade(color, r)
+  local h, s, l = M.tohsl(color)
+  return  M.hsl(h, s, l-l*r)
+end
+
+return M

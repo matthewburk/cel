@@ -564,7 +564,7 @@ do --metacel.new
       --TODO add _variations to metacel to avoid extra lookup
       [_face] = self[_face][_variations][face] or metacel[_face][_variations][face],
       [_celid] = celid,
-      [_celhandle] = newproxy()
+      [_celhandle] = newproxy(), --TODO this is way too much overhead for an uncommon case
     }
     celid = celid + 1
     return setmetatable(cel, self.metatable)

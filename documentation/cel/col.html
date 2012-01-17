@@ -32,32 +32,42 @@
       <p class="metaceldefheader">metacel</p>
         <h3 class="metaceldefname">
           col&nbsp;
-          <span class="metaceldefdesc"></span>
+          <span class="metaceldefdesc">A col(umn) is a vertical sequence of cels.</span>
         </h3>
         <div class="metaceldeffulldesc">
-        <p></p>
+        <p>A col(umn) is a vertical sequence of cels. <div class="list">
+      
+      <ul>
+      <li>Each cel linked to a col occupies a virtual slot.  When the linker function of a 
+      link is called, it will receive the dimensions of the virtual slot for hw, hh.</li><li>All slots in a col will have the same width (the width of the col), but can vary in height.</li><li>A slot derives its w, h, minw, minh and maxh from the cel it holds. 
+      The minh of the slot can be set directly when a cel is linked. The maxh of the slot is whatever the current height
+      of the cel is by default, the maxh restriction is removed by giving a flex value to the slot when a cel is linked.
+      </li><li>A col derives its w, h, minw, and minh from its virtual slots.</li><li>A col cannot be sparsely populated, becuase a col is defined by the cels that are linked to it.</li><li>The first cel in a col is above the next.</li>
+      </ul>
+      </div> A col is a special cel becuase it alters the layout of its links, instead of the default layout of a stack.
+    Becuase of this, cel:raise() and cel:sink() have no effect for a cel linked to a col.</p>
         <dl>
         
                 <div class="metaceldescription">
           <dt class="metaceldescription">description</dt>
           <dd>
-          A cel linked to a col is contained in a virtual slot.  The slot is described if
-      there is a face for it.  If the slot is described it will describe the link at
-      index 1. <div class="code"><pre><code>[n] = {</code>
+          A cel linked to a col is contained in a virtual slot.  
+      For each visible slot (where visible means not fully clipped) slot this description is given: <div class="code"><pre><code>[n] = {</code>
 <code>  id = 0,</code>
-<code>  metacel = '[n]',</code>
+<code>  metacel = '[index]',</code>
 <code>  [1] = cel,</code>
 <code>}</code></pre></div>
                       <div class="arguments">
               <span class="arguments">entries</span>
               <dl class="arguments">          <dt><code><span class="paramname">[n]</span>&nbsp;<span class="paramtype">integer</span></code></dt> 
-          <dd>index of a description.</dd>
+          <dd>index of this description.</dd>
                      <dt><code><span class="paramname">[n].id</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
-          <dd>always 0 for a slot, a virtual cel does not have an id.</dd>
+          <dd>always 0, a virtual cel does not have an id.</dd>
                      <dt><code><span class="paramname">[n].metacel</span>&nbsp;<span class="paramtype">boolean</span></code></dt> 
-          <dd>always '['.. n .. ']' for a slot, a virtual cel does not have a metacel.</dd>
+          <dd>always '['.. index .. ']' where index is the index of the slot in the col.  
+        A virtual cel does not have a metacel.</dd>
                      <dt><code><span class="paramname">[n][1]</span>&nbsp;<span class="paramtype">cel</span></code></dt> 
-          <dd>a cel.</dd>
+          <dd>the description of the cel linked to the slot.</dd>
           </dl>
             </div>
           </dd>
@@ -158,7 +168,7 @@
              <div title="function" class="functiondef">
         <p class="functiondefheader">function</p>
         <h3 class="functionsig">
-          col:insert(index, link)&nbsp;
+          col:insert(link, index)&nbsp;
           <span class="functiondesc">links the given cel to the col, inserting it at the given index.</span>
         </h3>
         <div class="functionfulldesc">

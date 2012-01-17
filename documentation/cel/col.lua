@@ -5,23 +5,44 @@ export['cel.col'] {
     source = 'cel';
     factory = 'cel.col';
 
+    [[A col(umn) is a vertical sequence of cels.]];
+    list {
+      [[Each cel linked to a col occupies a virtual slot.  When the linker function of a 
+      link is called, it will receive the dimensions of the virtual slot for hw, hh.]];
+      [[All slots in a col will have the same width (the width of the col), but can vary in height.]];
+      [[A slot derives its w, h, minw, minh and maxh from the cel it holds. 
+      The minh of the slot can be set directly when a cel is linked. The maxh of the slot is whatever the current height
+      of the cel is by default, the maxh restriction is removed by giving a flex value to the slot when a cel is linked.
+      ]];
+
+      [[A col derives its w, h, minw, and minh from its virtual slots.]];
+
+      [[A col cannot be sparsely populated, becuase a col is defined by the cels that are linked to it.]];
+      [[The first cel in a col is above the next.]];
+    };
+
+    --make this a note
+    [[A col is a special cel becuase it alters the layout of its links, instead of the default layout of a stack.
+    Becuase of this, cel:raise() and cel:sink() have no effect for a cel linked to a col.]];
+
     description = { 
-      [[A cel linked to a col is contained in a virtual slot.  The slot is described if
-      there is a face for it.  If the slot is described it will describe the link at
-      index 1.]];
+      [[A cel linked to a col is contained in a virtual slot.  
+      For each visible slot (where visible means not fully clipped) slot this description is given:]];
+      
       code[=[
         [n] = {
           id = 0,
-          metacel = '[n]',
+          metacel = '[index]',
           [1] = cel,
         }
       ]=];
 
       params = {
-        param.integer[[[n] - index of a description.]];
-        param.boolean[[[n].id - always 0 for a slot, a virtual cel does not have an id.]];
-        param.boolean[[[n].metacel - always '['.. n .. ']' for a slot, a virtual cel does not have a metacel.]]; 
-        param.cel[[[n][1] - a cel.]]; 
+        param.integer[[[n] - index of this description.]];
+        param.boolean[[[n].id - always 0, a virtual cel does not have an id.]];
+        param.boolean[[[n].metacel - always '['.. index .. ']' where index is the index of the slot in the col.  
+        A virtual cel does not have a metacel.]]; 
+        param.cel[[[n][1] - the description of the cel linked to the slot.]]; 
       };
     };
 
@@ -107,7 +128,7 @@ export['cel.col'] {
         param.cel[[the cel that is linked to the col at the specified index, or nil.]];
       };
     };
-    functiondef['col:insert(index, link)'] {
+    functiondef['col:insert(link, index)'] {
       [[links the given cel to the col, inserting it at the given index.]];
       [[This is a shortcut for using link, when a linker is not required.]];
 

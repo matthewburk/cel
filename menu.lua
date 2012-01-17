@@ -82,11 +82,11 @@ end
 
 function metatable.popupdismissed(menu)
   if menu[_hidetask] then
-    menu[_hidetask]:('cancel')
+    menu[_hidetask]('cancel')
     menu[_hidetask] = nil
   end
   if menu[_showtask] then
-    menu[_showtask]:('cancel')
+    menu[_showtask]('cancel')
     menu[_showtask] = nil
   end
   if menu[_parentmenu] then
@@ -171,7 +171,7 @@ end
 function metacel:onmousein(menu)
   local parentmenu = menu[_parentmenu]
   if parentmenu and parentmenu[_hidetask] then
-    parentmenu[_hidetask]:('cancel')
+    parentmenu[_hidetask]('cancel')
     parentmenu[_hidetask] = nil
   end
 end
@@ -217,7 +217,7 @@ do --metacel['.slot']
 
     if slot_submenu then
       if menu[_showtask] then 
-        menu[_showtask]:('cancel')
+        menu[_showtask]('cancel')
         menu[_showtask] = nil
       end
 
@@ -238,7 +238,7 @@ do --metacel['.slot']
     if slot_submenu then
       if slot_submenu == menu_submenu then
         if menu[_hidetask] then
-          menu[_hidetask]:('cancel')
+          menu[_hidetask]('cancel')
           menu[_hidetask] = nil
         end
       else

@@ -513,7 +513,10 @@ return function(_ENV, M)
     local dispatch = function(e)
       local task = e[2]
       if task then 
-        task() 
+        local reup = task() 
+        if reup then
+          M.doafter(reup, task)
+        end
       end
     end
     

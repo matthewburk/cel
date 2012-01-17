@@ -38,9 +38,9 @@ return function(_ENV, M)
     [_states] = {},
   }
 
-  function mouse:pick()
+  function mouse:pick(debug)
     event:wait()
-    pick(self)
+    pick(self, debug)
     event:signal()
     return self
   end
@@ -74,7 +74,7 @@ return function(_ENV, M)
   --fires mouseenter/mouseexit events
   --returns x,y in mouse[_focus].focus space
   --put in _cel.lua
-  function pick(mouse)
+  function pick(mouse, debug)
     local mouse_focus = mouse[_focus]
     local mouse_trap = mouse[_trap]
     local x = mouse[_x]
@@ -209,10 +209,10 @@ return function(_ENV, M)
           mouse_focus[i] = nil
         end
       else
-        print('BIG BAD PICK', mouse_focus[1], mouse_focus.focus, i, #mouse_focus)
-        print('BIG BAD PICK DATA', unpack(mouse_focus))
+        dprint('BIG BAD PICK', mouse_focus[1], mouse_focus.focus, i, #mouse_focus)
+        dprint('BIG BAD PICK DATA', unpack(mouse_focus))
         for j, k in pairs(mouse_focus) do
-          print(j, k)
+          dprint(j, k)
         end
         --_G.tripped = true
       end
