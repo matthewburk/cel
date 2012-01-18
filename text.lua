@@ -34,6 +34,7 @@ local _wrap = {}
 local _str = {}
 local _hpad = {}
 local _vpad = {}
+local _justification = {}
 
 local layout = {
   wrap = 'word',
@@ -49,7 +50,7 @@ local layout = {
 local function justify(text, w)
   w = w or text.w
   local textw = w - text[_hpad]
-  local justification = text[_layout].justification
+  local justification = text[_justification] or text[_layout].justification
   local lines = text[_lines]
   local penx = text[_penx]
   if 'center' == justification then
@@ -164,6 +165,12 @@ local function initstr(text, str, font, layout)
   end
 end
 
+function metatable.justify(text, value)
+  text[_justification] = value
+  justify(text)
+  return text:refresh()
+end
+
 function metatable.getfont(text)
   return text[_font]
 end
@@ -228,12 +235,12 @@ end
 
 do
   local _new = metacel.new
-  function metacel:new(str, face)
+  function metacel:new(str, face, wrap)
     face = self:getface(face)
     local text = _new(self, 0, 0, face)
     text[_layout] = face.layout or layout
     text[_font] = face.font
-    text[_wrap] = text[_layout].wrap
+    text[_wrap] = wrap or text[_layout].wrap
     initstr(text, str, text[_font], text[_layout])
     justify(text)
     return text
@@ -241,7 +248,7 @@ do
 
   local _compile = metacel.compile
   function metacel:compile(t, text)
-    return _compile(self, t, text or metacel:new(t.text, t.face))
+    return _compile(self, t, text or metacel:new(t.text, t.face, t.wrap))
   end
 end
 
