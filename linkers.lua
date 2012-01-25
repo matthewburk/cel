@@ -54,6 +54,7 @@ M['fill.bottommargin'] = function(hw, hh, x, y, w, h, margin)
 end
 
 M['fill.aspect'] = function(hw, hh, x, y, w, h, aspect, yval)
+  aspect = aspect or 1
   if hw < 1 or hh < 1 then 
     return 0, 0, aspect, 1
   end
@@ -220,6 +221,12 @@ M['width.bottom'] = function(hw, hh, x, y, w, h, xval, yval)
   xval = xval or 0
   yval = yval or 0  
   return xval, hh - h - yval, hw - (xval * 2), h
+end
+
+M['width.center'] = function(hw, hh, x, y, w, h, xval, yval)    
+  xval = xval or 0
+  yval = yval or 0
+  return M['center'](hw, hh, xval, y, hw-(xval*2), h, 0, yval)
 end
 
 M['height'] = function(hw, hh, x, y, w, h, pad)

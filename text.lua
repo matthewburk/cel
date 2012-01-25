@@ -177,6 +177,11 @@ end
 
 function metatable.getbaseline(text)
   local line = text[_lines][1]
+  return line.peny
+end
+
+function metatable.getpenorigin(text)
+  local line = text[_lines][1]
   return line.penx, line.peny
 end
 

@@ -103,6 +103,10 @@ return function(_ENV, M)
       end
     end
 
+    function M.isface(test)
+      return type(test) == 'table' and test[_metacelname] and true or false
+    end
+
     --called when a new metacel is created
     function _ENV.newmetaface(metacelname, proto)
       assert(type(metacelname) == 'string')

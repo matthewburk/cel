@@ -38,15 +38,8 @@ local modes = {}
 function modes.top(grip, x, y)
   local target = grip[_target]
   local h = target.h
-  local minh = target.minh
-
-  if y > 0 and h > minh then
-    if h - y < minh then y = h - minh end
-  elseif y > 0 then
-    y = 0
-  end
-
-  target:moveby(0, y, 0, -y)
+  local delta = h - target:moveby(0, 0, 0, -y).h
+  target:moveby(0, delta)
   mouse:pick()
 end
 
@@ -63,17 +56,8 @@ end
 function modes.left(grip, x, y)
   local target = grip[_target]
   local w = target.w
-  local minw, maxw = target.minw, target.maxw
-
-  if minw == maxw then return end
-  --TODO evaluate all the modes, they don't work well with limits in place
-  if w > minw and x > 0 then
-    if w - x < minw then x = w - minw end
-  elseif x > 0 then
-    x = 0
-  end
-
-  target:moveby(x, 0, -x, 0)
+  local delta = w - target:moveby(0, 0, -x, 0).w
+  target:moveby(delta)
   mouse:pick()
 end
 
@@ -89,53 +73,26 @@ end
 
 function modes.topright(grip, x, y)
   local target = grip[_target]
-  local minh = target.minh
   local h = target.h
-
-  if y > 0 and h > minh then
-    if h - y < minh then y = h - minh end
-  elseif y > 0 then
-    y = 0
-  end
-  --TODO test linker before moveby, see did i mention linkers tutorial for example
-  target:moveby(0, y, x, -y)
+  local delta = h - target:moveby(0, 0, x, -y).h
+  target:moveby(0, delta)
   mouse:pick()
 end
 
 function modes.bottomleft(grip, x, y)
   local target = grip[_target]
-  local minw = target.minw
   local w = target.w
-
-  if x > 0 and w > minw then
-    if w - x < minw then x = w - minw end
-  elseif x > 0 then
-    x = 0
-  end
-
-  target:moveby(x, 0, -x, y)
+  local delta = w - target:moveby(0, 0, -x, y).w
+  target:moveby(delta)
   mouse:pick()
 end
 
 function modes.topleft(grip, x, y)
   local target = grip[_target]
-  local w = target.w
-  local h = target.h
-  local minw, minh = target.minw, target.minh
-
-  if y > 0 and h > minh then
-    if h - y < minh then y = h - minh end
-  elseif y > 0 then
-    y = 0
-  end
-
-  if w > minw and x > 0 then
-    if w - x < minw then x = w - minw end
-  elseif x > 0 then
-    x = 0
-  end
-
-  target:moveby(x, y, -x, -y)
+  local w, h = target.w, target.h
+  target:moveby(0, 0, -x, -y)
+  local deltaw, deltah = w - target.w, h - target.h
+  target:moveby(deltaw, deltah)
   mouse:pick()
 end
 

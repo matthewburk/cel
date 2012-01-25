@@ -85,7 +85,7 @@ function metatable:movecaret(i)
   if i > #str then i = #str end
 
     caret.i = i
-    local penx, peny = text:getbaseline()
+    local penx = text:getpenorigin()
     local a = font:measureadvance(str, 0, i)
     local b = 2 --math.max(font:measureadvance(str, i+1, i+1), 2)
     caret:move(penx + a, 0, b, text.h)
@@ -150,7 +150,7 @@ function metatable:select(i, j)
   local text = self[_text]  
   local str = text:gettext()
   local font = text:getfont()
-  local penx = text:getbaseline()
+  local penx = text:getpenorigin()
 
   j = j or i
   selection.i = i
@@ -271,7 +271,7 @@ function metacel:onmousemove(editbox, x, y)
 
   if editbox:hasmousetrapped() and mouse:isdown(mouse.buttons.left) then
     x = x - text.x --translate x to text
-    local penx = text:getbaseline()
+    local penx = text:getpenorigin()
     local caretindex = text:getfont():pick(x-penx, text:gettext())
     editbox:dragcaret(caretindex)
   end
@@ -294,7 +294,7 @@ function metacel:onmousedown(editbox, button, x, y, intercepted)
 
     editbox:trapmouse()
     editbox:takefocus()
-    local penx = text:getbaseline()
+    local penx = text:getpenorigin()
     local caretindex = text:getfont():pick(x-penx, text:gettext())
 
     if keyboard:isdown(keyboard.keys.shift) then

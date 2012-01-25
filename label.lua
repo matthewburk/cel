@@ -39,6 +39,10 @@ local layout = {
 }
 
 function metatable:getbaseline()
+  return self[_peny]
+end
+
+function metatable:getpenorigin()
   return self[_penx], self[_peny]
 end
 

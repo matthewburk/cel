@@ -266,6 +266,8 @@ end
 
 do --rowformation.link
   local nooption = {}
+  local isface = M.isface
+  local getface = M.getface
   function rowformation:link(row, link, linker, xval, yval, option)
     option = option or nooption
 
@@ -276,6 +278,11 @@ do --rowformation.link
     links[index] = link
     links.n = index
 
+    local face = option.face
+    if face and not isface(face) then
+      face = getface('cel', face)
+    end
+
     local slot = {
       w = math.max(link[_w], option.minw or 0), --when flex is 0 width is not changed by flexing, only
                                                 --by moving the link, furthermore the width is constrained
@@ -284,7 +291,7 @@ do --rowformation.link
       linkx = 0,
       minw = option.minw, --overrides minw of link, slot will flex after this minw is allocated and will not go below this minw
       flex = option.flex or 0, --when a slot has no flex w and minw should alwyas be kept in sync and be the current width of the link
-      face = option.face, 
+      face = face,
     }
 
     links.flex = links.flex + slot.flex
@@ -977,7 +984,7 @@ local layout = {
 
 do --metacel.new, metacel.compile
   local _new = metacel.new
-
+  local slotface = M.getface('cel')
   function metacel:new(gap, face)
     face = self:getface(face)
     local layout = face.layout or layout
@@ -997,7 +1004,17 @@ do --metacel.new, metacel.compile
     }
 
     row[_maxw] = 0
-    row[_slotface] = layout.slotface or M.getface('row.slot')
+
+    if layout.slotface then
+      if M.isface(layout.slotface) then
+        row[_slotface] = layout.slotface
+      else
+        row[_slotface] = M.getface('cel', layout.slotface) or slotface
+      end
+    else
+      row[_slotface] = slotface
+    end
+
     row[_formation] = rowformation
     return row
   end

@@ -103,43 +103,10 @@ do --ENV.move
   function move(cel, x, y, w, h)
     --print('move', cel, x, y, w, h)
     local host = rawget(cel, _host)
-
     if host and rawget(host, _formation) then
       return host[_formation]:movelink(host, cel, x, y, w, h)
     else
-      local ox, oy, ow, oh = cel[_x], cel[_y], cel[_w], cel[_h]
-      local minw, maxw = cel[_minw], cel[_maxw]
-      local minh, maxh = cel[_minh], cel[_maxh]
-
-      if w ~= ow or h ~= oh then 
-        if w < minw then w = minw end
-        if w > maxw then w = maxw end
-        if h < minh then h = minh end
-        if h > maxh then h = maxh end    
-      end
-
-      if not(x ~= ox or y ~= oy or w ~= ow or h ~= oh) then return cel end
-
-      if host and rawget(cel, _linker) then
-        x, y, w, h = cel[_linker](host[_w], host[_h], x, y, w, h, cel[_xval], cel[_yval], minw, maxw, minh, maxh)
-        if w < minw then w = minw end
-        if w > maxw then w = maxw end
-        if h < minh then h = minh end
-        if h > maxh then h = maxh end    
-      end
-
-      if x ~= ox then x = math.modf(x); cel[_x] = x; end
-      if y ~= oy then y = math.modf(y); cel[_y] = y; end
-      if w ~= ow then w = math.floor(w); cel[_w] = w; end
-      if h ~= oh then h = math.floor(h); cel[_h] = h; end
-
-      if x ~= ox or y ~= oy or w ~= ow or h ~= oh then
-        event:wait()
-        celmoved(host, cel, x, y, w, h, ox, oy, ow, oh)  
-        event:signal()
-      end
-
-      return cel
+      return stackformation:movelink(host, cel, x, y, w, h)
     end
   end
 end
@@ -536,6 +503,44 @@ do --stackformation.unlink
     if host[_metacel].__unlink then
       host[_metacel]:__unlink(host, link)
     end
+  end
+end
+
+do --stackformation.movelink
+  function stackformation:movelink(host, cel, x, y, w, h)
+    local ox, oy, ow, oh = cel[_x], cel[_y], cel[_w], cel[_h]
+    local minw, maxw = cel[_minw], cel[_maxw]
+    local minh, maxh = cel[_minh], cel[_maxh]
+
+    if w ~= ow or h ~= oh then 
+      if w < minw then w = minw end
+      if w > maxw then w = maxw end
+      if h < minh then h = minh end
+      if h > maxh then h = maxh end    
+    end
+
+    if not(x ~= ox or y ~= oy or w ~= ow or h ~= oh) then return cel end
+
+    if host and rawget(cel, _linker) then
+      x, y, w, h = cel[_linker](host[_w], host[_h], x, y, w, h, cel[_xval], cel[_yval], minw, maxw, minh, maxh)
+      if w < minw then w = minw end
+      if w > maxw then w = maxw end
+      if h < minh then h = minh end
+      if h > maxh then h = maxh end    
+    end
+
+    if x ~= ox then x = math.modf(x); cel[_x] = x; end
+    if y ~= oy then y = math.modf(y); cel[_y] = y; end
+    if w ~= ow then w = math.floor(w); cel[_w] = w; end
+    if h ~= oh then h = math.floor(h); cel[_h] = h; end
+
+    if x ~= ox or y ~= oy or w ~= ow or h ~= oh then
+      event:wait()
+      celmoved(host, cel, x, y, w, h, ox, oy, ow, oh)  
+      event:signal()
+    end
+
+    return cel
   end
 end
 

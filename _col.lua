@@ -268,6 +268,8 @@ end
 
 do --colformation.link
   local nooption = {}
+  local isface = M.isface
+  local getface = M.getface
   function colformation:link(col, link, linker, xval, yval, option)
     option = option or nooption
 
@@ -278,13 +280,18 @@ do --colformation.link
     links[index] = link
     links.n = index
 
+    local face = option.face
+    if face and not isface(face) then
+      face = getface('cel', face)
+    end
+
     local slot = {
       h = math.max(link[_h], option.minh or 0), 
       y = 0,
       linky = 0,
       minh = option.minh, 
       flex = option.flex or 0, 
-      face = option.face, 
+      face = face,
     }
     --TODO move slot entries to the link
 
@@ -979,7 +986,7 @@ local layout = {
 
 do --metacel.new, metacel.compile
   local _new = metacel.new
-
+  local slotface = M.getface('cel')
   function metacel:new(gap, face)
     face = self:getface(face)
     local layout = face.layout or layout
@@ -998,8 +1005,17 @@ do --metacel.new, metacel.compile
       n = 0,
     }
 
-    col[_maxh] = 0
-    col[_slotface] = layout.slotface or M.getface('col.slot')
+    col[_maxh] = 0    
+
+    if layout.slotface then
+      if M.isface(layout.slotface) then
+        col[_slotface] = layout.slotface
+      else
+        col[_slotface] = M.getface('cel', layout.slotface) or slotface
+      end
+    else
+      col[_slotface] = slotface
+    end
     col[_formation] = colformation
     return col
   end
