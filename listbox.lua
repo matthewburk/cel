@@ -31,12 +31,10 @@ local _items = {}
 local _selected = {}
 local _current = {}
 local _changes = {}
-local _slotface = {}
-local slotface = cel.getface('listbox.slot')
 
 local layout = {
   gap = 0,
-  slotface = slotface,  
+  slotface = nil,  
 }
 
 function metatable:beginflux(...)
@@ -426,8 +424,6 @@ do -- items metacel
     function metacel:__describeslot(items, item, index, t)
       local listbox = items[_listbox]
 
-      t.face = listbox[_slotface]
-
       if listbox[_selected] and listbox[_selected][item] then
         t.selected = true
       else
@@ -478,7 +474,6 @@ do
     local layout = face.layout or layout
 
     local listbox = _new(self, w, h, face)
-    listbox[_slotface] = layout.slotface or slotface
 
     local items = metacel['.list']:new(layout.gap, layout)
 
