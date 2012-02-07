@@ -327,7 +327,7 @@ end
 do
   local __link = metacel.__link
   function metacel:__link(listbox, link, linker, xval, yval, option)
-    if not option or type(option) == 'number' then
+    if not option or type(option) == 'number' or type(option) == 'table' then
       --TODO link must accept an option
       return listbox[_items], linker, xval, yval, option
     else
