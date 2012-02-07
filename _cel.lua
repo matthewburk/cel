@@ -39,6 +39,7 @@ local _xval = _xval
 local _yval = _yval
 local _formation = _formation
 local _celhandle = {}
+local _appstatus = {}
 
 flows = {} --ENV.flows
 
@@ -143,7 +144,7 @@ end
 
 do --ENV.linkall
   function linkall(host, t)
-    linkall = function(host, t)
+    --linkall = function(host, t)
       event:wait()
 
       local linker = t.link
@@ -174,9 +175,9 @@ do --ENV.linkall
       end
 
       event:signal()
-    end
+    --end
    
-    return linkall(host, t)
+    --return linkall(host, t)
   end
 end
 
@@ -230,6 +231,7 @@ do --ENV.describe
     t.clip.t = gt
     t.clip.r = gr
     t.clip.b = gb
+    t.appstatus = cel[_appstatus]
 
     if mouse[_focus][cel] then
       t.mousefocusin = true
@@ -985,6 +987,13 @@ do --metatable.addlistener, metatable.removelistener
   end
 end
 
+do --metatable.addlinks
+  function metatable.addlinks(cel, t)
+    linkall(cel, t)
+    return cel
+  end
+end
+
 do --metatable.link
   --[[
   --After this function returns cel must be linked to host(or an alternate host via __link), and by default will be the
@@ -1028,8 +1037,7 @@ do --metatable.link
     while host[_metacel].__link do
       if linker and type(linker) ~= 'function' then linker = linkers[linker] end
 
-      local nhost, nlinker, nxval, nyval = host[_metacel]:__link(host, cel, linker, xval, yval, option)
-          option = nil
+      local nhost, nlinker, nxval, nyval, noption = host[_metacel]:__link(host, cel, linker, xval, yval, option)
 
       if nhost then
         if type(nlinker) == 'table' then
@@ -1040,6 +1048,7 @@ do --metatable.link
 
         if host ~= nhost then
           host = nhost
+          option = noption 
         else
           break
         end
@@ -1189,6 +1198,18 @@ do --metatable.enable
       refresh(cel)
     end
     return cel
+  end
+end
+
+do --metatable.setappstatus
+  function metatable.setappstatus(cel, appstatus)
+    cel[_appstatus] = appstatus
+    refresh(cel)
+    return cel
+  end
+
+  function metatable.getappstatus(cel)
+    return cel[_appstatus]
   end
 end
 
