@@ -33,24 +33,28 @@ M['fill.margin'] = function(hw, hh, x, y, w, h, xval, yval)
   return xval, yval, hw - (xval*2), hh - (yval*2)
 end
 
-M['fill.leftmargin'] = function(hw, hh, x, y, w, h, margin)
-  margin = margin or 0  
-  return margin, 0, hw - margin, hh
+M['fill.leftmargin'] = function(hw, hh, x, y, w, h, leftmargin, margin)
+  leftmargin = leftmargin or 0  
+  margin = margin or 0
+  return leftmargin, margin, hw-leftmargin-margin, hh-margin*2
 end
 
-M['fill.topmargin'] = function(hw, hh, x, y, w, h, margin)
-  margin = margin or 0  
-  return 0, margin, hw, hh-margin
+M['fill.topmargin'] = function(hw, hh, x, y, w, h, topmargin, margin)
+  topmargin = topmargin or 0  
+  margin = margin or 0
+  return margin, topmargin, hw-margin*2, hh-topmargin-margin
 end
 
-M['fill.rightmargin'] = function(hw, hh, x, y, w, h, margin)
+M['fill.rightmargin'] = function(hw, hh, x, y, w, h, rightmargin, margin)
+  rightmargin = rightmargin or 0  
   margin = margin or 0  
-  return 0, 0, hw - margin, hh
+  return margin, margin, hw-rightmargin, hh-margin*2
 end
 
-M['fill.bottommargin'] = function(hw, hh, x, y, w, h, margin)
+M['fill.bottommargin'] = function(hw, hh, x, y, w, h, bottommargin, margin)
+  bottommargin = bottommargin or 0  
   margin = margin or 0  
-  return 0, 0, hw, hh-margin
+  return margin, margin, hw-margin*2, hh-bottommargin-margin
 end
 
 M['fill.aspect'] = function(hw, hh, x, y, w, h, aspect, yval)
@@ -226,7 +230,7 @@ end
 M['width.center'] = function(hw, hh, x, y, w, h, xval, yval)    
   xval = xval or 0
   yval = yval or 0
-  return M['center'](hw, hh, xval, y, hw-(xval*2), h, 0, yval)
+  return M['center'](hw, hh, 0, y, hw-(xval*2), h, 0, yval)
 end
 
 M['height'] = function(hw, hh, x, y, w, h, pad)
