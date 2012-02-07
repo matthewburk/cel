@@ -253,7 +253,11 @@ do
 
   local _compile = metacel.compile
   function metacel:compile(t, text)
-    return _compile(self, t, text or metacel:new(t.text, t.face, t.wrap))
+    text = text or metacel:new(t.text, t.face, t.wrap)
+    if t.justify then
+      text:justity(t.justify)
+    end
+    return _compile(self, t, text)
   end
 end
 
