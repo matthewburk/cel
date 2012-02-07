@@ -690,6 +690,10 @@ do
     return lerp(a, b, p*p*(3-2*p))
   end
 
+  local function rlerp(a, b, c)
+    return (c - a)/(b - a);
+  end
+
   --
   --flow = {
     --iteration = 1,
@@ -877,7 +881,7 @@ function M.colorface(color)
   local face = M.getface('cel', color..'#color#')
   if not face then 
     face = M.getface('cel'):new {
-      fillcolor = color
+      color = color
     }:register(color..'#color#')
   end
   return face
