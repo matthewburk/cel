@@ -325,8 +325,11 @@ local metacel, metatable = metacel:newmetacel('slot')
 
 --TODO remove this function make all links private
 do --metatable.get
-  function metatable.get(slot)
-    return rawget(slot, _links)
+  function metatable.get()
+    error('strongly deprecated function')
+  end
+  function metatable.getsubject(slot)
+    return rawget(slot, _slotlink) or nil
   end
 end
 
