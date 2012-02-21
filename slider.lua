@@ -4,19 +4,15 @@ local _thumb = {}
 local _min = {}
 local _max = {}
 local _value = {}
-local _precision = {}
+local _step = {}
 
 local metacel, metatable = cel.newmetacel('slider')
 local thumbmeta = cel.grip.newmetacel('slider.thumb')
-local thumbstopmeta = cel.newmetacel('slider.thumbstop')
 
 local layout = {
-  size = 20,
+  size = 30,
   thumb = {
-    size = 10,
-  },
-  thumbstop = {
-    size = 10,
+    size = 20,
   },
 }
 
@@ -24,44 +20,34 @@ local function lerp (a, b, p)
   return a + p * (b -a)
 end
 
-local function syncmodeltovalue(slider)
-  local thumb = slider[_thumb]
-  local value = slider[_value] * slider[_precision]
-  local min = slider[_min] * slider[_precision]
-  local max = slider[_max] * slider[_precision]
-
-
-  local modelmax = slider.w - thumb.w 
-  local modelmin = 0
-  local modelvalue = math.floor(modelmax * (value/max) + 0.5)
-
-  thumb:move(modelvalue)
+local function rlerp(a, b, c)
+  return (c - a)/(b - a);
 end
 
-local function syncvaluetomodel(slider)
+function metatable.setvalue(slider, value)
   local thumb = slider[_thumb]
-  local modelvalue = thumb.x
-  local modelmax = slider.w - thumb.w 
-  local modelmin = 0
-  local max = slider[_max] * slider[_precision]
-  local min = slider[_min] * slider[_precision]
-  local value = slider[_value] * slider[_precision]
+  local min = slider[_min]
+  local max = slider[_max]
 
-  --if the current value would have a differnt modelvalue than the current
-  --model, then sync it to the new model position
-  if modelvalue ~= math.floor(modelmax * (value/max) + 0.5) then
-    value = math.floor(max * (modelvalue/modelmax) + min + .5)
-    slider[_value] = value/slider[_precision]
+  if value < min then value = min end
+  if value > max then value = max end
+
+  slider[_value] = value
+
+  local p = rlerp(min, max, value)
+
+  thumb:relink(thumb.linker, p)
+    --[[
+  if steps > 0 then
+    local astep = lerp(0, hw, 1/steps)
+    local nsteps = math.floor((x)/astep +.5)
+    x = math.floor((astep * nsteps))
   end
-end
-
-function metatable:getstringvalue()
-  return string.format('%.3f', self[_value])
-end
-
-function metatable:setvalue(value)
-  self[_value] = value
-  syncmodeltovalue(self)
+  --]]
+  
+  if slider.onchange then
+    slider:onchange(slider[_value])
+  end
   return self
 end
 
@@ -69,62 +55,68 @@ function metatable:getvalue()
   return self[_value]
 end
 
-function metacel:__resize(slider, ow, oh)
-  syncmodeltovalue(slider)
+function metatable:getminvalue()
+  return self[_min]
 end
 
-function metacel:onlinkmove(slider, thumb, ox, oy, ow, oh)
-  if thumb == slider[_thumb] then
-    syncvaluetomodel(slider)
-    if slider.onchange then
-      slider:onchange(slider[_value])
-    end
-  end
+function metatable:getmaxvalue()
+  return self[_max]
 end
 
-local function hthumblinker(hw, hh, x, y, w, h, steps, yval)
+function metatable:getstepvalue()
+  return self[_step]
+end
+
+function metacel:__describe(slider, t)
+  t.minvalue = slider[_min]
+  t.maxvalue = slider[_max]
+  t.value = slider[_value]
+  t.step = slider[_step]
+end
+
+local function dragthumb(thumb, x, y)
+  local slider = thumb.slider
+
+  local p = rlerp(0, slider.w-thumb.w, thumb.x+x)
+
+
+  local value = lerp(slider[_min], slider[_max], p)
+
+  dprint('p', p, 'value', value)
+
+  slider:setvalue(value)
+end
+
+local function hthumblinker(hw, hh, x, y, w, h, p, yval)
+  assert(p)
   yval = yval or 0
 
-  if x <= 0 then
-    x = 0
-  elseif x + w > hw then
-    x = hw - w
-  end
-
-  --[[
-  if steps > 0 then
-    local astep = lerp(0, hw-w, 1/steps)
-    local nsteps = math.floor((x/astep) + .5)
-    x = astep * nsteps
-  end
-  --]]
-
+  x = lerp(0, hw-w, p)
   return x, yval, w, hh-yval
 end
 do
   local _new = metacel.new
-  function metacel:new(direction, min, max, stepby, face)
+  function metacel:new(direction, min, max, step, face)
     face = self:getface(face)
     min = min or 0
     max = max or (min + 1)
-    stepby = stepby or 1
-    local steps = 0
-    if stepby then
-      steps = (max-min)/stepby
-    end
+    step = step or 1
+
     local layout = face.layout or layout
     local slider = _new(self, layout.size, layout.size, face)
 
     slider[_value] = min
     slider[_min] = min
     slider[_max] = max
-    slider[_precision] = 1/stepby 
+    slider[_step] = step 
 
     if layout.thumb then
       local layout = layout.thumb
       local thumb = thumbmeta:new(layout.size, layout.size, layout.face)
-      thumb:link(slider, hthumblinker, steps, nil)
-      thumb:grip(thumb)
+      thumb:link(slider, hthumblinker, 0, 0)
+      thumb.slider = slider
+      --thumb:grip(thumb)
+      thumb.ondrag = dragthumb
       slider[_thumb] = thumb
     end
     return slider
