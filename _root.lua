@@ -48,14 +48,6 @@ return function(_ENV, cel)
     end
   end
 
-  --TODO give this to all cels
-  function metatable.__call(root, t)
-    linkall(root, t) 
-    return root 
-  end
-
-  
-
   local root = metacel:new(1, 1)
   local root0 = root
   root.X = 0 --TODO hax, need to give root its own metable to avoid this hack, see getX
