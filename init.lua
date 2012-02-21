@@ -853,12 +853,7 @@ end
 M.col = require('cel._col')(_ENV, M)
 M.row = require('cel._row')(_ENV, M)
 M.slot = require('cel._slot')(_ENV, M)
-M.grid = require('cel._grid')(_ENV, M)
---[[
-M.sequence = {
-  y = require('cel._sequencey')(_ENV, M)
-}
---]]
+M.cel = M --this makes new and compile as defined by a namespace able to follow same rules for all metacels
 
 function M.colorface(color)
   local face = M.getface('cel', color..'#color#')
@@ -876,16 +871,15 @@ function M.string.link(s, host, ...)
   return host[_metacel]:__celfromstring(host, s):link(host, ...)
 end
 
-function M.newnamespace(out)
-  local N = {}
+function M.newnamespace(N)
 
   N.cel = setmetatable({}, {
     __call=function(_, t)
-      return out.compile('cel', t)      
+      return N.compile('cel', t)      
     end})
 
   N.cel.new = function(...)
-    return out.new('cel', ...)
+    return N.new('cel', ...)
   end
 
   local __index = function(namespace, k)
@@ -895,17 +889,16 @@ function M.newnamespace(out)
       namespace[k] = setmetatable({}, {
         __index = v,
         __call = function(_, t)
-          return out.compile(k, t)
+          return N.compile(k, t)
         end,
       })
 
       namespace[k].new = function(...)
-        return out.new(k, ...)
+        return N.new(k, ...)
       end
 
       return namespace[k]
     else
-      --TODO can't capture sequence.x and sequence.y this way
       namespace[k] = v
       return namespace[k]
     end
