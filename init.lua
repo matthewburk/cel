@@ -912,6 +912,44 @@ function M.newnamespace(N)
   return setmetatable(N, {__index=__index})
 end
 
+
+do
+  local forks = setmetatable({}, {__mode='k'})
+
+  
+  function M.fork(acel, f)
+    local fork = coroutine.wrap(f)
+
+    local function yield(...)
+      forks[acel] = fork
+      return coroutine.yield(...)
+    end
+
+    return fork(acel, yield)
+  end
+
+  function M.resumefork(cel, ...)
+    local acel = cel
+    local fork = forks[cel]
+    while (not fork) and cel do
+      cel = rawget(cel, _host)
+      if cel then
+        fork = forks[cel]
+      end
+    end
+
+    if fork then
+      forks[cel] = false 
+      return fork(acel, ...)
+    end
+
+    for k, v in pairs(forks) do
+      dprint('fork', k, v)
+    end
+    error(string.format('cel %s is not forked', tostring(acel)))
+  end
+end
+
 do
   local proxyM = newproxy(true)
   getmetatable(proxyM).__index = M 
