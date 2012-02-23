@@ -72,6 +72,7 @@ function metacel:__describe(slider, t)
   t.maxvalue = slider[_max]
   t.value = slider[_value]
   t.step = slider[_step]
+  t.thumbsize = slider[_thumb].w
 end
 
 local function dragthumb(thumb, x, y)
@@ -124,7 +125,7 @@ do
 
   local _compile = metacel.compile
   function metacel:compile(t, slider)
-    slider = slider or metacel:new(t.direction, t.min, t.max, t.stepby, t.face)
+    slider = slider or metacel:new(t.direction, t.min, t.max, t.step, t.face)
     slider.onchange = t.onchange
     return _compile(self, t, slider)
   end
