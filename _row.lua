@@ -161,6 +161,8 @@ local function reflex(row, force, wreflex)
               extra = extra - slot.flex
             end
 
+            local w, extraw = math.modf(w)
+            extra = extra + extraw
             slot.w = w
 
             if rawget(link, _linker) then
