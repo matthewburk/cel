@@ -255,7 +255,7 @@ do
   function metacel:compile(t, text)
     text = text or metacel:new(t.text, t.face, t.wrap)
     if t.justify then
-      text:justity(t.justify)
+      text:justify(t.justify)
     end
     return _compile(self, t, text)
   end
