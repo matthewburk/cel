@@ -73,10 +73,8 @@ local function dotasks()
     task = tasks.next
     if time >= task.due then
       tasks.next = task.next
-      if task.action then
-        task.next = nil
-        event:task(task)
-      end
+      task.next = nil
+      event:task(task)
     else
       break
     end
@@ -146,6 +144,8 @@ function driver.mousemove(x, y)
   local lx, ly = pick(mouse)
   local target = mouse[_focus].focus or mouse[_trap].trap
 
+  event:ontrackmouse('move', x, y)
+
   while target do
     if not target[_disabled] then event:onmousemove(target, lx, ly) end
     lx = lx + target[_x]
@@ -171,6 +171,8 @@ function driver.mousedown(x, y, button, alt, ctrl, shift)
   local target = mouse[_focus].focus or mouse[_trap].trap
   local trigger = {false}
 
+  event:ontrackmouse('down', button, lx, ly, trigger)
+
   while target do
     if not target[_disabled] then event:onmousedown(target, button, lx, ly, trigger) end
     lx = lx + target[_x]
@@ -195,6 +197,8 @@ function driver.mouseup(x, y, button, alt, ctrl, shift)
   local target = mouse[_focus].focus or mouse[_trap].trap
   local trigger = {false}
 
+  event:ontrackmouse('up', button, lx, ly, trigger)
+
   while target do
     if not target[_disabled] then event:onmouseup(target, button, lx, ly, trigger) end
     lx = lx + target[_x]
@@ -212,6 +216,8 @@ function driver.mousewheel(x, y, direction, lines)
   local lx, ly = pick(mouse)
   local target = mouse[_focus].focus or mouse[_trap].trap
   local trigger = {false}
+
+  event:ontrackmouse('wheel', direction, lx, ly, trigger)
 
   while target do
     if not target[_disabled] then event:onmousewheel(target, direction, lx, ly, trigger) end

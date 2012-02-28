@@ -90,28 +90,15 @@ return function(_ENV, M)
       do
         dispatching = true
         repeat
-          ---[[
           local ok, msg = xpcall( trydispatch, traceback) 
 
           if msg then
-            print(msg)
+            dprint(msg)
           end
-          --]]
-          --[[
-          ok = true
-          trydispatch()
-          --]]
         until ok
 
         dispatching = false 
       end
-
-
-      --[[ WTF is this here for
-      if refreshtable[root] and root.refresh then
-        root.refresh()
-      end
-      --]]
     end
   end
 
@@ -130,20 +117,43 @@ return function(_ENV, M)
     return ret
   end
 
-  do --onlink --only send to metacel --TODO work out a way to send extra param like onlinkmove and onresize
-    local dispatch = function(e)
-      local cel, link, index = e[2], e[3], e[4]
+  do --onlink 
+    --only send to metacel
+    --TODO work out a way to send extra param like onlinkmove and onresize
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel, link, index)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      i = i + 1; queue[i] = link 
+      i = i + 1; queue[i] = index
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      local link = queue[i]; queue[i] = nil; i = i + 1
+      local index = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel, link, index 
+    end
+
+    function queue.dispatch()
+      local cel, link, index = pop() 
       cel[_metacel]:onlink(cel, link, index)
     end
 
     function event:onlink(cel, link, index)
       if cel[_metacel].onlink then
-        self:push({dispatch, cel, link, index})
+        push(self, cel, link, index)
       end
     end
   end
 
-  do --onlinkmove --only sent to metacel, duplicates merged
+  do --onlinkmove 
+    --only sent to metacel, duplicates merged
     local queue = {first = 0, last = -1}
     local memo = { } --link to cel
 
@@ -186,7 +196,6 @@ return function(_ENV, M)
         if memo[link] == e then
           memo[link]=nil
         end
-        --print('---------dipatching onlinkmove event', cel, link, ox, oy, ow, oh)
         cel[_metacel]:onlinkmove(cel, link, ox, oy, ow, oh) 
       end
     end
@@ -198,7 +207,6 @@ return function(_ENV, M)
         --same link again
         local e = memo[link]
         if e and e[1] == cel then
-          --print('******repushing onlinkmove event', cel, link, ox, oy, ow, oh)
           repush(self, e) 
         else
           memo[link] = push(self, cel, link, ox, oy, ow, oh) 
@@ -208,6 +216,7 @@ return function(_ENV, M)
   end
 
   do --onresize
+    --TODO merge duplicates
     local queue = {first = 0, last = -1}
     
     local function push(event, cel, ow, oh, extra)
@@ -230,9 +239,7 @@ return function(_ENV, M)
 
     function queue.dispatch()
       local cel, ow, oh = pop() 
-      if cel[_metacel].onresize then 
-        cel[_metacel]:onresize(cel, ow, oh) 
-      end
+      if cel[_metacel].onresize then cel[_metacel]:onresize(cel, ow, oh) end
       if cel.onresize then cel:onresize(ow, oh) end
     end
 
@@ -243,7 +250,7 @@ return function(_ENV, M)
     end
   end
 
-  do --raise
+  do --asyncall
     local unpack = unpack
     local dispatch = function(e)
       local metacel, eventname, t, argc = e[2], e[3], e[4], e[5]
@@ -253,50 +260,104 @@ return function(_ENV, M)
       end
     end
 
-    function event:raise(metacel, eventname, t, ...)
+    function event:asyncall(metacel, eventname, t, ...)
       self:push({dispatch, metacel, eventname, t, select('#', ...), ...})
     end
   end
 
   do --onmousemove
-    local dispatch = function(e)
-      local cel, x, y = e[2], e[3], e[4]
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel, x, y)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      i = i + 1; queue[i] = x 
+      i = i + 1; queue[i] = y
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      local x = queue[i]; queue[i] = nil; i = i + 1
+      local y = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel, x, y
+    end
+
+    function queue.dispatch()
+      local cel, x, y = pop() 
       if cel[_metacel].onmousemove then cel[_metacel]:onmousemove(cel, x, y) end
-      if cel.onmousemove then cel:onmousemove(x, y) end
+      if cel.onmousemove then cel:onmousemove(x, y) end      
     end
 
     function event:onmousemove(cel, lx, ly)
-      if cel[_metacel].onmousemove or cel.onmousemove then 
-        self:push({dispatch, cel, lx, ly})
+      if rawget(cel[_metacel], 'onmousemove') or 
+         rawget(cel, 'onmousemove') then
+        push(self, cel, lx, ly)
       end
     end
   end
 
   do --onmousein
-    local events = setmetatable({}, {__mode = 'kv'})
-    local dispatch = function(e)
-      local cel = e[2]
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel
+    end
+
+    function queue.dispatch()
+      local cel = pop() 
       if cel[_metacel].onmousein then cel[_metacel]:onmousein(cel) end
-      if cel.onmousein then cel:onmousein() end
+      if cel.onmousein then cel:onmousein() end      
     end
 
     function event:onmousein(cel)
-      if cel[_metacel].onmousein or cel.onmousein then
-        self:push({dispatch, cel})
+      if rawget(cel[_metacel], 'onmousein') or 
+         rawget(cel, 'onmousein') then
+        push(self, cel)
       end
     end
   end
 
   do --onmouseout
-    local dispatch = function(e)
-      local cel = e[2]
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, cel)
+      local i = queue.last
+      i = i + 1; queue[i] = cel
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local cel = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return cel
+    end
+
+    function queue.dispatch()
+      local cel = pop() 
       if cel[_metacel].onmouseout then cel[_metacel]:onmouseout(cel) end
-      if cel.onmouseout then cel:onmouseout() end
+      if cel.onmouseout then cel:onmouseout() end      
     end
 
     function event:onmouseout(cel)
-      if cel[_metacel].onmouseout or cel.onmouseout then
-        self:push({dispatch, cel})
+      if rawget(cel[_metacel], 'onmouseout') or 
+         rawget(cel, 'onmouseout') then
+        push(self, cel)
       end
     end
   end
@@ -331,9 +392,8 @@ return function(_ENV, M)
 
     function event:ontimer(cel, value, source)
       if rawget(cel[_metacel], 'ontimer') or 
-         rawget(cel, 'ontimer')           or
+         rawget(cel, 'ontimer') or
          rawget(cel, _timerlistener) then
-
         push(self, cel, value, source)
       end
     end
@@ -509,21 +569,7 @@ return function(_ENV, M)
     end
   end
 
-  do --task
-    local dispatch = function(e)
-      local task = e[2]
-      if task then 
-        local reup = task() 
-        if reup then
-          M.doafter(reup, task)
-        end
-      end
-    end
-    
-    function event:task(task)
-      self:push({dispatch, task.action})
-    end
-  end
+  
 
   do --onmousewheel
     local dispatch = function(e)
@@ -650,5 +696,83 @@ return function(_ENV, M)
       end
     end
   end
+
+  do --task
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, task)
+      local i = queue.last
+      i = i + 1; queue[i] = task
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local task = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return task 
+    end
+
+    function queue.dispatch()
+      local task = pop()
+      if task then 
+        local reup = task(task) 
+        if reup then
+          M.doafter(reup, task)
+        end
+      end
+    end
+
+    function event:task(task)
+      push(self, task.func)
+    end
+  end
+
+  do --ontrackmouse
+    local queue = {first = 0, last = -1}
+    
+    local function push(event, func, action, p1, p2, p3, p4)
+      local i = queue.last
+      i = i + 1; queue[i] = func 
+      i = i + 1; queue[i] = action
+      i = i + 1; queue[i] = p1
+      i = i + 1; queue[i] = p2
+      i = i + 1; queue[i] = p3
+      i = i + 1; queue[i] = p4
+      queue.last = i
+      event:push(queue)
+    end
+
+    local function pop()
+      local i = queue.first
+      local func = queue[i]; queue[i] = nil; i = i + 1
+      local action = queue[i]; queue[i] = nil; i = i + 1
+      local p1 = queue[i]; queue[i] = nil; i = i + 1
+      local p2 = queue[i]; queue[i] = nil; i = i + 1
+      local p3 = queue[i]; queue[i] = nil; i = i + 1
+      local p4 = queue[i]; queue[i] = nil; i = i + 1
+      queue.first = i
+      return func, action, p1, p2, p3, p4 
+    end
+
+    function queue.dispatch()
+      local func, action, p1, p2, p3, p4  = pop()
+      
+      if true ~= func(action, p1, p2, p3, p4) then
+        _ENV.mousetrackerfuncs[func] = nil
+      end
+      
+    end
+
+    function event:ontrackmouse(action, p1, p2, p3, p4)
+      --pushing individual functions becuase iterating would be bad while calling out to 
+      --carefree code, that could alter the talbe beilng iterated.
+      for func in pairs(_ENV.mousetrackerfuncs) do
+        push(self, func, action, p1, p2, p3, p4)
+      end
+    end
+  end
+
   return event
 end

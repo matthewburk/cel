@@ -621,7 +621,7 @@ do --metacel.asyncall
   function metacel:asyncall(name, ...)
     if self[name] then
       local t = {} --WTF is this for???
-      event:raise(self, name, t, ...)
+      event:asyncall(self, name, t, ...)
       return t
     end
   end
