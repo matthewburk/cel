@@ -60,7 +60,14 @@ end
 
 function metatable:settext(str)
   self:select(false)
-  return self[_text]:settext(str)
+  if self.filter then
+    str = self.filter(str)
+  end
+
+  if str then
+    self[_text]:settext(str)
+  end
+  return self
 end
 
 function metatable:gettext()
@@ -209,7 +216,7 @@ function metatable:delete(i, j)
   
   if i > 0 then
     str = str:sub(0, i-1) .. str:sub(j+1, -1)
-    text:settext(str)
+    self:settext(str)
   end
   return self
 end
@@ -257,11 +264,13 @@ function metacel:onkeypress(editbox, key, intercepted)
     return true
   elseif key == keys.delete then
     if editbox:getselection() then
+      local i = selection.i
       editbox:deleteselection()
+      editbox:movecaret(i-1)
     else
       editbox:delete(caret.i+1)
+      editbox:movecaret(caret.i)
     end
-    editbox:movecaret(caret.i)
     return true
   end
 end
@@ -353,9 +362,24 @@ do
   end
 
   local _compile = metacel.compile
-  function metacel:construct(t, editbox)
-    return _compile(self, t, editbox or metacel:new(t.text, t.w, t.face))
+  function metacel:compile(t, editbox)
+    editbox = editbox or metacel:new(t.text, t.w, t.face)
+
+    editbox.filter = t.filter
+
+    return _compile(self, t, editbox)
   end
 end
 
-return metacel:newfactory()
+return metacel:newfactory {
+  filters = {
+    number = function(str)
+      if str == '' or str == '-' or str == '.' then return str end
+      local n = tonumber(str)
+      if not n then
+        return
+      end
+      return str
+    end,
+  }
+}
