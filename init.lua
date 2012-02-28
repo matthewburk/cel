@@ -98,6 +98,8 @@ M.util = require('cel.util')
 
 timer = {millis = 0} --ENV.timer
 
+_ENV.mousetrackerfuncs = {}
+
 --ENV.linkers
 linkers = require 'cel.linkers'
 
@@ -279,10 +281,9 @@ do --cel.doafter
       error('expected a function', 2)
     end
 
-    local due = M.timer() + ms
     local task = {
-      action = f;
-      due = due,
+      func = f;
+      due = M.timer() + ms,
       next = nil,
     }
 
@@ -299,11 +300,8 @@ do --cel.doafter
     end
 
     prev.next = task
-    return function(op)
-      if op == 'cancel' then
-        task.action = nil
-      end
-    end
+
+    return f
   end
 end
 
@@ -313,7 +311,7 @@ do --getlinker
   end
 end
 
-do --clipbaord
+do --clipboard
   local defaultclipboard = {}
 
   function M.clipboard(command, data)
@@ -947,6 +945,12 @@ do
       dprint('fork', k, v)
     end
     error(string.format('cel %s is not forked', tostring(acel)))
+  end
+end
+
+do --cel.trackmouse
+  function M.trackmouse(func)
+    _ENV.mousetrackerfuncs[func] = true
   end
 end
 

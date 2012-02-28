@@ -27,29 +27,25 @@ local _setmenu = {}
 local _menu = {}
 local _submenu = {}
 local _parentmenu = {}
-local _hidetask = {}
-local _showtask = {}
+local _task = {}
 local _layout = {}
 local _root = {}
 
 --TODO this is broke by depending on a root cel, fix that
-local metacel, metatable = cel.col.newmetacel('menu')
-metacel['.slot'] = cel.slot.newmetacel('menu.slot')
+local meta, mt = cel.col.newmetacel('menu')
+meta['.slot'] = cel.slot.newmetacel('menu.slot')
 
 local layout = {
   showdelay = 200;
   hidedelay = 200;
   slot = {
-    link = {'width'};
-    padding = {
+    margin = {
       l = 40,
       r = 40,
       t = function(w, h) return h*.25 end; 
       b = function(w, h) return h*.25 end;
     };
-    item = {
-      link = {'center'};
-    };
+    link = 'center',
   };
   divider = {
     w = 1; h = 1;
@@ -61,42 +57,26 @@ local function ismenuslot(slot)
   return slot[_menu] ~= nil
 end
 
-function metatable.putdivider(menu)
+function mt.putdivider(menu)
   local opt = menu[_layout].divider
   cel.new(opt.w, opt.h, cel.menu.divider):link(menu, opt.link, 'divider')
   return menu
 end
 
-function metatable.fork(menu, fork, submenu)
+function mt.fork(menu, fork, submenu)
   local fork = type(fork) == 'string' and cel.label.new(fork, cel.menu) or fork
-  local slot = metacel.new_menuslot(menu, fork)
-  fork:link(slot, menu[_layout].slot.item.link)
+  local slot = meta.new_menuslot(menu, fork)
+  fork:link(slot, menu[_layout].slot.link)
   slot[_submenu] = submenu
   return menu
 end
 
-function metatable.addslot(menu, item)
+function mt.addslot(menu, item)
   item:link(menu)
   return menu
 end
 
-function metatable.popupdismissed(menu)
-  if menu[_hidetask] then
-    menu[_hidetask]('cancel')
-    menu[_hidetask] = nil
-  end
-  if menu[_showtask] then
-    menu[_showtask]('cancel')
-    menu[_showtask] = nil
-  end
-  if menu[_parentmenu] then
-    menu[_parentmenu][_submenu] = nil
-    menu[_parentmenu] = nil
-  end
-  menu[_root] = nil
-end
-
-function metatable.showat(menu, x, y, root)
+function mt.showat(menu, x, y, root)
   root = root or menu[_root]
   menu[_root] = root
 
@@ -116,17 +96,75 @@ function metatable.showat(menu, x, y, root)
     if y < 0 then y = 0 end
   end
 
-  menu:link(root, x, y, root.linkoption.popup(menu[_parentmenu]))
+  menu:link(root, x, y, 'popup')
+
+  if not menu[_parentmenu] then
+    cel.trackmouse(function(action, button, x, y)
+
+      if not menu:islinkedtoroot() then
+        return false
+      end
+
+      if 'down' == action then
+        do
+          local menu = menu
+          while menu do
+            if menu:hasfocus(cel.mouse) then
+              return true  
+            end
+            menu = menu[_submenu]
+          end
+        end
+
+        do
+          local menu = menu
+          while menu do
+            menu:unlink()
+            menu = menu[_submenu]
+          end
+        end
+
+        
+
+        return false
+      end
+
+      return true
+    end)
+  end
 end
 
-function metatable.hide(menu)
+do
+  local _unlink = mt.unlink
+  function mt.unlink(menu)
+    local ret = menu
+
+    do
+      local parentmenu = menu[_parentmenu] 
+      if parentmenu and parentmenu[_submenu] == menu then
+        parentmenu[_submenu] = nil
+      end
+    end
+
+    while menu do 
+      menu[_task] = false
+      _unlink(menu)
+      local submenu = menu[_submenu]
+      menu[_submenu] = nil
+      menu = submenu
+    end
+
+    return ret 
+  end
+end
+
+function mt.hide(menu)
   menu:unlink()
 end
 
 local function showat(menu, x, y, parent)
   menu[_root] = parent[_root]
   local root = menu[_root]
-  --TODO enforce a single showing menu for the parent
   menu[_parentmenu] = parent
 
   if parent[_submenu] and parent[_submenu] ~= menu then
@@ -153,37 +191,36 @@ local function showat(menu, x, y, parent)
   if menu.showat then
     menu:showat(x, y)
   else
-    metatable.showat(menu, x, y)
+    mt.showat(menu, x, y)
   end
 end
 
 do
-  function metacel:__link(menu, link, linker, xval, yval, option)
+  function meta:__link(menu, link, linker, xval, yval, option)
     if option == 'divider' then
       return
     elseif not ismenuslot(link) then
       local slot = self.new_menuslot(menu, link)
-      return slot, menu[_layout].slot.item.link
+      return slot, menu[_layout].slot.link
     end
   end
 end
 
-function metacel:onmousein(menu)
+function meta:onmousein(menu)
   local parentmenu = menu[_parentmenu]
-  if parentmenu and parentmenu[_hidetask] then
-    parentmenu[_hidetask]('cancel')
-    parentmenu[_hidetask] = nil
+  if parentmenu then
+    parentmenu[_task] = false
   end
 end
 
-function metacel:__celfromstring(menu, s)
+function meta:__celfromstring(menu, s)
   return cel.label.new(s, cel.menu)
 end
 
-do --metacel['.slot']
-  local metacel_slot = metacel['.slot']
+do --meta['.slot']
+  local meta_slot = meta['.slot']
 
-  function metacel_slot:__describe(slot, t)
+  function meta_slot:__describe(slot, t)
     local submenu = slot[_submenu]
     if submenu then
       if submenu:islinkedtoroot() then
@@ -196,7 +233,7 @@ do --metacel['.slot']
     end
   end
 
-  function metacel_slot:onmouseup(slot)
+  function meta_slot:onmouseup(slot)
     local menu = slot[_menu]
     if not slot[_submenu] then
       while menu do
@@ -210,79 +247,67 @@ do --metacel['.slot']
     return true
   end
 
-  function metacel_slot:onmouseout(slot)
+  function meta_slot:onmouseout(slot)
     local menu = slot[_menu]
     local slot_submenu = slot[_submenu]
     local menu_submenu = menu[_submenu]
 
     if slot_submenu then
-      if menu[_showtask] then 
-        menu[_showtask]('cancel')
-        menu[_showtask] = nil
-      end
-
-      if slot_submenu == menu_submenu then
-        menu[_hidetask] = cel.doafter(menu[_layout].hidedelay, function()
-          slot_submenu:unlink()
-          menu[_hidetask] = nil
+      if slot_submenu ~= menu_submenu then
+        menu[_task] = false
+      else
+        menu[_task] = cel.doafter(menu[_layout].hidedelay, function(task)
+          if menu[_task] == task then
+            slot_submenu:unlink()
+            menu[_task] = nil
+          end
         end)
       end
     end
   end
 
-  function metacel_slot:onmousein(slot)
+  function meta_slot:onmousein(slot)
     local menu = slot[_menu]
     local slot_submenu = slot[_submenu]
     local menu_submenu = menu[_submenu]
 
     if slot_submenu then
-      if slot_submenu == menu_submenu then
-        if menu[_hidetask] then
-          menu[_hidetask]('cancel')
-          menu[_hidetask] = nil
-        end
-      else
-        if menu_submenu then
-          menu[_hidetask] = cel.doafter(menu[_layout].hidedelay, function()
-            menu_submenu:unlink()
-            menu[_hidetask] = nil
-          end)
-        end
-
-        menu[_showtask] = cel.doafter(menu[_layout].showdelay, function() 
-          showat(slot_submenu, slot.X + slot.w, slot.Y, menu) 
-          menu[_showtask] = nil
+      if slot_submenu ~= menu_submenu then
+        menu[_task] = cel.doafter( menu[_layout].showdelay, function(task) 
+          if menu[_task] == task then
+            showat(slot_submenu, slot.X + slot.w, slot.Y, menu) 
+            menu[_task] = nil
+          end
         end)
       end
-    else
-      if menu_submenu and not menu[_hidetask] then
-        menu[_hidetask] = cel.doafter(menu[_layout].hidedelay, function()
+    elseif menu_submenu then
+      menu[_task] = cel.doafter(menu[_layout].hidedelay, function(task)
+        if menu[_task] == task then
           menu_submenu:unlink()
-          menu[_hidetask] = nil
-        end)
-      end
+          menu[_task] = nil
+        end
+      end)
     end
   end
 
   do
     local normalize = cel.util.normalize_padding
-    local _new = metacel_slot.new
-    function metacel_slot:new(menu, item)
+    local _new = meta_slot.new
+    function meta_slot:new(menu, item)
       local layout = menu[_layout].slot
-      local slot = _new(self, normalize(layout.padding, item.w, item.h))
+      local slot = _new(self, normalize(layout.margin, item.w, item.h))
       slot[_menu] = menu
       slot.item = item
-      slot:link(menu, layout.link)
+      slot:link(menu, 'width')
       return slot 
     end
   end
 
 end
 
-local menufork = {}
 do
-  local _new = metacel.new
-  function metacel:new(face)
+  local _new = meta.new
+  function meta:new(face)
     local face = self:getface(face)
     local layout = face.layout or layout
     local menu = _new(self, 0, face)
@@ -290,17 +315,17 @@ do
     return menu
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, menu)
-    menu = menu or metacel:new(t.face)
+  local _compile = meta.compile
+  function meta:compile(t, menu)
+    menu = menu or meta:new(t.face)
     menu.onchoose = t.onchoose
     return _compile(self, t, menu)
   end
 
-  local _compileentry = metacel.compileentry
-  function metacel:compileentry(menu, entry, entrytype)
-    if 'table' == entrytype and entry[menufork] then
-      menu:fork(entry[menufork], cel.menu(entry))
+  local _compileentry = meta.compileentry
+  function meta:compileentry(menu, entry, entrytype)
+    if 'table' == entrytype and entry.submenu then
+      menu:fork(entry.submenu, cel.menu(entry))
     else
       _compileentry(self, menu, entry, entrytype)
     end
@@ -308,12 +333,12 @@ do
 end
 
 do
-  local slotmetacel = metacel['.slot']
-  metacel.new_menuslot = slotmetacel:newfactory().new
+  local slotmeta = meta['.slot']
+  meta.new_menuslot = slotmeta:newfactory().new
 end
 
 local function divider(menu)
   menu:putdivider()
 end
 
-return metacel:newfactory({layout = layout, divider=divider, fork=menufork})
+return meta:newfactory({layout = layout, divider=divider})
