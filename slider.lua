@@ -83,7 +83,7 @@ local function dragthumb(thumb, x, y)
 
   local value = lerp(slider[_min], slider[_max], p)
 
-  dprint('p', p, 'value', value)
+  --dprint('p', p, 'value', value)
 
   slider:setvalue(value)
 end

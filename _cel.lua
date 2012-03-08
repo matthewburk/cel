@@ -206,6 +206,7 @@ do --ENV.describe
       flowcontext = false,
       refresh = 'full',
       clip = {l=0,t=0,r=0,b=0},
+      disabled = false,
     }
 
     cache[cel]=t
@@ -232,6 +233,7 @@ do --ENV.describe
     t.clip.r = gr
     t.clip.b = gb
     t.appstatus = cel[_appstatus]
+    t.disabled = cel[_disabled] or (host and host.disabled and 'host')
 
     if mouse[_focus][cel] then
       t.mousefocusin = true
@@ -1090,6 +1092,10 @@ do --metatable.relink
 
     local ox, oy, ow, oh = cel[_x], cel[_y], cel[_w], cel[_h]
 
+    if type(linker) == 'table' then
+      linker, xval, yval = linker[1], linker[2], linker[3]
+    end
+
     if linker and type(linker) ~= 'function' then
       linker = linkers[linker] 
       if not linker then
@@ -1103,9 +1109,11 @@ do --metatable.relink
       local nlinker, nxval, nyval = host[_metacel]:__relink(host, cel, linker, xval, yval)
 
       if nlinker then
-        linker = nlinker
-        xval = nxval
-        yval = nyval
+        if type(nlinker) == 'table' then
+          linker, xval, yval = nlinker[1], nlinker[2], nlinker[3]
+        else
+          linker, xval, yval = nlinker, nxval, nyval
+        end
         if type(linker) ~= 'function' then linker = linkers[linker] end
       end
     end

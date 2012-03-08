@@ -750,6 +750,7 @@ do --colformation.describeslot
       index = 0,
       refresh = false,
       clip = {l=0,t=0,r=0,b=0},
+      disabled = false,
     }
 
     dcache[index-dcache.offset]=t
@@ -787,6 +788,7 @@ do --colformation.describeslot
     t.clip.t = gt
     t.clip.r = gr
     t.clip.b = gb
+    t.disabled = link[_disabled] or (host.disabled and 'host')
 
     if col[_metacel].__describeslot then
       col[_metacel]:__describeslot(col, link, index, t)
