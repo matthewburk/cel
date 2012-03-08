@@ -23,6 +23,10 @@ THE SOFTWARE.
 --]]
 local M =  {}
 
+M['hidden'] = function(hw, hh, x, y, w, h)
+  return hw, hh, w, h
+end
+
 M['fill'] = function(hw, hh)
   return 0, 0, hw, hh
 end
