@@ -127,7 +127,7 @@ local function initstr(text, str, font, layout)
     end
   end
 
-  minw = minw + l + r
+  minw = math.floor(minw + l + r + .5)
 
   local maxlinew = 0
 
