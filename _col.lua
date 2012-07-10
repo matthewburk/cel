@@ -843,6 +843,26 @@ end
 --define col metacel
 local metacel, metatable = metacel:newmetacel('col')
 
+
+function metacel:touch(cel, x, y)
+  local formation = rawget(cel, _formation)
+
+  if formation and formation.pick then
+    local link = formation:pick(cel, x, y)
+    if touch(link, x - link[_x], y - link[_y]) then
+      return true
+    end
+    return false
+  end
+
+  for link in  links(cel) do
+    if touch(link, x - link[_x], y - link[_y]) then
+      return true
+    end
+  end
+  return false
+end
+
 --TODO its probably faster to drop the old _links, but formation:unlink calls out to metacel
 --with the index that was unlinked
 function metatable.clear(col) 
