@@ -114,4 +114,9 @@ function M.shade(color, r)
   return  M.hsl(h, s, l-l*r)
 end
 
+function M.setalpha(color, a)
+  local r, g, b = M.torgb(color)
+  return M.rgb(r, g, b, a)
+end
+
 return M
