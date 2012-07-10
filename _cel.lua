@@ -789,78 +789,6 @@ do --metacel.compileentry
   end
 end
 
----[=[ TODO remove this function
-do --metacel.setlimits
-  local floor = math.floor
-  local function max(a, b) if a >= b then return a else return b end end
-
-  --TODO implement sending in nw, nh, which is the new size of the cel, since
-  --we have to resize in most cases when the limits are changed
-  --and a lot of times we have to do it right after calling setlimts
-  function metacel:setlimits(cel, minw, maxw, minh, maxh, nw, nh)
-    --TODO changing the limits should cause the linker to run if 
-    --the current w/h is restrained by the limits, but the linker
-    --would grow/shrink it if it could
-    --
-    --
-    --[[
-    if cel[_metacel] ~= self then
-      return cel[_metacel]:setlimits(cel, minw, maxw, minh, maxh, nw, nh)
-    end
-    --]]
-
-    minw = max(floor(minw or 0), 0)
-    maxw = max(floor(maxw or maxdim), minw)
-    minh = max(floor(minh or 0), 0)
-    maxh = max(floor(maxh or maxdim), minh)
-
-    local ominw = cel[_minw]
-    local omaxw = cel[_maxw]
-    local ominh = cel[_minh]
-    local omaxh = cel[_maxh]
-
-    cel[_minw] = minw
-    cel[_maxw] = maxw
-    cel[_minh] = minh
-    cel[_maxh] = maxh
-
-    if not (ominw ~= minw or omaxw ~= maxw or ominh ~= minh or omaxh ~= maxh) then
-      return
-    end
-
-    local w = nw or cel[_w]
-    local h = nh or cel[_h]
-
-    if w < minw then w = minw end
-    if h < minh then h = minh end
-    if w > maxw then w = maxw end
-    if h > maxh then h = maxh end
-
-    event:wait()
-
-    local host = rawget(cel, _host)
-    if host then
-      local formation = rawget(host, _formation)
-      if formation and formation.linklimitschanged then
-        formation:linklimitschanged(host, cel, ominw, omaxw, ominh, omaxh)
-      end
-    end
-
-    --this resizes the cel if the limits now constrain it
-    --but also need to resize if the limits unconstrain it
-    --if i always resize it makes it really slow under certain conditions
-    --like a sequence of wrapping text
-    --don't do this, the formation should handle it only, so just do it for the stackformation
-    --or do it when there is no host
-    if w ~= cel[_w] or h ~= cel[_h] or rawget(cel, _linker) then
-      cel:resize(w, h)
-    end
-
-    event:signal()
-  end
-end
---]=]
-
 do --metacel.metatable
     --[[
     --TODO can't put refresh in cel becuase it can be intercepted during meta processing 
@@ -927,8 +855,10 @@ do --metatable.setlimits
     --like a sequence of wrapping text
     --don't do this, the formation should handle it only, so just do it for the stackformation
     --or do it when there is no host
-    if w ~= cel[_w] or h ~= cel[_h] or rawget(cel, _linker) then
+    if w ~= cel[_w] or h ~= cel[_h] then
       cel:resize(w, h)
+    elseif host and rawget(cel, _linker) then
+      dolinker(host, cel, rawget(cel, _linker), rawget(cel, _xval), rawget(cel, _yval))
     end
 
     event:signal()

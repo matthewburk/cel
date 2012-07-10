@@ -94,12 +94,6 @@ function metatable.adddefaultcontrols(window)
   return window
 end
 
---when extending the window metacel, redefine this funciton if you redefine the metacel version
-function metatable:setlimits(...)
-  metacel:setlimits(self, ...)
-  return self
-end
-
 function metatable.getbordersize(window)
   return window[_bordersize]
 end

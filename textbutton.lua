@@ -53,6 +53,7 @@ do
   end
 end
 
+--maxw/maxh cannot be set because the cel must be grow to accomodate text
 function metacel:__setlimits(textbutton, minw, maxw, minh, maxh)
   return minw, nil, minh, nil
 end

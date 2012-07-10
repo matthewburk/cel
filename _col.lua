@@ -221,7 +221,7 @@ local function reflex(col, force, hreflex)
   if links.flex == 0 then maxh = minh end
 
   if col[_minh] ~= minh or col[_maxh] ~= maxh or col[_minw] ~= minw then
-    col[_metacel]:setlimits(col, minw, nil, minh, maxh)
+    col:setlimits(minw, nil, minh, maxh)
   end
 
   --seek minimum width

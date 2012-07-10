@@ -219,7 +219,7 @@ local function reflex(row, force, wreflex)
   if links.flex == 0 then maxw = minw end
 
   if row[_minw] ~= minw or row[_maxw] ~= maxw or row[_minh] ~= minh then
-    row[_metacel]:setlimits(row, minw, maxw, minh, nil)
+    row:setlimits(minw, maxw, minh, nil)
   end
 
   --seek minimum height
