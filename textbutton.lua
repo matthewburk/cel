@@ -43,6 +43,8 @@ metacel.onmousedown = metabutton.onmousedown
 metacel.onmouseup = metabutton.onmouseup
 metacel.ontimer = metabutton.ontimer
 
+metatable.setstate = metabutton.metatable.setstate
+metatable.getstate = metabutton.metatable.getstate
 do 
   local __describe = metacel.__describe
   function metacel:__describe(textbutton, t)
