@@ -106,17 +106,18 @@ M['fence'] = function(hw, hh, x, y, w, h, xval, yval)
   hh = hh - (yval*2)
 
   if w > hw then w = hw end
+
   if x <= xval then 
     x = xval
   elseif x + w > hw then
-    x = hw - w
+    x = hw - w + xval
   end
 
   if h > hh then h = hh end
   if y <= yval then
     y = yval
   elseif y + h > hh then
-    y = hh - h
+    y = hh - h + yval
   end
 
   return x, y, w, h
