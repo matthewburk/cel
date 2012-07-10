@@ -48,7 +48,7 @@ function metatable.setvalue(slider, value)
   if slider.onchange then
     slider:onchange(slider[_value])
   end
-  return self
+  return slider 
 end
 
 function metatable:getvalue()
