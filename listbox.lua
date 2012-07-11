@@ -58,12 +58,13 @@ function metatable:sort(comp)
   return self
 end
 
-function metatable:insert(item, index)
+function metatable:insert(index, item, linker, xval, yval, option)
   if type(item) == 'string' then
     item = cel.tocel(item, self)
   end
 
-  item:link(self, nil, nil, nil, index)
+  self[_items]:insert(index, item, linker, xval, yval, option)
+
   return self
 end
 
@@ -77,13 +78,13 @@ function metatable:pick(x, y)
 end
 
 do
-  local function insertall(listbox, index, t)
+  local function insertall(listbox, index, t, linker, xval, yval, option)
     for i=1, #t do
-      t[i]:link(listbox, nil, nil, nil, index)
+      listbox[_items]:insert(index+i-1, t[i], linker, xval, yval, option)
     end
   end
-  function metatable:insertlist(t, index)
-    return self:flux(insertall, self, index, t)
+  function metatable:insertlist(index, t, linker, xval, yval, option)
+    return self:flux(insertall, self, index, t, linker, xval, yval, option)
   end
 end
 
@@ -327,8 +328,7 @@ end
 do
   local __link = metacel.__link
   function metacel:__link(listbox, link, linker, xval, yval, option)
-    if not option or type(option) == 'number' or type(option) == 'table' then
-      --TODO link must accept an option
+    if not option or type(option) == 'table' then
       return listbox[_items], linker, xval, yval, option
     else
       return __link(self, listbox, link, linker, xval, yval, option)
@@ -397,10 +397,10 @@ do -- items metacel
   end
 
   do --metacel.__link
-    function metacel:__link(items, item, linker, xval, yval, index)
+    function metacel:__link(items, item, linker, xval, yval)
       local listbox = items[_listbox]
       if listbox.onchange then
-        self:__qchange(listbox, item, index or items:len(), true, listbox.onchange)
+        self:__qchange(listbox, item, items:len(), true, listbox.onchange)
       end
     end
   end

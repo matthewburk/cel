@@ -103,8 +103,6 @@ local function reflex(col, force, hreflex)
     return 'influx' 
   end
 
-  
-  
   local links = col[_links]
 
   if links.reflexing then
@@ -260,7 +258,7 @@ function colformation:moved(col, x, y, w, h, ox, oy, ow, oh)
     links.w = w
     links.wreflex = links.wreflex or w ~= ow
     if col[_flux] == 0 then
-      reflex(col, false, links.flex > 0 and h ~= oh) --TODO do same in _row
+      reflex(col, false, links.flex > 0 and h ~= oh)
     end
     if col[_metacel].__resize then
       col[_metacel]:__resize(col, ow, oh)
@@ -275,10 +273,8 @@ do --colformation.link
   function colformation:link(col, link, linker, xval, yval, option)
     option = option or nooption
 
-    --TODO index option
-
     local links = col[_links]
-    local index = links.n + 1
+    local index = links.n + 1 
     links[index] = link
     links.n = index
 
@@ -949,9 +945,48 @@ function metatable.prev(col, item)
   end
 end
 
---TODO make colformation:link accept a number for the option which is the index
-function metatable.insert(col, item, index)
-  item:link(col, nil, nil, nil, index)
+function metatable.insert(col, index, item, linker, xval, yval, option)
+  index = index or -1
+
+  col:beginflux()
+
+  if rawget(item, _host) == col then
+    item:relink(linker, xval, yval, option)
+    local links = col[_links]
+    local n = links.n
+
+    if index < -1 then
+      index = math.max(1, n + index+1)
+    elseif index > n or index <= 0 then
+      index = n
+    end
+
+    local currentindex = indexof(col, item) 
+    if index ~= currentindex then
+      links.reform = true
+      table.remove(links, currentindex)
+      table.insert(links, index, item)
+      col:refresh() --TODO may not have to refresh here, when refresh logic is working correctly
+    end
+  else
+    item:link(col, linker, xval, yval, option)
+    local links = col[_links]
+    local n = links.n
+
+    if index < -1 then
+      index = math.max(1, n + index+1)
+    elseif index > n or index <= 0 then
+      index = n
+    end
+
+    if index ~= n then
+      links.reform = true
+      links[n] = nil
+      table.insert(links, index, item)
+    end
+  end
+
+  col:endflux()
   return col
 end
 
@@ -990,7 +1025,7 @@ function metatable.sort(col, comp)
   table.sort(links, comp)
   links.reform = true
   col:endflux()
-  col:refresh()
+  col:refresh() --TODO why is this here??
   return col
 end
 

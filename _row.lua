@@ -273,8 +273,6 @@ do --rowformation.link
   function rowformation:link(row, link, linker, xval, yval, option)
     option = option or nooption
 
-    --TODO index option
-
     local links = row[_links]
     local index = links.n + 1
     links[index] = link
@@ -946,9 +944,48 @@ function metatable.prev(row, item)
   end
 end
 
---TODO make rowformation:link accept a number for the option which is the index
-function metatable.insert(row, item, index)
-  item:link(row, nil, nil, nil, index)
+function metatable.insert(row, index, item, linker, xval, yval, option)
+  index = index or -1
+
+  row:beginflux()
+
+  if rawget(item, _host) == row then
+    item:relink(linker, xval, yval, option)
+    local links = row[_links]
+    local n = links.n
+
+    if index < -1 then
+      index = math.max(1, n + index+1)
+    elseif index > n or index <= 0 then
+      index = n
+    end
+
+    local currentindex = indexof(row, item) 
+    if index ~= currentindex then
+      links.reform = true
+      table.remove(links, currentindex)
+      table.insert(links, index, item)
+      row:refresh() --TODO may not have to refresh here, when refresh logic is working correctly
+    end
+  else
+    item:link(row, linker, xval, yval, option)
+    local links = row[_links]
+    local n = links.n
+
+    if index < -1 then
+      index = math.max(1, n + index+1)
+    elseif index > n or index <= 0 then
+      index = n
+    end
+
+    if index ~= n then
+      links.reform = true
+      links[n] = nil
+      table.insert(links, index, item)
+    end
+  end
+
+  row:endflux()
   return row
 end
 
