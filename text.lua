@@ -30,14 +30,15 @@ local _lines = {}
 local _penx = {}
 local _peny = {}
 local _layout = {}
-local _wrap = {}
+local _wrapmode = {}
 local _str = {}
 local _hpad = {}
 local _vpad = {}
 local _justification = {}
+local _naturalh = {}
 
 local layout = {
-  wrap = 'word',
+  wrap = 'line',
   padding = {
     fit = 'default',
     fitx = 'default',
@@ -66,33 +67,22 @@ local function justify(text, w)
   end
 end
 
+--TODO do not call this if text wrap mode is line wrap
 local function wrap(text)
-  local lines = {}
   local font = text[_font]
   local textw = text.w - text[_hpad]
-
-  do --lines
-    local penx, peny = text[_penx], text[_peny]
-    local str = text[_str]
-    local i = 1
-
-    while true do
-      local j, advance, char = font:wrapat(str, i, #str, textw, text[_wrap])
-      if not j then break end
-      lines[#lines + 1] = { i = i, j = j, penx = penx, peny = peny, advance=advance }
-      peny = peny + font.lineheight
-      i = j + 1
-    end
-  end
+  local h=text[_naturalh]-((#text[_lines]-1)*font.lineheight)
+  local penx, peny = text[_penx], text[_peny]
+  local str = text[_str]
+  local maxlinew, nlines, lines = font:wrapat(textw, str, penx, peny, {})
 
   text[_lines] = lines
-
-  local minh = font.ascent + font.descent + ((#lines-1)*font.lineheight) + text[_vpad]
-  text:setlimits(text.minw, text.maxw, minh, minh)
+  text[_naturalh]=h+((nlines-1)*font.lineheight)
+  text:setlimits(text.minw, text.maxw, text[_naturalh], text[_naturalh])
 end
 
 local function initstr(text, str, font, layout)
-  str = str or ''
+  str=str or ''
 
   --this removes leading spaces on strings if the string starts with [\n 
   local pattern = str:match('^%[(\n%s+)')
@@ -100,64 +90,45 @@ local function initstr(text, str, font, layout)
     str = str:gsub(pattern, '\n'):sub(3)
   end
 
-
-  local textw, texth, xmin, xmax, ymin, ymax = font:measure(str)
-  local penx, peny, w, h, l, t, r, b = font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax ) 
+  local textw, texth, xmin, xmax, ymin, ymax=font:measure(str)
+  local penx, peny, w, h, l, t, r, b=font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax) 
 
   text[_str] = str
   text[_penx] = penx
   text[_peny] = peny
-  text[_hpad] = l + r
-  text[_vpad] = t + b
+  text[_hpad] = l+r
+  text[_vpad] = t+b
 
-  local lines = {}
-  text[_lines] = lines
+  local minw, maxw=0, 0
+  local nlines, lines
 
-  local maxlines = 0
-  local minw, minh = 0, 0
- 
-  do --minw
-    local i = 1
-    while true do
-      local j, advance = font:wrap(str, i, #str, text[_wrap])
-      if not j then break end
-      i = j + 1
-      if advance > minw then minw = advance end
-      maxlines = maxlines + 1
-    end
+  if text[_wrapmode] == 'word' then
+    local maxadvance = font:wrap('word', str, penx, peny)
+    minw=math.floor(penx+maxadvance+l+r+.5)
+
+    maxadvance, nlines, lines = font:wrap('line', str, penx, peny, {})
+    maxw=math.floor(penx+maxadvance+l+r+.5)
+  else
+    local maxadvance
+    maxadvance, nlines, lines = font:wrap('line', str, penx, peny, {})
+    minw=math.floor(penx+maxadvance+l+r+.5)
+    maxw=minw
   end
 
-  minw = math.floor(minw + l + r + .5)
+  text[_lines]=lines
+  text[_naturalh]=h+((nlines-1)*font.lineheight)
 
-  local maxlinew = 0
+  text:setlimits(minw, maxw, text[_naturalh], text[_naturalh], maxw, text[_naturalh])
 
-  do --lines
-    local i = 1
-    while true do
-      local j, advance = font:wrap(str, i, #str, 'line')
-      if not j then break end
-      lines[#lines + 1] = {i = i, j = j, penx = penx, peny = peny, advance=advance}
-      peny = peny + font.lineheight
-      i = j + 1
-      if advance > maxlinew then maxlinew = advance end
-    end
-  end
-
-  maxlinew = maxlinew + l + r
-
-  minh = font.ascent + font.descent + ((#lines-1)*font.lineheight) + text[_vpad]
-
-  text:setlimits(minw, maxlinew, minh, minh, maxlinew, minh)
-
-  if text.w < maxlinew then
+  if text.w < maxw then
     wrap(text)
   else
   end
 
-
-  if text.h > minh then --make text always centered vertically, until there is a good reason to offer alternatives
-    local peny = text[_peny] + math.floor((text.h - minh)/2)
-    for i=1, #lines do
+  --make text always centered vertically, until there is a good reason to offer alternatives
+  if text.h > text[_naturalh] then 
+    local peny = text[_peny] + math.floor((text.h - text[_naturalh])/2)
+    for i=1, nlines do
       local line = lines[i]
       line.peny = peny
       peny = peny + font.lineheight
@@ -218,7 +189,7 @@ function metacel:__describe(text, t)
   t.lines = text[_lines]
 end
 
---TODO decrease calls to __resize for links in a sequence
+--TODO decrease calls to __resize for links in a col/row
 function metacel:__resize(text, ow, oh)
   if text.w ~= ow then
     wrap(text)
@@ -226,10 +197,10 @@ function metacel:__resize(text, ow, oh)
   end
 
   --make text always centered vertically, until there is a good reason to offer alternatives
-  if text.h > text.minh then
+  if text.h > text[_naturalh] then
     local font = text[_font]
     local lines = text[_lines]
-    local peny = text[_peny] + math.floor((text.h - text.minh)/2)
+    local peny = text[_peny] + math.floor((text.h - text[_naturalh])/2)
     for i=1, #lines do
       local line = lines[i]
       line.peny = peny
@@ -240,12 +211,12 @@ end
 
 do
   local _new = metacel.new
-  function metacel:new(str, face, wrap)
+  function metacel:new(str, face, wrapmode)
     face = self:getface(face)
     local text = _new(self, 0, 0, face)
     text[_layout] = face.layout or layout
     text[_font] = face.font
-    text[_wrap] = wrap or text[_layout].wrap
+    text[_wrapmode] = wrapmode or text[_layout].wrap
     initstr(text, str, text[_font], text[_layout])
     justify(text)
     return text

@@ -337,6 +337,8 @@ do --loadfont TODO make driver supply path and extension
   
   local fontmt = {}
   do
+    local string_sub = string.sub
+    local string_char = string.char
     local string_byte = string.byte
 
     local function clamp(v, min, max)
@@ -347,40 +349,45 @@ do --loadfont TODO make driver supply path and extension
 
     do
       function fontmt.height(font)
-        --return font.bbox.ymax - font.bbox.ymin
         return font.ascent + font.descent
       end
 
       function fontmt.measure(font, s, i, j)
-        if not s then
-          return 0, 0, 0, 0, 0, 0
-        end
+        if not s then return 0, 0, 0, 0, 0, 0 end
 
-        i = (i and math.max(i, 1)) or 1
-        j = j or #s
-
+        local start = i or 1
+        local len = j and j-i+1 or #s 
         local xmin, xmax, ymin, ymax = 32000, -32000, 32000, -32000
         local penx = 0
 
-        for i=i, j do
-          local glyph = font.metrics[string_byte(s, i)]
-          local glyph_xmin = penx + glyph.xmin
-          local glyph_xmax = penx + glyph.xmax
+        for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
+        --for i=1, #s do local uchar = string_sub(s, i, i)
+          if start > 1 then
+            start=start-1
+          elseif len > 0 then
+            len=len-1
 
-          if glyph_xmin < xmin then
-            xmin = glyph_xmin
-          end
-          if glyph_xmax > xmax then
-            xmax = glyph_xmax
-          end
-          if glyph.ymin < ymin then
-            ymin = glyph.ymin
-          end
-          if glyph.ymax > ymax then
-            ymax = glyph.ymax
-          end
+            local glyph = font.metrics[uchar]
+            local glyph_xmin = penx + glyph.xmin
+            local glyph_xmax = penx + glyph.xmax
 
-          penx = penx + glyph.advance
+            if glyph_xmin < xmin then
+              xmin = glyph_xmin
+            end
+            if glyph_xmax > xmax then
+              xmax = glyph_xmax
+            end
+            if glyph.ymin < ymin then
+              ymin = glyph.ymin
+            end
+            if glyph.ymax > ymax then
+              ymax = glyph.ymax
+            end
+
+            penx = penx + glyph.advance
+          else
+            break
+          end
         end
 
         if xmin > xmax then
@@ -389,193 +396,313 @@ do --loadfont TODO make driver supply path and extension
 
         return penx, font.ascent + font.descent, xmin, xmax, ymin, ymax
       end
-      --[==[
-        static ptrdiff_t posrelat (ptrdiff_t pos, size_t len) {
-          /* relative string position: negative means back from end */
-          return (pos>=0) ? pos : (ptrdiff_t)len+pos+1;
-        }
-
-
-        static int str_sub (lua_State *L) {
-          size_t l;
-          const char *s = luaL_checklstring(L, 1, &l);
-          ptrdiff_t start = posrelat(luaL_checkinteger(L, 2), l);
-          ptrdiff_t end = posrelat(luaL_optinteger(L, 3, -1), l);
-          if (start < 1) start = 1;
-          if (end > (ptrdiff_t)l) end = (ptrdiff_t)l;
-          if (start <= end)
-            lua_pushlstring(L, s+start-1, end-start+1);
-          else lua_pushliteral(L, "");
-          return 1;
-        }
-      --
-      --]==]
 
       function fontmt.measureadvance(font, s, i, j)
-        if not s then
-          return 0
-        end
+        if not s then return 0 end
 
-        i = (i and math.max(i, 1)) or 1
-        j = j or #s
+        local start = i or 1
+        local len = j and j-i+1 or #s 
         local advance = 0
 
-        for i=i, j do
-          local b = string_byte(s, i)
-
-          if not b then return 0 end
-
-          local glyph = font.metrics[b]
-          advance = advance + glyph.advance
+        for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
+        --for i=1, #s do local uchar = string_sub(s, i, i)
+          if start > 1 then
+            start=start-1
+          elseif len > 0 then
+            len=len-1
+            local glyph = font.metrics[uchar]
+            advance = advance + glyph.advance
+          else
+            break
+          end
         end
         return advance
       end
 
-      function fontmt.measurebbox(font, s, i, j)
-        if not s --[[or #s < 1--]] then
-          return 0, 0, 0, 0
-        end
-
-        i = (i and math.max(i, 1)) or 1
-        j = j or #s
-        local xmin, xmax, ymin, ymax = 32000, -32000, 32000, -32000
-        local penx = 0
-
-        for i=i, j do
-          local b = string_byte(s, i)
-          if not b then return 0, 0, 0, 0 end
-
-          local glyph = font.metrics[b]
-          local glyph_xmin = penx + glyph.xmin
-          local glyph_xmax = penx + glyph.xmax
-
-          if glyph_xmin < xmin then
-            xmin = glyph_xmin
-          end
-          if glyph_xmax > xmax then
-            xmax = glyph_xmax
-          end
-          if glyph.ymin < ymin then
-            ymin = glyph.ymin
-          end
-          if glyph.ymax > ymax then
-            ymax = glyph.ymax
-          end
-
-          penx = penx + glyph.advance
-        end
-
-        if xmin > xmax then
-          return 0, 0, 0, 0
-        end
-
-        return xmin, xmax, ymin, ymax
-      end
-
-      local function interpolate(a, b, p)
+      --TODO move to utility package
+      local function lerp(a, b, p)
         return a + p * (b -a)
       end
 
-      ---[[
-      local math = math
       function fontmt.pick(font, x, s, i, j)
-        local penx = 0
-        i = (i and math.max(i, 1)) or 1
+        i = i or 1
         j = j or #s
-        for i = i, j do
-          local glyph = font.metrics[string_byte(s, i)]
-          local nextpenx = penx + glyph.advance
-          if nextpenx > x then
-            local mid = interpolate(penx, nextpenx, .5)
-            if x < mid then
-              return i-1, penx
-            else
-              return i, nextpenx
+        local penx = 0
+        local count=0
+
+        for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
+        --for i=1, #s do local uchar = string_sub(s, i, i)
+          count=count+1
+          if count >= i and count <= j then
+            local glyph = font.metrics[uchar]
+            local nextpenx = penx + glyph.advance
+
+            if nextpenx > x then
+              local mid = lerp(penx, nextpenx, .5)
+              if x < mid then
+                return i-1, penx
+              else
+                return i, nextpenx
+              end
             end
+            penx = nextpenx
+          elseif count > j then
+            return j, penx
           end
-          penx = nextpenx
         end 
-        return j, penx
+
+        return count, penx
       end
-      --]]
     end
 
     ---[[
     do
-      local _wrapmode = {
-        word = {
-          [' '] = true,
-          ['\t'] = true,
-          ['\n'] = 'force',
-          ['\r'] = 'force',
-        },
-        line = {
-          ['\n'] = 'force',
-          ['\r'] = 'force',
-        }
-      }
+      local iswhitespace = { [' ']=true, ['\t']=true, ['\r']=true, ['\n']='force' }
 
-      --on first call, should be font, 'mytext', 1, #'mytext', max
-      --on next should be font, 'mytext', returned i+1, #'mytext', max
-      function fontmt.wrapat(font, text, _i, j, max, mode)
-        if _i > j then return end
-
+      local function wordwrap(font, s, penx, peny, lines)
         local metrics = font.metrics
-        local advance = 0
-        local retadvance
-        local reti
-        local retchar
-        local breakon = _wrapmode[mode] or _wrapmode.word
+        local advance=0
+        local maxadvance=0
+        local nlines=0
+        local i=1
+        local j=0
 
-        for i = _i, j do
-          local glyph = metrics[string.byte(text, i)]
+        for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
+        --for i=1, #s do local uchar = string_sub(s, i, i)
+          local glyph = metrics[uchar]
 
-          local breakchar = breakon[glyph.char]
-          if breakchar == 'force' then
-            return i, advance, glyph.char
+          if not iswhitespace[uchar] then
+            advance = advance+glyph.advance
+            --include uchar in line text
+            j=j+#uchar
           else
-            if breakchar then
-              reti = i
-              retadvance = advance
-              retchar = glyph.char
-            end
-            advance = advance + glyph.advance
-            if advance > max then
-              if reti then
-                return reti, retadvance, retchar
-              elseif i > _i then
-                return i-1, advance - glyph.advance, nil
-              else
-                --must go on
+            if j >= i then --haveword
+              nlines=nlines+1
+              if advance > maxadvance then maxadvance=advance end
+
+              if lines then
+                lines[nlines] = {text=string.sub(s, i, j), penx=penx, peny=peny, advance=advance}
+                peny = peny + font.lineheight
               end
             end
+
+            advance=0
+            j=j+#uchar
+            --skip whitespace
+            i=j+1
           end
         end
 
-        return j, advance, nil
+        if advance > 0 then
+          if j >= i then --haveword
+            nlines=nlines+1
+            if advance > maxadvance then maxadvance=advance end
+
+            if lines then
+              lines[nlines] = {text=string.sub(s, i, j), penx=penx, peny=peny, advance=advance}
+              peny = peny + font.lineheight
+            end
+          end
+        end
+
+        return maxadvance, nlines, lines
       end
 
-      function fontmt.wrap(font, text, _i, j, mode)
-        if _i > j then return end
-
+      local function linewrap(font, s, penx, peny, lines)
         local metrics = font.metrics
-        local advance = 0
-        local breakon = _wrapmode[mode] or _wrapmode.word
+        local advance=0
+        local maxadvance=0
+        local nlines=0
+        local i=1
+        local j=0
 
-        for i = _i, j do
-          local glyph = metrics[string.byte(text, i)]
-          local breakchar = breakon[glyph.char]
-          if breakchar then
-            return i, advance, breakchar
+        for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
+        --for i=1, #s do local uchar = string_sub(s, i, i)
+          local glyph = metrics[uchar]
+
+          if '\n' ~= uchar then
+            advance = advance+glyph.advance
+            --include uchar in line text
+            j=j+#uchar
           else
-            advance = advance + glyph.advance
+            nlines=nlines+1
+            if advance > maxadvance then maxadvance=advance end
+
+            if lines then
+              local text
+              if j >= i then --haveword
+                text = string.sub(s, i, j)
+              else
+                text = ''
+              end
+              lines[nlines] = {text=text, penx=penx, peny=peny, advance=advance}
+              peny = peny + font.lineheight
+            end
+
+            advance=0
+            j=j+#uchar
+            --skip whitespace
+            i=j+1
           end
         end
 
-        return j, advance
+        if advance > 0 then
+          nlines=nlines+1
+          if advance > maxadvance then maxadvance=advance end
+
+          if lines then
+            local text
+            if j >= i then --haveword
+              text = string.sub(s, i, j)
+            else
+              text = ''
+            end
+            lines[nlines] = {text=text, penx=penx, peny=peny, advance=advance}
+          end
+        end
+
+        return maxadvance, nlines, lines
       end
-    end
+
+      --word wrapmode will remove all whitespace, and each word will be on its own line
+      --line wrapmode will remove \r and \n, all other whitspace is preserved
+      --penx of first line, obtain via font:pad
+      --peny of first line, obtain via font:pad
+      function fontmt.wrap(font, wrapmode, s,  penx, peny, lines)
+        if not s then
+          return 0, 0, lines
+        elseif wrapmode == 'word' then
+          return wordwrap(font, s, penx, peny, lines)
+        else
+          return linewrap(font, s, penx, peny, lines)
+        end
+      end
+
+      ---[[
+      --line.advance for each line returned does not include trailing whitespace
+      function fontmt.wrapat(font, advancebreak, s, penx, peny, lines)
+        lines = lines or {}
+        local metrics = font.metrics
+        local maxadvance=0
+        local nlines=0
+
+        local inkadvance=0
+        local lineadvance=0
+        local wordadvance=0 
+        local linei=1
+        local linej=0
+        local wordi=1
+        local wordj=1
+        local whitespace
+        local wordfinished
+
+        for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
+        --for i=1, #s do local uchar = string_sub(s, i, i)
+          local glyph = metrics[uchar]
+
+          if whitespace and (not iswhitespace[uchar]) then --if starting a word
+            wordi=linej+1
+            wordj=linej+1
+            wordadvance=0
+          end
+
+          if not whitespace and iswhitespace[uchar] then --ending a word
+            inkadvance=lineadvance
+          end
+
+          whitespace=iswhitespace[uchar]
+
+          repeat
+            local done=true
+
+            --linebreak
+            if '\n' == uchar then
+              if inkadvance > maxadvance then maxadvance=inkadvance end
+              local text
+              if linej >= linei then 
+                text = string.sub(s, linei, linej) 
+              else 
+                text = '' 
+              end
+              nlines=nlines+1
+              lines[nlines] = {text=text, penx=penx, peny=peny, advance=inkadvance}
+              peny = peny + font.lineheight
+
+              linej=linej+#uchar
+              linei=linej+1 --skip \n
+              lineadvance=0
+              inkadvance=0
+
+            --advancebreak
+            elseif lineadvance+glyph.advance > advancebreak and (not whitespace) then
+              done=false --process this char again
+
+              if wordi > linei then --working on second+ word, break at beginning of this word
+                lineadvance=lineadvance-wordadvance
+                if inkadvance > maxadvance then maxadvance=inkadvance end
+                local text=string.sub(s, linei, wordi-1)
+                nlines=nlines+1
+                lines[nlines] = {text=text, penx=penx, peny=peny, advance=inkadvance}
+                peny = peny+font.lineheight
+
+                linei=wordi
+                lineadvance=wordadvance
+                inkadvance=wordadvance
+
+              elseif wordj > wordi then --working on first word but not first char, break before this char
+                if lineadvance > maxadvance then maxadvance=lineadvance end
+                local text = string.sub(s, wordi, wordj) 
+                nlines=nlines+1
+                lines[nlines] = {text=text, penx=penx, peny=peny, advance=lineadvance}
+                peny = peny+font.lineheight
+
+                linei=wordj+1
+                linej=linei
+                lineadvance=0
+                inkadvance=0
+
+                wordi=linei
+                wordj=linei
+                wordadvance=0
+
+              else --first char in line exceeds advancebreak, and may be follwed by whitespace which should be on same line
+                done=true --go to next char
+                linej=linej+#uchar
+                wordj=linej
+                lineadvance=lineadvance+glyph.advance
+                wordadvance=wordadvance+glyph.advance
+                inkadvance=lineadvance
+              end
+
+            --no break
+            else
+              --include space at ends of words even if whitespace exceeds advancebreak
+              linej=linej+#uchar
+              wordj=linej
+              lineadvance=lineadvance+glyph.advance
+              wordadvance=wordadvance+glyph.advance
+
+              
+            end
+          until done
+        end
+
+        if lineadvance > 0 then
+          if lineadvance > maxadvance then maxadvance=lineadvance end
+          local text
+          if linej >= linei then 
+            text = string.sub(s, linei, linej) 
+          else 
+            text = '' 
+          end
+          nlines=nlines+1
+          lines[nlines] = {text=text, penx=penx, peny=peny, advance=lineadvance}
+        end
+
+        return maxadvance, nlines, lines
+      end
     --]]
+    end
 
     do
       --font is font passed to cel.text.measure
