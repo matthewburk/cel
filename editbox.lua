@@ -35,6 +35,7 @@ local _padb = {}
 local _caret = {}
 local _multiline = {}
 local _selection = {}
+local _nglyphs = {}
 
 local keyboard = cel.keyboard
 local mouse = cel.mouse
@@ -42,7 +43,6 @@ local mouse = cel.mouse
 local layout = {
   text = cel.getface('editbox.text')
 }
-
 
 do --editbox.text
   local textmetacel = metacel['.text']
@@ -74,6 +74,10 @@ function metatable:gettext()
   return self[_text]:gettext()
 end
 
+function metatable:len()
+  return self[_text]:len()
+end
+
 function metatable:isfull()
   return false
 end
@@ -87,14 +91,15 @@ function metatable:movecaret(i)
   local caret = self[_caret]
   local str = text:gettext()
   local font = text:getfont()
+  local len = text:len()
 
   if i < 0 then i = 0 end
-  if i > #str then i = #str end
+  if i > len then i = len end
 
     caret.i = i
     local penx = text:getpenorigin()
     local a = font:measureadvance(str, 0, i)
-    local b = 2 --math.max(font:measureadvance(str, i+1, i+1), 2)
+    local b = 2
     caret:move(penx + a, 0, b, text.h)
 
     local selection = text.selection
@@ -215,8 +220,24 @@ function metatable:delete(i, j)
   j = j or i
   
   if i > 0 then
-    str = str:sub(0, i-1) .. str:sub(j+1, -1)
-    self:settext(str)
+    local len, nbytes = 0, 0
+    local leftpart = ''
+    local rightpart = ''
+
+    for uchar in string.gmatch(str, '([%z\1-\127\194-\244][\128-\191]*)') do
+      len=len+1
+      nbytes=nbytes+#uchar
+      if len == i then
+        leftpart=str:sub(1, nbytes-#uchar)
+      end
+      if len == j then
+        rightpart=str:sub(nbytes+1, -1)
+        break
+      end
+    end
+
+    --str = str:sub(0, i-1) .. str:sub(j+1, -1)
+    self:settext(leftpart..rightpart)
   end
   return self
 end
@@ -227,7 +248,21 @@ function metacel:onchar(editbox, char, intercepted)
   local i = editbox[_caret].i
   editbox:deleteselection()
   local str = text:gettext()
-  editbox:settext(str:sub(0, i) .. char .. str:sub(i+1, -1))
+  local len, nbytes = 0, 0
+  local leftpart = ''
+  local rightpart = ''
+
+  for uchar in string.gmatch(str, '([%z\1-\127\194-\244][\128-\191]*)') do
+    len=len+1
+    nbytes=nbytes+#uchar
+    if len == i then
+      leftpart=str:sub(1, nbytes)
+      rightpart=str:sub(nbytes+1, -1)
+    end
+  end
+
+  editbox:settext(leftpart .. char .. rightpart)
+  --editbox:settext(str:sub(0, i) .. char .. str:sub(i+1, -1))
   editbox:movecaret(i+1)
   return true
 end
@@ -373,10 +408,14 @@ end
 
 return metacel:newfactory {
   filters = {
+    --needs improvement
     number = function(str)
       if str == '' or str == '-' or str == '.' then return str end
       local n = tonumber(str)
       if not n then
+        return
+      end
+      if #tostring(n) ~= #str then
         return
       end
       return str

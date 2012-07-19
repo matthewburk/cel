@@ -353,12 +353,13 @@ do --loadfont TODO make driver supply path and extension
       end
 
       function fontmt.measure(font, s, i, j)
-        if not s then return 0, 0, 0, 0, 0, 0 end
+        if not s then return 0, 0, 0, 0, 0, 0, 0 end
 
         local start = i or 1
         local len = j and j-i+1 or #s 
         local xmin, xmax, ymin, ymax = 32000, -32000, 32000, -32000
         local penx = 0
+        local nglyphs = 0
 
         for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
         --for i=1, #s do local uchar = string_sub(s, i, i)
@@ -385,79 +386,97 @@ do --loadfont TODO make driver supply path and extension
             end
 
             penx = penx + glyph.advance
+            nglyphs = nglyphs + 1
           else
             break
           end
         end
 
         if xmin > xmax then
-          return penx, font.ascent + font.descent, 0, 0, 0, 0
+          return penx, font.ascent + font.descent, 0, 0, 0, 0, 0
         end
 
-        return penx, font.ascent + font.descent, xmin, xmax, ymin, ymax
+        return penx, font.ascent + font.descent, xmin, xmax, ymin, ymax, nglyphs
       end
 
+      ---[[
       function fontmt.measureadvance(font, s, i, j)
         if not s then return 0 end
+        if not i or i < 1 then i=1 end
+        if j and i > j then return 0 end
 
-        local start = i or 1
-        local len = j and j-i+1 or #s 
         local advance = 0
+        local count=0
 
         for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
-        --for i=1, #s do local uchar = string_sub(s, i, i)
-          if start > 1 then
-            start=start-1
-          elseif len > 0 then
-            len=len-1
+          count=count+1
+          if count >= i then
             local glyph = font.metrics[uchar]
-            advance = advance + glyph.advance
-          else
-            break
+            advance=advance+glyph.advance
+          end
+          if count == j then
+            return advance
           end
         end
         return advance
       end
+      --]]
+
+      --[[
+      function fontmt.measureadvance(font, s, i, j)
+        if not s then
+          return 0
+        end
+
+        i = (i and math.max(i, 1)) or 1
+        j = j or #s
+        local advance = 0
+
+        for i=i, j do
+          local b = string_sub(s, i, i)
+
+          if not b then return 0 end
+
+          local glyph = font.metrics[b]
+          advance = advance + glyph.advance
+        end
+        return advance
+      end
+      --]]
 
       --TODO move to utility package
       local function lerp(a, b, p)
         return a + p * (b -a)
       end
 
-      function fontmt.pick(font, x, s, i, j)
-        i = i or 1
-        j = j or #s
+      function fontmt.pick(font, x, s)
+        local metrics=font.metrics
         local penx = 0
         local count=0
 
         for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
         --for i=1, #s do local uchar = string_sub(s, i, i)
           count=count+1
-          if count >= i and count <= j then
-            local glyph = font.metrics[uchar]
-            local nextpenx = penx + glyph.advance
+          local glyph = metrics[uchar]
+          local nextpenx = penx + glyph.advance
 
-            if nextpenx > x then
-              local mid = lerp(penx, nextpenx, .5)
-              if x < mid then
-                return i-1, penx
-              else
-                return i, nextpenx
-              end
+          if nextpenx > x then
+            local mid = lerp(penx, nextpenx, .5)
+            if x < mid then
+              return count-1, penx
+            else
+              return count, nextpenx
             end
-            penx = nextpenx
-          elseif count > j then
-            return j, penx
           end
+          penx = nextpenx
         end 
 
-        return count, penx
+        return #s, penx
       end
     end
 
-    ---[[
     do
-      local iswhitespace = { [' ']=true, ['\t']=true, ['\r']=true, ['\n']='force' }
+      local iswhitespace = { [' ']=true, ['\t']=true, ['\r']=true, ['\n']='true' }
 
       local function wordwrap(font, s, penx, peny, lines)
         local metrics = font.metrics
@@ -578,7 +597,6 @@ do --loadfont TODO make driver supply path and extension
         end
       end
 
-      ---[[
       --line.advance for each line returned does not include trailing whitespace
       function fontmt.wrapat(font, advancebreak, s, penx, peny, lines)
         lines = lines or {}
@@ -701,7 +719,6 @@ do --loadfont TODO make driver supply path and extension
 
         return maxadvance, nlines, lines
       end
-    --]]
     end
 
     do

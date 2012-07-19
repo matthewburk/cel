@@ -33,6 +33,7 @@ local _penx = {}
 local _peny = {}
 local _textw = {}
 local _texth = {}
+local _len = {}
 
 local layout = {
   padding={}
@@ -54,6 +55,10 @@ function metatable.gettext(label)
   return label[_text]
 end
 
+function metatable.len(label)
+  return label[_len]
+end
+
 function metatable.settext(label, text)
   if not rawget(label, _font) then
     return false, 'not a label'
@@ -67,9 +72,10 @@ function metatable.settext(label, text)
 
   local font = label[_font]
   local layout = label[_layout]
-  local textw, texth, xmin, xmax, ymin, ymax = font:measure(text)
+  local textw, texth, xmin, xmax, ymin, ymax, len = font:measure(text)
   local penx, peny, w, h = font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax)  
 
+  label[_len] = len
   label[_penx] = math.floor(penx)
   label[_peny] = math.floor(peny)
   label[_textw] = textw
@@ -108,9 +114,10 @@ do
 
     local layout = face.layout or layout
     local font = face.font
-    local textw, texth, xmin, xmax, ymin, ymax = font:measure(text)
+    local textw, texth, xmin, xmax, ymin, ymax, len = font:measure(text)
     local penx, peny, w, h = font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax)
     local label = _new(self, w, h, face, w, w, h, h)
+    label[_len] = len
     label[_font] = font
     label[_text] = text
     label[_penx] = floor(penx) --TODO this should already be floored

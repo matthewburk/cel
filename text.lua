@@ -36,6 +36,7 @@ local _hpad = {}
 local _vpad = {}
 local _justification = {}
 local _naturalh = {}
+local _len = {}
 
 local layout = {
   wrap = 'line',
@@ -90,7 +91,7 @@ local function initstr(text, str, font, layout)
     str = str:gsub(pattern, '\n'):sub(3)
   end
 
-  local textw, texth, xmin, xmax, ymin, ymax=font:measure(str)
+  local textw, texth, xmin, xmax, ymin, ymax, len=font:measure(str)
   local penx, peny, w, h, l, t, r, b=font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax) 
 
   text[_str] = str
@@ -98,6 +99,7 @@ local function initstr(text, str, font, layout)
   text[_peny] = peny
   text[_hpad] = l+r
   text[_vpad] = t+b
+  text[_len] = len
 
   local minw, maxw=0, 0
   local nlines, lines
@@ -177,6 +179,10 @@ end
 
 function metatable.gettext(text)
   return text[_str]
+end
+
+function metatable.len(text)
+  return text[_len]
 end
 
 function metatable.__tostring(text)
