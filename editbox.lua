@@ -384,7 +384,7 @@ do
     text.editbox = editbox
     text.selection = {i=false, j=false}
     editbox[_text] = text
-    editbox[_caret] = cel.new(2, text.h, '@caret'):link(text)
+    editbox[_caret] = cel.new(2, text.h, '@caret'):link(text, (text:getpenorigin()))
     editbox[_caret].i = 0
     editbox[_font] = font
     editbox[_padl] = 1
