@@ -40,13 +40,6 @@ local _len = {}
 
 local layout = {
   wrap = 'line',
-  padding = {
-    fit = 'default',
-    fitx = 'default',
-    fity = 'default',
-    l = 2,
-    t = 2,
-  },
 }
 
 local function justify(text, w)
@@ -85,10 +78,11 @@ end
 local function initstr(text, str, font, layout)
   str=str or ''
 
-  --this removes leading spaces on strings if the string starts with [\n 
-  local pattern = str:match('^%[(\n%s+)')
-  if pattern then
-    str = str:gsub(pattern, '\n'):sub(3)
+  do --remove leading spaces on strings if the string starts with [\n 
+    local pattern = str:match('^%[(\n%s+)')
+    if pattern then
+      str = str:gsub(pattern, '\n'):sub(3)
+    end
   end
 
   local textw, texth, xmin, xmax, ymin, ymax, len=font:measure(str)
@@ -106,14 +100,14 @@ local function initstr(text, str, font, layout)
 
   if text[_wrapmode] == 'word' then
     local maxadvance = font:wrap('word', str, penx, peny)
-    minw=math.floor(penx+maxadvance+l+r+.5)
+    minw=penx+maxadvance+l+r
 
     maxadvance, nlines, lines = font:wrap('line', str, penx, peny, {})
-    maxw=math.floor(penx+maxadvance+l+r+.5)
+    maxw=penx+maxadvance+l+r
   else
     local maxadvance
     maxadvance, nlines, lines = font:wrap('line', str, penx, peny, {})
-    minw=math.floor(penx+maxadvance+l+r+.5)
+    minw=penx+maxadvance+l+r
     maxw=minw
   end
 
