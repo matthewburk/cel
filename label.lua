@@ -76,8 +76,8 @@ function metatable.settext(label, text)
   local penx, peny, w, h = font:pad(layout.padding, textw, texth, xmin, xmax, ymin, ymax)  
 
   label[_len] = len
-  label[_penx] = math.floor(penx)
-  label[_peny] = math.floor(peny)
+  label[_penx] = penx
+  label[_peny] = peny
   label[_textw] = textw
   label[_texth] = texth
   label:setlimits(w, w, h, h)
@@ -107,7 +107,6 @@ function metacel:__describe(label, t)
 end
 
 do
-  local floor = math.floor
   local _new = metacel.new
   function metacel:new(text, face)
     face = self:getface(face)
@@ -120,8 +119,8 @@ do
     label[_len] = len
     label[_font] = font
     label[_text] = text
-    label[_penx] = floor(penx) --TODO this should already be floored
-    label[_peny] = floor(peny)
+    label[_penx] = penx
+    label[_peny] = peny
     label[_textw] = textw
     label[_texth] = texth
     label[_layout] = layout
