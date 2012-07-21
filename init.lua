@@ -725,37 +725,84 @@ do --loadfont TODO make driver supply path and extension
       --font is font passed to cel.text.measure
       --layout is where margin is defined
       --w, h, xmin, xmax, ymin, ymax is results returns from cel.text.measure
+      local nopadding = {}
       function fontmt.pad(font, padding, w, h, xmin, xmax, ymin, ymax)
-        local fitx = padding.fitx or padding.fit or 'default'
-        local fity = padding.fity or padding.fit or 'default'
+        padding = padding or nopadding
+        local fitx = padding.fitx or padding.fit
+        local fity = padding.fity or padding.fit
 
-        --w is advancew, h is font height
-        if 'default' == fitx then
-          xmin = math.min(xmin, 0) --left is lesser of penx and xmin
-          w = math.max(-xmin + w, xmax - xmin) --right greater of advance or rightmost pixel as drawn
+        local penx, peny = 0, 0
+
+        if 'bbox' == fitx and 'bbox' == fity then
+          w = xmax - xmin
+          h = ymax - ymin
+
+          local l = padding.l or 0
+          if type(l) == 'function' then l = math.floor(l(w,h,font) + .5) end
+          local t = padding.t or 0
+          if type(t) == 'function' then t = math.floor(t(w,h,font) + .5) end
+          local r = padding.r or l
+          if type(r) == 'function' then r = math.floor(r(w,h,font) + .5) end
+          local b = padding.b or t
+          if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
+
+          w = w + l + r 
+          h = h + t + b
+
+          return -xmin + l, -ymin + t, w, h, l, t, r, b
         elseif 'bbox' == fitx then
           w = xmax - xmin
-        end
 
-        if 'bbox' == fity then
-          h = ymax - ymin
+          local l = padding.l or 0
+          if type(l) == 'function' then l = math.floor(l(w,h,font) + .5) end
+          local t = padding.t or 0
+          if type(t) == 'function' then t = math.floor(t(w,h,font) + .5) end
+          local r = padding.r or l
+          if type(r) == 'function' then r = math.floor(r(w,h,font) + .5) end
+          local b = padding.b or t
+          if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
+
+          w = w + l + r 
+          h = h + t + b
+
+          return -xmin + l, t+font.ascent, w, h, l, t, r, b
+        elseif 'bbox' == fity then
+          local halfem = font.emwidth/2
+
+          h=ymax-ymin
+
+          local l = padding.l or 0
+          if type(l) == 'function' then l = math.floor(l(w,h,font) + .5) end
+          local t = padding.t or 0
+          if type(t) == 'function' then t = math.floor(t(w,h,font) + .5) end
+          local r = padding.r or l
+          if type(r) == 'function' then r = math.floor(r(w,h,font) + .5) end
+          local b = padding.b or t
+          if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
+
+          l=l+math.floor(font.emwidth/2)
+          r=r+math.ceil(font.emwidth/2)
+          w = w + l + r 
+          h = h + t + b
+
+          return l, -ymin + t, w, h, l, t, r, b
         else
-          ymin = -font.ascent
+          local l = padding.l or 0
+          if type(l) == 'function' then l = math.floor(l(w,h,font) + .5) end
+          local t = padding.t or 0
+          if type(t) == 'function' then t = math.floor(t(w,h,font) + .5) end
+          local r = padding.r or l
+          if type(r) == 'function' then r = math.floor(r(w,h,font) + .5) end
+          local b = padding.b or t
+          if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
+
+          l=l+math.floor(font.emwidth/2)
+          r=r+math.ceil(font.emwidth/2)
+          w = w + l + r 
+          h = h + t + b
+
+          return l, t+font.ascent, w, h, l, t, r, b
         end
-
-        local l = padding.l or 0
-        if type(l) == 'function' then l = math.floor(l(w,h,font) + .5) end
-        local t = padding.t or 0
-        if type(t) == 'function' then t = math.floor(t(w,h,font) + .5) end
-        local r = padding.r or l
-        if type(r) == 'function' then r = math.floor(r(w,h,font) + .5) end
-        local b = padding.b or t
-        if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
-
-        w = w + l + r 
-        h = h + t + b
-
-        return -xmin + l, -ymin + t, w, h, l, t, r, b
       end
     end
   end
