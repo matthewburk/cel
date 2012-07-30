@@ -342,6 +342,10 @@ function driver.command(command, data)
   event:signal()
 end
 
+function driver.descriptionchanged()
+  return _ENV.root[_refresh] and true or false
+end
+
 function driver.changecursor(cursor)
   --noop driver must implement this function and change the systems cursor
 end
