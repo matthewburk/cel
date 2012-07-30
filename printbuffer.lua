@@ -72,7 +72,7 @@ do
   end
 
   function metatable.printdescription(self)
-    printdescription(self, cel.getdescription().description, '')
+    printdescription(self, (cel.describe()), '')
   end
 end
 

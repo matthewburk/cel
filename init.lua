@@ -204,24 +204,25 @@ function M.notouch()
 end
 
 do --cel.describe, cel.printdescription
-  local preamble = {
+  local metadescription = {
     updaterect = updaterect 
   }
   local count = 0
+  local _description
 
   local updaterect = updaterect
   function M.describe()
     local altered = false
-    if not preamble.description or root[_refresh] then
+    if not _description or root[_refresh] then
       updaterect.l = 99999
       updaterect.t = 99999
       updaterect.r = 0
       updaterect.b = 0
 
       count = count + 1
-      preamble.timer = M.timer()
-      preamble.count = count 
-      preamble.description = describe(root, nil, 0, 0, 0, 0, root[_w], root[_h])
+      metadescription.timer = M.timer()
+      metadescription.count = count 
+      _description = describe(root, nil, 0, 0, 0, 0, root[_w], root[_h])
 
       if updaterect.r < updaterect.l or updaterect.b < updaterect.t then
         updaterect.l = 0
@@ -232,7 +233,7 @@ do --cel.describe, cel.printdescription
 
       altered = true
     end
-    return preamble, altered
+    return _description, metadescription, altered
   end
   local write = io.write
   local format = string.format
@@ -251,9 +252,8 @@ do --cel.describe, cel.printdescription
     end
   end
 
-  function M.printdescription(t)
-    t = t or M.getdescription() 
-    if t == preamble then
+  function M.printdescription(t, metadescription)
+    if metadescription then
       io.write(string.format('count:%d\ntimer:%d\n', t.count, t.timer))
       io.write(string.format('updaterect { l:%d t:%d r:%d b:%d }\n',
                 t.updaterect.l, t.updaterect.t, t.updaterect.r, t.updaterect.b))
@@ -264,11 +264,6 @@ do --cel.describe, cel.printdescription
       printdescription(t, '')
     end
     io.flush()
-  end
-
-  --TODO remove this, its a hack
-  function M.getdescription()
-    return preamble.description and preamble
   end
 end
 
@@ -767,8 +762,6 @@ do --loadfont TODO make driver supply path and extension
 
           return -xmin + l, t+font.ascent, w, h, l, t, r, b
         elseif 'bbox' == fity then
-          local halfem = font.emwidth/2
-
           h=ymax-ymin
 
           local l = padding.l or 0
@@ -780,8 +773,9 @@ do --loadfont TODO make driver supply path and extension
           local b = padding.b or t
           if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
 
-          l=l+math.floor(font.emwidth/2)
-          r=r+math.ceil(font.emwidth/2)
+          local advance = font.metrics[' '].advance
+          l=l+math.floor(advance/2)
+          r=r+math.floor(.9+advance/2)
           w = w + l + r 
           h = h + t + b
 
@@ -796,8 +790,9 @@ do --loadfont TODO make driver supply path and extension
           local b = padding.b or t
           if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
 
-          l=l+math.floor(font.emwidth/2)
-          r=r+math.ceil(font.emwidth/2)
+          local advance = font.metrics[' '].advance
+          l=l+math.floor(advance/2)
+          r=r+math.floor(.9+advance/2)
           w = w + l + r 
           h = h + t + b
 
