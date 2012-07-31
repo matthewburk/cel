@@ -1124,7 +1124,7 @@ do
 
     if fork then
       forks[cel] = false 
-      return fork(acel, ...)
+      return fork(...)
     end
 
     for k, v in pairs(forks) do
