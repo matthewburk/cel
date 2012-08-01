@@ -790,9 +790,9 @@ do --loadfont TODO make driver supply path and extension
           local b = padding.b or t
           if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
 
-          local advance = font.metrics[' '].advance
-          l=l+math.floor(advance/2)
-          r=r+math.floor(.9+advance/2)
+          --local advance = font.metrics[' '].advance
+          --l=l+math.floor(advance/2)
+          --r=r+math.floor(.9+advance/2)
           w = w + l + r 
           h = h + t + b
 

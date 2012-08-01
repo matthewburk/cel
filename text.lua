@@ -100,14 +100,14 @@ local function initstr(text, str, font, layout)
 
   if text[_wrapmode] == 'word' then
     local maxadvance = font:wrap('word', str, penx, peny)
-    minw=math.floor(.5+penx+maxadvance+l+r)
+    minw=math.floor(.5+maxadvance+l+r)
 
     maxadvance, nlines, lines = font:wrap('line', str, penx, peny, {})
-    maxw=math.floor(.5+penx+maxadvance+l+r)
+    maxw=math.floor(.5+maxadvance+l+r)
   else
     local maxadvance
     maxadvance, nlines, lines = font:wrap('line', str, penx, peny, {})
-    minw=math.floor(.5+penx+maxadvance+l+r)
+    minw=math.floor(.5+maxadvance+l+r)
     maxw=minw
   end
 
