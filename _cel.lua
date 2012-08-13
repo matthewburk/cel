@@ -40,6 +40,7 @@ local _yval = _yval
 local _formation = _formation
 local _celhandle = {}
 local _appstatus = {}
+local _hidden = {}
 
 flows = {} --ENV.flows
 
@@ -252,6 +253,8 @@ do --ENV.describe
 
   local updaterect = _ENV.updaterect
   function describe(cel, host, gx, gy, gl, gt, gr, gb, fullrefresh)
+    if cel[_hidden] then return end
+
     gx = gx + cel[_x] --TODO clamp to maxint
     gy = gy + cel[_y] --TODO clamp to maxint
 
@@ -1135,6 +1138,14 @@ do --metatable.enable
       cel[_disabled] = false
       refresh(cel)
     end
+    return cel
+  end
+end
+
+do --metatable.sethidden
+  function metatable.sethidden(cel, value)
+    cel[_hidden] = value and true or nil
+    refresh(cel)
     return cel
   end
 end
