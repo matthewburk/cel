@@ -95,7 +95,7 @@ local function hthumblinker(hw, hh, x, y, w, h, p, yval)
   x = lerp(0, hw-w, p)
   return x, yval, w, hh-yval
 end
-do
+do --TODO min, max and step should not be new params, but set via setrange, setstep functions
   local _new = metacel.new
   function metacel:new(direction, min, max, step, face)
     face = self:getface(face)

@@ -283,7 +283,7 @@ end
 
 do 
   local _new = metacel.new
-  function metacel:new(w, h, title, face)
+  function metacel:new(w, h, face)
     local face = self:getface(face)
     local layout = face.layout or layout
     local minw, maxw, minh, maxh = layout.minw or 0, layout.maxw, layout.minh or 0, layout.maxh

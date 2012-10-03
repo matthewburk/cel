@@ -39,13 +39,12 @@ local _naturalh = {}
 local _len = {}
 
 local layout = {
-  wrap = 'line',
 }
 
 local function justify(text, w)
   w = w or text.w
   local textw = w - text[_hpad]
-  local justification = text[_justification] or text[_layout].justification
+  local justification = text[_justification]
   local lines = text[_lines]
   local penx = text[_penx]
   if 'center' == justification then
@@ -138,6 +137,13 @@ function metatable.justify(text, value)
   return text:refresh()
 end
 
+--TODO optimize initstr does too much
+function metatable.wrap(text, wrapmode)
+  text[_wrapmode] = wrapmode
+  initstr(text, text[_str], text[_font], text[_layout])
+  return text:refresh()
+end
+
 function metatable.getfont(text)
   return text[_font]
 end
@@ -211,12 +217,12 @@ end
 
 do
   local _new = metacel.new
-  function metacel:new(str, face, wrapmode)
+  function metacel:new(str, face)
     face = self:getface(face)
     local text = _new(self, 0, 0, face)
     text[_layout] = face.layout or layout
     text[_font] = face.font
-    text[_wrapmode] = wrapmode or text[_layout].wrap
+    text[_wrapmode] = 'line'
     initstr(text, str, text[_font], text[_layout])
     justify(text)
     return text
@@ -224,7 +230,10 @@ do
 
   local _compile = metacel.compile
   function metacel:compile(t, text)
-    text = text or metacel:new(t.text, t.face, t.wrap)
+    text = text or metacel:new(t.text, t.face)
+    if t.wrap then
+      text:wrap(t.wrap)
+    end
     if t.justify then
       text:justify(t.justify)
     end

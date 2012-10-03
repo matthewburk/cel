@@ -27,8 +27,6 @@ local metacel, metatable = cel.text.newmetacel('textbutton')
 local metabutton = cel.button.newmetacel('textbutton.proxybutton')
 
 local layout = {
-  wrap = 'line',
-  justification = 'center',
   padding = {
     fit = 'default',
     fitx = 'default',
@@ -66,7 +64,7 @@ do
   local _new = metacel.new
   function metacel:new(text, face)
     face = self:getface(face)
-    local textbutton = _new(self, text, face)
+    local textbutton = _new(self, text, face):justify('center')
     return textbutton               
   end
 

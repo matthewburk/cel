@@ -115,9 +115,9 @@ end
 
 do
   local _new = metacel.new
-  function metacel:new(w, h, face, minw, maxw, minh, maxh)
+  function metacel:new(w, h, face)
     face = self:getface(face)
-    return _new(self, w, h, face, minw, maxw, minh, maxh)
+    return _new(self, w, h, face)
   end
 
   local _compile = metacel.compile

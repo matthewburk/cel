@@ -39,7 +39,7 @@ do
   end
 end
 
-do 
+do --TODO slot and slotbutton should not take margins as new args, use a setmargins function instead
   local _new = metacel.new
   function metacel:new(l, t, r, b, minw, minh, face)
     face = self:getface(face)

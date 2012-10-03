@@ -69,7 +69,7 @@ function metatable:select(name)
   local link = self[_links][name]
 
   if not link then
-    return self, false
+    return self
   end
 
   if self[_subject] then
@@ -79,7 +79,11 @@ function metatable:select(name)
   self[_subject] = nil
   link:link(self, link[_linkparams])
 
-  return self, true
+  return self, link
+end
+
+function metatable:find(name)
+  return self[_links][name]
 end
 
 function metatable:current()
