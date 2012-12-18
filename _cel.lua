@@ -949,15 +949,19 @@ end
 
 do --metatable.join
   function metatable.join(cel, target, joiner, xval, yval)
-    local host = rawget(target, _host)
-
-    if host == nil then return cel, false end
-
     if type(joiner) ~= 'function' then joiner = joiners[joiner] end
 
     if type(joiner) ~= 'function' then error('joiner is not a function') end
 
-    metatable.link(cel, host, joinlinker, {joiner, xval or false, yval}, target)
+    local host = rawget(cel, _host)
+
+    if host then
+      metatable.relink(cel, joinlinker, {joiner, xval or false, yval}, target)
+    elseif rawget(target, _host) then
+      metatable.link(cel, rawget(target, _host), joinlinker, {joiner, xval or false, yval}, target)
+    else
+      return cel, false
+    end
 
     if trackers[target] then
       trackers[target][cel] = true

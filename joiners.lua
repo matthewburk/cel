@@ -27,12 +27,38 @@ M['identity'] = function(jx, jy, jw, jh, x, y, w, h, xval, yval)
   return jx, jy, jw, jh
 end
 
-M['top:bottom'] = function(jx, jy, jw, jh, x, y, w, h, distance)
+--join bottom of cel to top of target
+M['bottom:top'] = function(jx, jy, jw, jh, x, y, w, h, distance)
   distance = distance or 0
   x = jx  
   w = jw
   y = jy-h-distance
   return x, y, w, h
+end
+
+--join top of cel to bottom of target
+M['top:bottom'] = function(jx, jy, jw, jh, x, y, w, h, distance)
+  distance = distance or 0
+  x = jx  
+  w = jw
+  y = jy+jh+distance
+  return x, y, w, h
+end
+
+M['width'] = function(jx, jy, jw, jh, x, y, w, h, xval)
+  xval = xval or 0
+  return x, y, jw + xval, h
+end
+
+M['height'] = function(jx, jy, jw, jh, x, y, w, h, xval)
+  xval = xval or 0
+  return x, y, w, jh + xval
+end
+
+M['size'] = function(jx, jy, jw, jh, x, y, w, h, xval, yval)
+  xval = xval or 0
+  yval = yval or 0
+  return x, y, jw + xval, jh + yval
 end
 
 return M 
