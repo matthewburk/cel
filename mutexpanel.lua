@@ -21,30 +21,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
+
+--[[
+--A mutexpanel is a container and exposes its contents.
+--]]
+
 local cel = require 'cel'
 
 local _subject = {}
 local _bucket = {}
 local _links = {}
 local _linkparams = {}
-local meta, metatable = cel.newmetacel('mutexpanel')
+
+local meta, mt = cel.newmetacel('mutexpanel')
 
 do
   local function it(mutexpanel, prev)
     return next(mutexpanel[_links], prev)
   end
 
-  function metatable:cels()
+  function mt:cels()
     return it, self 
   end
 end
 
-function metatable:add(name, subject, linker, xval, yval)
+function mt:add(name, subject, linker, xval, yval)
   subject:link(self, linker, xval, yval, name)
   return self
 end
 
-function metatable:remove(name)
+function mt:remove(name)
   local link = self[_links][name]
   if link then
     self[_links][name] = nil
@@ -56,7 +62,7 @@ function metatable:remove(name)
   return self
 end
 
-function metatable:clear()
+function mt:clear()
   for name, link in pairs(self[_links]) do
     self[_links][link] = nil
     link:unlink()
@@ -65,7 +71,7 @@ function metatable:clear()
   return self
 end
 
-function metatable:select(name)
+function mt:select(name)
   local link = self[_links][name]
 
   if not link then
@@ -82,12 +88,16 @@ function metatable:select(name)
   return self, link
 end
 
-function metatable:find(name)
+function mt:find(name)
   return self[_links][name]
 end
 
-function metatable:current()
+function mt:current()
   return self[_subject]
+end
+
+function mt:iscurrent(name)
+  return self[_subject] and self[_subject] == self[_links][name]
 end
 
 function meta:__link(mutexpanel, link, linker, xval, yval, name)

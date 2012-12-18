@@ -299,8 +299,6 @@ do
 
     window:setlimits(layout.minw, layout.maxw, layout.minh, layout.maxh)
 
-    window[_title] = title
-
     local bordersize = 0
     
     if layout.border then
@@ -378,6 +376,9 @@ do
   local _compile = metacel.compile
   function metacel:compile(t, window)
     window = window or metacel:new(t.w, t.h, t.title, t.face)
+
+    if t.title then window:settitle(t.title) end
+
     window.onchange = t.onchange
     return _compile(self, t, window)
   end

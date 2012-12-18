@@ -43,6 +43,11 @@ local _appstatus = {}
 local _hidden = {}
 
 flows = {} --ENV.flows
+trackers = setmetatable({}, {__mode='k'}) --ENV.trackers
+
+local function joinlinker(hw, hh, x, y, w, h, joinparams, target, ...)
+  return joinparams[1](target[_x], target[_y], target[_w], target[_h], x, y, w, h, joinparams[2], joinparams[3], ...)
+end
 
 do --ENV.links
   function links(host)
@@ -323,6 +328,19 @@ do --ENV.celmoved
         end
         if link[_metacel].__resize then
           link[_metacel]:__resize(link, ow, oh)
+        end
+      end
+
+      if trackers[link] then
+        for tracker in pairs(trackers[link]) do
+          if rawget(tracker, _linker) == joinlinker then
+            if rawget(tracker, _yval) == link then
+              dolinker(tracker[_host], tracker, joinlinker, rawget(tracker, _xval), link)
+            else
+              trackers[link][tracker] = nil --unjoin from link iff tracker is joined to another target, otherwise the join is kept so that
+                                            --it is enforced when the tracker relinks 
+            end
+          end
         end
       end
     end
@@ -929,6 +947,28 @@ do --metatable.addlinks
   end
 end
 
+do --metatable.join
+  function metatable.join(cel, target, joiner, xval, yval)
+    local host = rawget(target, _host)
+
+    if host == nil then return cel, false end
+
+    if type(joiner) ~= 'function' then joiner = joiners[joiner] end
+
+    if type(joiner) ~= 'function' then error('joiner is not a function') end
+
+    metatable.link(cel, host, joinlinker, {joiner, xval or false, yval}, target)
+
+    if trackers[target] then
+      trackers[target][cel] = true
+    else
+      trackers[target] = setmetatable({[cel]=true}, {__mode='k'})
+    end
+
+    return cel, true
+  end
+end
+
 do --metatable.link
   --[[
   --After this function returns cel must be linked to host(or an alternate host via __link), and by default will be the
@@ -939,12 +979,8 @@ do --metatable.link
     assert(cel)
     assert(host)
     if not host then error('host is nil') end
+    if cel == host then error('attempt to link cel to self') end
 
-    if cel == host then return cel end
-    if rawget(cel, _host) == host then
-      --TODO cel could be retargeted, test that first then return
-      return cel 
-    end
 
     if linker then
       local typeof = type(linker)
@@ -964,6 +1000,13 @@ do --metatable.link
     end
 
     if not host or not host[_x] then error('retargeted host is invalid') end
+
+    --[[ don't do this becuase option would be ignored, document that this will unlink the cel from its host and link it again
+    --with new linker and option, use relink to avoid the unlink
+    if rawget(cel, _host) == host then
+      return metatable.relink(cel, linker, xval, yval)
+    end
+    --]]
 
     event:wait()
 
@@ -1142,9 +1185,17 @@ do --metatable.enable
   end
 end
 
-do --metatable.sethidden
-  function metatable.sethidden(cel, value)
-    cel[_hidden] = value and true or nil
+do --metatable.hide
+  function metatable.hide(cel)
+    cel[_hidden] = true
+    refresh(cel)
+    return cel
+  end
+end
+
+do --metatable.unhide
+  function metatable.unhide(cel)
+    cel[_hidden] = nil
     refresh(cel)
     return cel
   end
@@ -1689,6 +1740,8 @@ do --metatable.raise
 
     if rawget(cel, _next) then cel[_next][_prev] = cel end
 
+    refreshlink(host, cel)
+
     return cel
   end
 end
@@ -1729,6 +1782,8 @@ do --metatable.sink
     cel[_next] = nil
 
     --TODO force a pick?
+
+    refreshlink(host, cel)
 
     return cel
   end

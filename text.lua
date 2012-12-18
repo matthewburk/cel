@@ -47,7 +47,11 @@ local function justify(text, w)
   local justification = text[_justification]
   local lines = text[_lines]
   local penx = text[_penx]
-  if 'center' == justification then
+  if 'left' == justification then
+    for i=1, #lines do
+      lines[i].penx = penx
+    end
+  elseif 'center' == justification then
     for i=1, #lines do
       local line = lines[i]
       line.penx = math.floor(penx + ((textw-line.advance)/2))

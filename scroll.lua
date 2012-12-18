@@ -679,7 +679,7 @@ do
     scrollbar.autohide = layout.show == nil and 'hide' or false 
     scrollbar.modelrange = 0
     scrollbar.modelmax = 0
-    scrollbar.minmodelsize = layout.track.thumb.minsize
+    scrollbar.minmodelsize = layout.track.thumb.minsize or 1
 
     do
       local layout = layout.track
@@ -1036,7 +1036,7 @@ do
     face = self:getface(face)
     local layout = face.layout or layout
     local scroll = _new(self, w, h, face)
-    scroll.stepsize = layout.stepsize
+    scroll.stepsize = layout.stepsize or 1
 
     scroll[_xdim] = { value = 0, max = 0, size = 0, range = 0, }
     scroll[_ydim] = { value = 0, max = 0, size = 0, range = 0, }
@@ -1092,6 +1092,11 @@ do
         scroll:setsubject(t.subject[1], not not t.subject.fillwidth, not not t.subject.fillheight) 
       end
     end
+
+    if t.stepsize then
+      scroll.stepsize = t.stepsize
+    end
+
     return _compile(self, t, scroll)
   end
 

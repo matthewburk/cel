@@ -103,6 +103,9 @@ _ENV.mousetrackerfuncs = {}
 --ENV.linkers
 linkers = require 'cel.linkers'
 
+--ENV.joiners
+joiners = require 'cel.joiners'
+
 M.mouse = require('cel._mouse')(_ENV, M)
 
 M.keyboard = require('cel._keyboard')(_ENV, M)
@@ -1037,7 +1040,6 @@ end
 M.col = require('cel._col')(_ENV, M)
 M.row = require('cel._row')(_ENV, M)
 M.slot = require('cel._slot')(_ENV, M)
-M.cel = M --this makes new and compile as defined by a namespace able to follow same rules for all metacels
 
 function M.colorface(color)
   local face = M.getface('cel', color..'#color#')
@@ -1148,6 +1150,7 @@ do
     return metacel:compile(t)
   end
   getmetatable(proxyM).__metatable = function() error('protected table') end
+M.cel = proxyM --this makes new and compile as defined by a namespace able to follow same rules for all metacels
   return proxyM 
 end
 
