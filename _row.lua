@@ -457,42 +457,45 @@ function rowformation:testlinker(row, link, linker, xval, yval)
   return x, y, w, h
 end
 
---rowformation:linker
---called from dolinker/testlinker/movelink
-function rowformation:linker(row, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh, hw)
-  local slot = link[_slot]
-  local links = row[_links]
-  local hw, hh = hw or slot.w, links.h
+do --rowformation:linker
+  --called from dolinker/testlinker/movelink
+  local joinlinker = joinlinker
+  function rowformation:linker(row, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh, hw)
+    local slot = link[_slot]
+    local links = row[_links]
+    local hw, hh = hw or slot.w, links.h
 
-  assert(links.h >= row[_h])
+    assert(links.h >= row[_h])
 
-  x = x - slot.x
+    x = x - slot.x
 
-  x, y, w, h = linker(hw, hh, x, y, w, h, xval, yval, minw, maxw, minh, maxh)
+    x, y, w, h = linker(hw, hh, x, y, w, h, xval, yval, minw, maxw, minh, maxh)
 
-  x = math.modf(x)
-  y = math.modf(y)
-  w = math.floor(w)
-  h = math.floor(h)
+    x = math.modf(x)
+    y = math.modf(y)
+    w = math.floor(w)
+    h = math.floor(h)
 
-  if slot.flex == 0 then
-    if hw > slot.w and w ~= hw then hw = slot.w end 
-    if w > hw then w = hw end
-    if x + w > hw then x = hw - w end
-    if x < 0 or (not slot.minw) or slot.minw <= w then
-      x = 0
+    if linker == joinlinker then hw=w end
+
+    if slot.flex == 0 then
+      if hw > slot.w and w ~= hw then hw = slot.w end 
+      if w > hw then w = hw end
+      if x + w > hw then x = hw - w end
+      if x < 0 or (not slot.minw) or slot.minw <= w then
+        x = 0
+      end
     end
+
+    if h > hh then h = hh end
+    if y + h > hh then y = hh - h end
+    if y < 0 then y = 0 end
+
+    slot.linkx = x
+
+    return slot.x + x, y, w, h
   end
-
-  if h > hh then h = hh end
-  if y + h > hh then y = hh - h end
-  if y < 0 then y = 0 end
-
-  slot.linkx = x
-
-  return slot.x + x, y, w, h
 end
-
 
 
 --rowformation.linklimitschanged

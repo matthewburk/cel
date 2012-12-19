@@ -45,9 +45,11 @@ local _hidden = {}
 flows = {} --ENV.flows
 trackers = setmetatable({}, {__mode='k'}) --ENV.trackers
 
-local function joinlinker(hw, hh, x, y, w, h, joinparams, target, ...)
+function joinlinker(hw, hh, x, y, w, h, joinparams, target, ...)
   return joinparams[1](target[_x], target[_y], target[_w], target[_h], x, y, w, h, joinparams[2], joinparams[3], ...)
 end
+
+local joinlinker = joinlinker
 
 do --ENV.links
   function links(host)
@@ -102,6 +104,15 @@ end
 do --ENV.dolinker
   function dolinker(host, cel, linker, xval, yval)
     return (rawget(host, _formation) or stackformation):dolinker(host, cel, linker, xval, yval)
+  end
+end
+
+do --ENV.jointargetmoved
+  function jointargetmoved(tracker)
+    local x, y, w, h = joinlinker(0, 0, tracker[_x], tracker[_y], tracker[_w], tracker[_h],
+                                  rawget(tracker, _xval), rawget(tracker, _yval),
+                                  tracker[_minw], tracker[_maxw], tracker[_minh], tracker[_maxh])
+    move(tracker, x, y, w, h)
   end
 end
 
@@ -335,7 +346,7 @@ do --ENV.celmoved
         for tracker in pairs(trackers[link]) do
           if rawget(tracker, _linker) == joinlinker then
             if rawget(tracker, _yval) == link then
-              dolinker(tracker[_host], tracker, joinlinker, rawget(tracker, _xval), link)
+              jointargetmoved(tracker)
             else
               trackers[link][tracker] = nil --unjoin from link iff tracker is joined to another target, otherwise the join is kept so that
                                             --it is enforced when the tracker relinks 
@@ -956,8 +967,10 @@ do --metatable.join
     local host = rawget(cel, _host)
 
     if host then
+      event:wait()
       metatable.relink(cel, joinlinker, {joiner, xval or false, yval}, target)
     elseif rawget(target, _host) then
+      event:wait()
       metatable.link(cel, rawget(target, _host), joinlinker, {joiner, xval or false, yval}, target)
     else
       return cel, false
@@ -968,6 +981,10 @@ do --metatable.join
     else
       trackers[target] = setmetatable({[cel]=true}, {__mode='k'})
     end
+
+    jointargetmoved(cel)
+
+    event:signal()
 
     return cel, true
   end

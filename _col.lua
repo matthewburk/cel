@@ -457,40 +457,44 @@ function colformation:testlinker(col, link, linker, xval, yval)
   return x, y, w, h
 end
 
---colformation:linker
---called from dolinker/testlinker/movelink
-function colformation:linker(col, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh, hh)
-  local slot = link[_slot]
-  local links = col[_links]
-  local hw, hh = links.w, (hh or slot.h)
+do --colformation:linker
+  --called from dolinker/testlinker/movelink
+  local joinlinker = joinlinker
+  function colformation:linker(col, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh, hh)
+    local slot = link[_slot]
+    local links = col[_links]
+    local hw, hh = links.w, (hh or slot.h)
 
-  assert(links.w >= col[_w])
+    assert(links.w >= col[_w])
 
-  y = y - slot.y
+    y = y - slot.y
 
-  x, y, w, h = linker(hw, hh, x, y, w, h, xval, yval, minw, maxw, minh, maxh)
+    x, y, w, h = linker(hw, hh, x, y, w, h, xval, yval, minw, maxw, minh, maxh)
 
-  x = math.modf(x)
-  y = math.modf(y)
-  w = math.floor(w)
-  h = math.floor(h)
+    x = math.modf(x)
+    y = math.modf(y)
+    w = math.floor(w)
+    h = math.floor(h)
 
-  if w > hw then w = hw end
-  if x + w > hw then x = hw - w end
-  if x < 0 then x = 0 end
+    if w > hw then w = hw end
+    if x + w > hw then x = hw - w end
+    if x < 0 then x = 0 end
 
-  if slot.flex == 0 then
-    --if hh > slot.h and h ~= hh then hh = slot.h end 
-    if h > hh then h = hh end
-    if y + h > hh then y = hh - h end
-    if y < 0 or (not slot.minh) or slot.minh <= h then
-      y = 0
+    if linker == joinlinker then hh=h end
+
+    if slot.flex == 0 then
+      --if hh > slot.h and h ~= hh then hh = slot.h end 
+      if h > hh then h = hh end
+      if y + h > hh then y = hh - h end
+      if y < 0 or (not slot.minh) or slot.minh <= h then
+        y = 0
+      end
     end
+
+    slot.linky = y
+
+    return x, slot.y + y, w, h
   end
-
-  slot.linky = y
-
-  return x, slot.y + y, w, h
 end
 
 
