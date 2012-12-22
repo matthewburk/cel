@@ -21,14 +21,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
-return function(_ENV, M)
-
+--
+local M = require 'cel.core.module'
+local _ENV = require 'cel.core.env'
 setfenv(1, _ENV)
 
-stackformation = {}
-
-local stackformation = stackformation 
-
+local _celhandle = {}
+local _appstatus = {}
+local _hidden = {}
 local _links = _links
 local _x, _y, _w, _h = _x, _y, _w, _h
 local _host = _host
@@ -38,18 +38,16 @@ local _linker = _linker
 local _xval = _xval
 local _yval = _yval
 local _formation = _formation
-local _celhandle = {}
-local _appstatus = {}
-local _hidden = {}
+local stackformation = stackformation 
+local mouse = require('cel.core.mouse')
+local keyboard = require('cel.core.keyboard')
 
-flows = {} --ENV.flows
-trackers = setmetatable({}, {__mode='k'}) --ENV.trackers
-
-function joinlinker(hw, hh, x, y, w, h, joinparams, target, ...)
-  return joinparams[1](target[_x], target[_y], target[_w], target[_h], x, y, w, h, joinparams[2], joinparams[3], ...)
+do --ENV.joinlinker
+  function joinlinker(hw, hh, x, y, w, h, joinparams, target, ...)
+    return joinparams[1](target[_x], target[_y], target[_w], target[_h],
+      x, y, w, h, joinparams[2], joinparams[3], ...)
+  end
 end
-
-local joinlinker = joinlinker
 
 do --ENV.links
   function links(host)
@@ -108,6 +106,7 @@ do --ENV.dolinker
 end
 
 do --ENV.jointargetmoved
+  local joinlinker = joinlinker
   function jointargetmoved(tracker)
     local x, y, w, h = joinlinker(0, 0, tracker[_x], tracker[_y], tracker[_w], tracker[_h],
                                   rawget(tracker, _xval), rawget(tracker, _yval),
@@ -157,7 +156,6 @@ do --ENV.touch
     return true
   end
 end
-
 
 do --ENV.linkall
   function linkall(host, t)
@@ -323,6 +321,7 @@ end
 do --ENV.celmoved
   --host is the host of the cel that moved, can be nil
   --link is the cel that moved
+  local joinlinker = joinlinker
   function celmoved(host, link, x, y, w, h, ox, oy, ow, oh)
     local _link = link
     assert(link)
@@ -455,7 +454,6 @@ do --ENV.testlinker
   end
 end
 
-
 do --stackformation.links
   local function nextlink(host, link)
     if link then
@@ -579,7 +577,6 @@ do --stackformation.movelink
     return cel
   end
 end
-
 
 do --ENV.metacel
   metacel = {}
@@ -797,9 +794,6 @@ do --metacel.getface
   end
 end
 
-function M.unpacklink(t, i, j)
-
-end
 do --metacel.compileentry 
   function metacel:compileentry(host, entry, entrytype, linker, xval, yval, option)
     if 'table' == entrytype then
@@ -959,6 +953,7 @@ do --metatable.addlinks
 end
 
 do --metatable.join
+  local joinlinker = joinlinker
   function metatable.join(cel, target, joiner, xval, yval)
     if type(joiner) ~= 'function' then joiner = joiners[joiner] end
 
@@ -968,9 +963,15 @@ do --metatable.join
 
     if host then
       event:wait()
+      move(cel, joiner(target[_x], target[_y], target[_w], target[_h],
+        cel[_x], cel[_y], cel[_w], cel[_h], xval or false, yval, 
+        cel[_minw], cel[_maxw], cel[_minh], cel[_maxh]))
       metatable.relink(cel, joinlinker, {joiner, xval or false, yval}, target)
     elseif rawget(target, _host) then
       event:wait()
+      move(cel, joiner(target[_x], target[_y], target[_w], target[_h],
+        cel[_x], cel[_y], cel[_w], cel[_h], xval or false, yval, 
+        cel[_minw], cel[_maxw], cel[_minh], cel[_maxh]))
       metatable.link(cel, rawget(target, _host), joinlinker, {joiner, xval or false, yval}, target)
     else
       return cel, false
@@ -981,8 +982,6 @@ do --metatable.join
     else
       trackers[target] = setmetatable({[cel]=true}, {__mode='k'})
     end
-
-    jointargetmoved(cel)
 
     event:signal()
 
@@ -1655,7 +1654,6 @@ do --metatable.takefocus
   end
 end
 
-
 do --metatable.hasmousetrapped
   function metatable.hasmousetrapped(cel)
     if mouse[_trap].trap == cel then
@@ -1866,6 +1864,4 @@ function metatable:dump()
   if self[_metacel].__dump then
     self[_metacel]:__dump(self)
   end
-end
-
 end

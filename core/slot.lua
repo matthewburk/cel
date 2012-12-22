@@ -21,8 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
-return function(_ENV, M)
+local M = require 'cel.core.module'
+local _ENV = require 'cel.core.env'
 setfenv(1, _ENV)
+
+local mouse = require('cel.core.mouse')
+local keyboard = require('cel.core.keyboard')
 
 local _margin = {}
 local _slotlink = {}
@@ -386,5 +390,3 @@ do --metacel.new, metacel.compile
 end
 
 return metacel:newfactory() 
-
-end

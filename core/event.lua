@@ -21,8 +21,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
-return function(_ENV, M)
-  setfenv(1, _ENV)
+
+local _ENV = require 'cel.core.env'
+local M = require 'cel.core.module'
+setfenv(1, _ENV)
+
   local _metacel = _metacel
 
   event = {}
@@ -775,4 +778,3 @@ return function(_ENV, M)
   end
 
   return event
-end

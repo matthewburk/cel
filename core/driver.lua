@@ -21,12 +21,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
-return function(_ENV, M)
-setfenv(1, _ENV)
-local mouse = mouse
-local keyboard = keyboard
 
-driver = {} --ENV.driver
+local M = require 'cel.core.module'
+local _ENV = require 'cel.core.env'
+setfenv(1, _ENV)
+
+local mouse = require('cel.core.mouse')
+local keyboard = require('cel.core.keyboard')
+
+_ENV.driver = {}
 
 local function doflows()
   event:wait()
@@ -357,5 +360,4 @@ function driver.option(opt, value)
 end
 
 return driver
-end
 

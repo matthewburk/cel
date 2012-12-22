@@ -22,25 +22,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
 
---TODO should be optimized for 10000+ slots
+--TODO rows should be optimized for 1-100 slots cols should be opimizted for 10000+ slots
 
-return function (_ENV, M)
+local M = require 'cel.core.module'
+local _ENV = require 'cel.core.env'
 setfenv(1, _ENV)
+
+local mouse = require('cel.core.mouse')
+local keyboard = require('cel.core.keyboard')
 
 local _dcache = {}
 local _links = {}
 local _flux = {}
 local _slotface = {}
-local _slot = _next
-local colformation = {}
+local _slot = {}
+local rowformation = {}
 
 local math = math
 local table = table
 
-local lastindex = 0 --not storing lastindex on per col basis on purpose
+local lastindex = 0 --not storing lastindex on per row basis on purpose
 
-local function indexof(col, link)
-  local links = col[_links]
+local function indexof(row, link)
+  local links = row[_links]
   
   if link == links[1] then
     return 1
@@ -59,13 +63,13 @@ local function indexof(col, link)
   local _slot = _slot
   local floor = math.floor
   local istart, iend, imid = 1, links.n, 0
-  local inval = link[_slot].y
+  local inval = link[_slot].x
    
   --binary search
   --TODO change to interpolating search
   while istart <= iend do
     imid = floor( (istart+iend)/2 )
-    local value = links[imid][_slot].y
+    local value = links[imid][_slot].x
     if inval == value then
       lastindex = imid
       return imid
@@ -79,44 +83,42 @@ end
 
 local function getbraceedge(link, linker, xval, yval)
   if not linker then
-    return link[_x] + link[_w]
+    return link[_y] + link[_h]
   else
     local minw, maxw = link[_minw], link[_maxw]
     local minh, maxh = link[_minh], link[_maxh]
-    local x, _, w, _ = linker(0, link[_h], link[_x], 0, link[_w], link[_h], xval, yval, minw, maxw, minh, maxh) 
+    local _, y, _, h = linker(link[_w], 0, 0, link[_y], link[_w], link[_h], xval, yval, minw, maxw, minh, maxh) 
 
-    if w < minw then w = minw end
-    if w > maxw then w = maxw end
+    if h < minh then h = minh end
+    if h > maxh then h = maxh end
 
-    x = math.modf(x)
-    w = math.floor(w)
+    y = math.modf(y)
+    h = math.floor(h)
 
-    return math.max(x + w, w, -x)
+    return math.max(y + h, h, -y)
   end
 end
 
 --reflex becuase the flex ratio of a slot changes
 --which means total flex changes or a sinlge slot flex changes
---relex if the *excess* height of a col changes
-local function reflex(col, force, hreflex)
-  if col[_flux] > 0 and not force then 
-    return 'influx' 
-  end
+--relex if the *excess* width of a row changes
+local function reflex(row, force, wreflex)
+  if row[_flux] > 0 and not force then return 'influx' end
 
-  local links = col[_links]
+  
+  local links = row[_links]
 
   if links.reflexing then
     links.reflexed = false
     return
   end
 
-  
   event:wait()
 
   if links.n > 0 then
     local nloops = 0
     repeat
-      local wreflex = links.wreflex
+      local hreflex = links.hreflex
       nloops = nloops + 1
       if nloops > 2 then
         print('XOMFASDF#@$!@FDSAFSAFAFSAFSDFAAF')
@@ -128,27 +130,27 @@ local function reflex(col, force, hreflex)
         print('XOMFASDF#@$!@FDSAFSAFAFSAFSDFAAF')
         print('ZOMG nloops is', nloops)
       end
-      local colh = math.max(col[_h], links.minh)
-
+      local roww = math.max(row[_w], links.minw)
       links.reflexing = true
       links.reflexed = true
-      links.wreflex = false
+      links.hreflex = false
       if wreflex or hreflex or links.reform then
-        local colformation = colformation
-        local dolinker = colformation.dolinker
+        local rowformation = rowformation
+        local dolinker = rowformation.dolinker
         local extra = 0
         local mult = 0
        
         local gap = links.gap
-        local y = 0
+        local x = 0
 
         local link = nil
         local slot = nil
 
-        if links.flex > 0 and colh - links.minh > 0 then
-          extra = (colh - links.minh) % links.flex
-          mult = math.floor((colh - links.minh)/links.flex)
+        if links.flex > 0 and roww - links.minw > 0 then
+          extra = (roww - links.minw) % links.flex
+          mult = math.floor((roww - links.minw)/links.flex)
         end
+
 
         for i = 1, links.n do
           link = links[i]
@@ -156,30 +158,30 @@ local function reflex(col, force, hreflex)
          
           --flex
           if slot.flex > 0 then
-            local h = (slot.minh or link[_minh]) + (slot.flex * mult)
+            local w = (slot.minw or link[_minw]) + (slot.flex * mult)
 
             if extra > 0 then
-              h = h + math.min(slot.flex, extra)
+              w = w + math.min(slot.flex, extra)
               extra = extra - slot.flex
             end
 
-            local h, extrah = math.modf(h)
-            extra = extra + extrah
-            slot.h = h
+            local w, extraw = math.modf(w)
+            extra = extra + extraw
+            slot.w = w
 
             if rawget(link, _linker) then
-              dolinker(colformation, col, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
+              dolinker(rowformation, row, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
             end
-          elseif wreflex then
+          elseif hreflex then
             if rawget(link, _linker) then
-              dolinker(colformation, col, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
+              dolinker(rowformation, row, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
             end
           end
 
           --reform
-          slot.y = y
-          link[_y] = slot.y + (slot.linky or 0)
-          y = y + slot.h + gap
+          slot.x = x
+          link[_x] = slot.x + (slot.linkx or 0)
+          x = x + slot.w + gap
         end
 
         links.reform = false
@@ -190,9 +192,9 @@ local function reflex(col, force, hreflex)
 
     if not links.brace then
       --rebrace
-      local minw = 0
+      local minh = 0
       local edge = 0
-      local breakat = links.minw
+      local breakat = links.minh
       local brace 
       for i = 1, links.n do
         link = links[i]
@@ -200,8 +202,8 @@ local function reflex(col, force, hreflex)
 
         edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
 
-        if edge >= minw then
-          minw = edge
+        if edge >= minh then
+          minh = edge
           brace = link
           if edge == breakat then
             break
@@ -209,72 +211,74 @@ local function reflex(col, force, hreflex)
         end
       end
       links.brace = brace
-      links.minw = minw
+      links.minh = minh
       assert(links.brace)
     end
   end
+  --this is reconcile, brings row in sync with links
+  --resize row
   local minw, minh = links.minw, links.minh
-  local maxh
+  local maxw
 
-  if links.flex == 0 then maxh = minh end
+  if links.flex == 0 then maxw = minw end
 
-  if col[_minh] ~= minh or col[_maxh] ~= maxh or col[_minw] ~= minw then
-    col:setlimits(minw, nil, minh, maxh)
+  if row[_minw] ~= minw or row[_maxw] ~= maxw or row[_minh] ~= minh then
+    row:setlimits(minw, maxw, minh, nil)
   end
 
-  --seek minimum width
-  if col[_w] ~= (col[_minw]) then
-    col:resize(col[_minw])
+  --seek minimum height
+  if row[_h] ~= (row[_minh]) then
+    row:resize(nil, row[_minh])
   end
 
   event:signal() --TODO move wait/signal outside of this function
 end
 
---called anytime col is moved by any method
---colformation.moved
-function colformation:moved(col, x, y, w, h, ox, oy, ow, oh)
-  if w ~= ow and h == oh then
-    event:onresize(col, ow, oh)
-    local links = col[_links]
-    links.w = w
-    links.wreflex = true
+--called anytime row is moved by any method
+--rowformation.moved
+function rowformation:moved(row, x, y, w, h, ox, oy, ow, oh)
+  if h ~= oh and w == ow then
+    event:onresize(row, ow, oh)
+    local links = row[_links]
+    links.h = h
+    links.hreflex = true
 
-    if col[_flux] == 0 then
-      --col:beginflux(false)
+    if row[_flux] == 0 then
+      --row:beginflux(false)
       for i = 1, links.n do
         local link = links[i] 
         if rawget(link, _linker) then
-          self:dolinker(col, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
+          self:dolinker(row, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
         end
       end
-      --col:endflux(false)
+      --row:endflux(false)
     end
-    if col[_metacel].__resize then
-      col[_metacel]:__resize(col, ow, oh)
+    if row[_metacel].__resize then
+      row[_metacel]:__resize(row, ow, oh)
     end
   elseif w ~= ow or h ~= oh then
-    event:onresize(col, ow, oh)
-    local links = col[_links]
-    links.w = w
-    links.wreflex = links.wreflex or w ~= ow
-    if col[_flux] == 0 then
-      reflex(col, false, links.flex > 0 and h ~= oh)
+    event:onresize(row, ow, oh)
+    local links = row[_links]
+    links.h = h
+    links.hreflex = links.hreflex or h ~= oh
+    if row[_flux] == 0 then
+      reflex(row, false, links.flex > 0 and w ~= ow)
     end
-    if col[_metacel].__resize then
-      col[_metacel]:__resize(col, ow, oh)
+    if row[_metacel].__resize then
+      row[_metacel]:__resize(row, ow, oh)
     end
   end
 end
 
-do --colformation.link
+do --rowformation.link
   local nooption = {}
   local isface = M.isface
   local getface = M.getface
-  function colformation:link(col, link, linker, xval, yval, option)
+  function rowformation:link(row, link, linker, xval, yval, option)
     option = option or nooption
 
-    local links = col[_links]
-    local index = links.n + 1 
+    local links = row[_links]
+    local index = links.n + 1
     links[index] = link
     links.n = index
 
@@ -284,76 +288,76 @@ do --colformation.link
     end
 
     local slot = {
-      h = math.max(link[_h], option.minh or 0), 
-      y = 0,
-      linky = 0,
-      minh = option.minh, 
-      flex = option.flex or 0, 
+      w = math.max(link[_w], option.minw or 0), --when flex is 0 width is not changed by flexing, only
+                                                --by moving the link, furthermore the width is constrained
+                                                --by the minw of the slot
+      x = 0,
+      linkx = 0,
+      minw = option.minw, --overrides minw of link, slot will flex after this minw is allocated and will not go below this minw
+      flex = option.flex or 0, --when a slot has no flex w and minw should alwyas be kept in sync and be the current width of the link
       face = face,
     }
-    --TODO move slot entries to the link
 
     links.flex = links.flex + slot.flex
 
-    --set slot.y and accumulate 
+    --set slot.x and accumulate 
     if slot.flex == 0 then
       if links.n > 1 then
-        slot.y = links.gap + links.minh
-        links.minh = links.minh + links.gap + slot.h
+        slot.x = links.gap + links.minw
+        links.minw = links.minw + links.gap + slot.w
       else
-        links.minh = links.minh + slot.h
+        links.minw = links.minw + slot.w
       end
     else
       if links.n > 1 then
-        slot.y = links.gap + links.minh
-        links.minh = links.minh + links.gap + (slot.minh or link[_minh])
+        slot.x = links.gap + links.minw
+        links.minw = links.minw + links.gap + (slot.minw or link[_minw])
       else
-        links.minh = links.minh + (slot.minh or link[_minh])
+        links.minw = links.minw + (slot.minw or link[_minw])
       end
     end
 
-
     --TODO make slot same key as _next
     link[_slot] = slot
-    link[_y] = slot.y
+    link[_x] = slot.x
 
     local edge
 
-    --set _x
+    --set _y
     if not linker then
-      link[_x] = xval <= 0 and 0 or math.floor(xval)
+      link[_y] = yval <= 0 and 0 or math.floor(yval)
 
-      edge = link[_x] + link[_w]
-      if edge > links.minw then 
+      edge = link[_y] + link[_h]
+      if edge > links.minh then 
         links.brace = link 
-        links.minw = edge
-        links.wreflex = true
-        if links.w < edge then links.w = edge end
+        links.minh = edge
+        links.hreflex = true
+        if links.h < edge then links.h = edge end
       end
     else 
       edge = getbraceedge(link, linker, xval, yval)
-      if edge > links.minw then 
+      if edge > links.minh then 
         links.brace = link 
-        links.minw = edge
-        links.wreflex = true
-        if links.w < edge then links.w = edge end
+        links.minh = edge
+        links.hreflex = true
+        if links.h < edge then links.h = edge end
       end
       link[_linker] = linker
       link[_xval] = xval
       link[_yval] = yval
-      self:dolinker(col, link, linker, xval, yval)
+      self:dolinker(row, link, linker, xval, yval)
     end
 
-    event:onlink(col, link, index)
+    event:onlink(row, link, index)
 
-    if col[_flux] == 0 then
-      reflex(col, false, links.flex > 0)
+    if row[_flux] == 0 then
+      reflex(row, false, links.flex > 0)
     end
   end
 end
 
-function colformation:relink(col, link, linker, xval, yval)
-  local links = col[_links]
+function rowformation:relink(row, link, linker, xval, yval)
+  local links = row[_links]
   local slot = link[_slot]
   local edge
   local doreflex
@@ -364,18 +368,18 @@ function colformation:relink(col, link, linker, xval, yval)
     link[_xval] = xval
     link[_yval] = yval
   else
-    edge = link[_x] + link[_w]
+    edge = link[_y] + link[_h]
   end
 
-  if edge > links.minw then 
+  if edge > links.minh then 
     links.brace = link 
-    links.minw = edge
-    links.wreflex = true
-    if links.w < edge then 
-      links.w = edge 
+    links.minh = edge
+    links.hreflex = true
+    if links.h < edge then 
+      links.h = edge 
       doreflex = true
     end
-  elseif links.brace == link and edge < links.minw then
+  elseif links.brace == link and edge < links.minh then
     links.brace = false
     doreflex = true
   end
@@ -385,7 +389,7 @@ function colformation:relink(col, link, linker, xval, yval)
     local minw, maxw = link[_minw], link[_maxw]
     local minh, maxh = link[_minh], link[_maxh]
 
-    local x, y, w, h = self:linker(col, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
+    local x, y, w, h = self:linker(row, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
 
     if w > maxw then w = maxw end
     if w < minw then w = minw end
@@ -393,10 +397,10 @@ function colformation:relink(col, link, linker, xval, yval)
     if h < minh then h = minh end
 
     if slot.flex == 0 then
-      if h ~= oh then
-        links.minh = links.minh - slot.h
-        slot.h = math.max(h, slot.minh or 0)
-        links.minh = links.minh + slot.h
+      if w ~= ow then
+        links.minw = links.minw - slot.w
+        slot.w = math.max(w, slot.minw or 0)
+        links.minw = links.minw + slot.w
         links.reform = true
         doreflex = true
       end
@@ -407,22 +411,22 @@ function colformation:relink(col, link, linker, xval, yval)
       link[_w] = w
       link[_y] = y
       link[_h] = h
-      celmoved(col, link, x, y, w, h, ox, oy, ow, oh)
+      celmoved(row, link, x, y, w, h, ox, oy, ow, oh)
     end
   end
 
-  if doreflex and col[_flux] == 0 then
-    reflex(col, false)
+  if doreflex and row[_flux] == 0 then
+    reflex(row, false)
   end
 end
 
 --called anytime the link[_linker] needs to be enforced
---colformation.dolinker
-function colformation:dolinker(col, link, linker, xval, yval)
+--rowformation.dolinker
+function rowformation:dolinker(row, link, linker, xval, yval)
   local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
   local minw, maxw, minh, maxh = link[_minw], link[_maxw], link[_minh], link[_maxh]
 
-  local x, y, w, h = self:linker(col, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
+  local x, y, w, h = self:linker(row, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
 
   if w > maxw then w = maxw end
   if w < minw then w = minw end
@@ -434,20 +438,20 @@ function colformation:dolinker(col, link, linker, xval, yval)
     link[_w] = w
     link[_y] = y
     link[_h] = h
-    celmoved(col, link, x, y, w, h, ox, oy, ow, oh)
+    celmoved(row, link, x, y, w, h, ox, oy, ow, oh)
   end
 end
 
---colformation.testlinker
-function colformation:testlinker(col, link, linker, xval, yval)
+--rowformation.testlinker
+function rowformation:testlinker(row, link, linker, xval, yval)
   local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
   local minw, maxw, minh, maxh = link[_minw], link[_maxw], link[_minh], link[_maxh]
   local slot = link[_slot]
 
-  --TODO if this link is the brace, then account for the new width wehn linked with the linker
-  local sloty = slot.linky
-  local x, y, w, h = self:linker(col, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
-  slot.linky = sloty
+  --TODO if this link is the brace, then account for the new height wehn linked with the linker
+  local slotx = slot.linkx
+  local x, y, w, h = self:linker(row, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
+  slot.linkx = slotx
 
   if w > maxw then w = maxw end
   if w < minw then w = minw end
@@ -457,17 +461,17 @@ function colformation:testlinker(col, link, linker, xval, yval)
   return x, y, w, h
 end
 
-do --colformation:linker
+do --rowformation:linker
   --called from dolinker/testlinker/movelink
   local joinlinker = joinlinker
-  function colformation:linker(col, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh, hh)
+  function rowformation:linker(row, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh, hw)
     local slot = link[_slot]
-    local links = col[_links]
-    local hw, hh = links.w, (hh or slot.h)
+    local links = row[_links]
+    local hw, hh = hw or slot.w, links.h
 
-    assert(links.w >= col[_w])
+    assert(links.h >= row[_h])
 
-    y = y - slot.y
+    x = x - slot.x
 
     x, y, w, h = linker(hw, hh, x, y, w, h, xval, yval, minw, maxw, minh, maxh)
 
@@ -476,83 +480,82 @@ do --colformation:linker
     w = math.floor(w)
     h = math.floor(h)
 
-    if w > hw then w = hw end
-    if x + w > hw then x = hw - w end
-    if x < 0 then x = 0 end
-
-    if linker == joinlinker then hh=h end
+    if linker == joinlinker then hw=w end
 
     if slot.flex == 0 then
-      --if hh > slot.h and h ~= hh then hh = slot.h end 
-      if h > hh then h = hh end
-      if y + h > hh then y = hh - h end
-      if y < 0 or (not slot.minh) or slot.minh <= h then
-        y = 0
+      if hw > slot.w and w ~= hw then hw = slot.w end 
+      if w > hw then w = hw end
+      if x + w > hw then x = hw - w end
+      if x < 0 or (not slot.minw) or slot.minw <= w then
+        x = 0
       end
     end
 
-    slot.linky = y
+    if h > hh then h = hh end
+    if y + h > hh then y = hh - h end
+    if y < 0 then y = 0 end
 
-    return x, slot.y + y, w, h
+    slot.linkx = x
+
+    return slot.x + x, y, w, h
   end
 end
 
 
-
---colformation.linklimitschanged
-function colformation:linklimitschanged(col, link, ominw, omaxw, ominh, omaxh)
-  local links = col[_links]
+--rowformation.linklimitschanged
+function rowformation:linklimitschanged(row, link, ominw, omaxw, ominh, omaxh)
+  local links = row[_links]
   local slot = link[_slot]
 
   local doreflex = false
 
-  if slot.flex > 0 and not slot.minh then
-    local original = links.minh
-    links.minh = links.minh - (ominh or 0) 
-    links.minh = links.minh + (link[_minh]) 
+  if slot.flex > 0 and not slot.minw then
+    local original = links.minw
+    links.minw = links.minw - (ominw or 0) 
+    links.minw = links.minw + (link[_minw]) 
 
-    if links.minh ~= original then
+    if links.minw ~= original then
       links.reform = true
       doreflex = true
     end
   elseif slot.flex == 0 then
-    if slot.h < link[_minh] then
-      links.minh = links.minh - slot.h
-      slot.h = link[_minh]
-      links.minh = links.minh + slot.h
+    if slot.w < link[_minw] then
+      links.minw = links.minw - slot.w
+      slot.w = link[_minw]
+      links.minw = links.minw + slot.w
       links.reform = true
       doreflex = true
     end
   end
 
-  if (link[_minw]) > links.minw then
+  if (link[_minh]) > links.minh then
     local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
-    if edge > links.minw then
-      links.minw = edge
+    if edge > links.minh then
+      links.minh = edge
       links.brace = link
-      links.wreflex = true
-      if links.w < edge then 
-        links.w = edge 
+      links.hreflex = true
+      if links.h < edge then 
+        links.h = edge 
         doreflex = true
       end
     end
-  elseif (link == links.brace) and ((link[_minw]) < link[_w]) then
+  elseif (link == links.brace) and ((link[_minh]) < link[_h]) then
     local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
-     if edge < links.minw then
+     if edge < links.minh then
       links.brace = false 
       doreflex = true
     end
   end
 
-  if doreflex and col[_flux] == 0 then
-    reflex(col)
+  if doreflex and row[_flux] == 0 then
+    reflex(row)
   end
 end
 
-do --colformation.movelink
+do --rowformation.movelink
   --movelink should only be called becuase move was explicitly called, make sure that is the case
   local math = math
-  function colformation:movelink(col, link, x, y, w, h)
+  function rowformation:movelink(row, link, x, y, w, h)
     local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
     local minw, maxw = link[_minw], link[_maxw]
     local minh, maxh = link[_minh], link[_maxh]
@@ -564,21 +567,21 @@ do --colformation.movelink
 
     if not(x ~= ox or y ~= oy or w ~= ow or h ~= oh) then return link end
 
-    local links = col[_links]
+    local links = row[_links]
     local slot = link[_slot]
     local doreflex = false
 
     if slot.flex > 0 then
       if rawget(link, _linker) then
-        x, y, w, h = self:linker(col, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
+        x, y, w, h = self:linker(row, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
                      x, y, w, h, minw, maxw, minh, maxh)
       else
-        y = math.modf(y) - slot.y        
-        slot.linky = y
-        y = slot.y + y      
+        x = math.modf(x) - slot.x        
+        slot.linkx = x
+        x = slot.x + x      
 
-        if x ~= ox then x = math.max(0, math.modf(x)) end
-        if w ~= ow then w = math.floor(w) end
+        if y ~= oy then y = math.max(0, math.modf(y)) end
+        if h ~= oh then h = math.floor(h); end
       end
 
       if w > maxw then w = maxw end
@@ -586,22 +589,22 @@ do --colformation.movelink
       if h > maxh then h = maxh end
       if h < minh then h = minh end
     else
-      --when a link with no flex is moved explicitly, it will change the height of the slot
-      --bounded by the maxh of the link and the minh of the slot/link
+      --when a link with no flex is moved explicitly, it will change the width of the slot
+      --bounded by the maxw of the link and the minw of the slot/link
       if rawget(link, _linker) then
-        x, y, w, h = self:linker(col, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
-                                 x, y, w, h, minw, maxw, minh, maxh,  math.max(h, slot.minh or 0))
+        x, y, w, h = self:linker(row, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
+                                 x, y, w, h, minw, maxw, minh, maxh,  math.max(w, slot.minw or 0))
       else
-        local hh = math.max(h, slot.minh or 0)
-        y = math.modf(y) - slot.y        
-        if y + h > hh then y = hh - h end
-        if y < 0 then y = 0 end
+        local hw = math.max(w, slot.minw or 0)
+        x = math.modf(x) - slot.x        
+        if x + w > hw then x = hw - w end
+        if x < 0 then x = 0 end
 
-        slot.linky = y
-        y = slot.y + y      
+        slot.linkx = x
+        x = slot.x + x      
 
-        if x ~= ox then x = math.max(0, math.modf(x)) end
-        if w ~= ow then w = math.floor(w) end
+        if y ~= oy then y = math.max(0, math.modf(y)) end
+        if h ~= oh then h = math.floor(h); end
       end
 
       if w > maxw then w = maxw end
@@ -609,10 +612,10 @@ do --colformation.movelink
       if h < minh then h = minh end
       if h > maxh then h = maxh end   
 
-      if h ~= oh then
-        links.minh = links.minh - slot.h
-        slot.h = math.max(h, slot.minh or 0)
-        links.minh = links.minh + slot.h
+      if w ~= ow then
+        links.minw = links.minw - slot.w
+        slot.w = math.max(w, slot.minw or 0)
+        links.minw = links.minw + slot.w
         links.reform = true
         doreflex = true
       end
@@ -626,15 +629,15 @@ do --colformation.movelink
 
     local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
 
-    if edge > links.minw then
-      links.minw = edge
+    if edge > links.minh then
+      links.minh = edge
       links.brace = link
-      links.wreflex = true
-      if links.w < edge then 
-        links.w = edge 
+      links.hreflex = true
+      if links.h < edge then 
+        links.h = edge 
         doreflex = true
       end
-    elseif links.brace == link and edge < links.minw then
+    elseif links.brace == link and edge < links.minh then
       links.brace = false
       doreflex = true
     end
@@ -642,11 +645,11 @@ do --colformation.movelink
     event:wait()
 
     if x~= ox or y ~= oy or w ~= ow or h ~= oh then
-      celmoved(col, link, x, y, w, h, ox, oy, ow, oh)
+      celmoved(row, link, x, y, w, h, ox, oy, ow, oh)
     end
 
-    if doreflex and col[_flux] == 0 then
-      reflex(col)
+    if doreflex and row[_flux] == 0 then
+      reflex(row)
     end
 
     event:signal()
@@ -655,13 +658,13 @@ do --colformation.movelink
   end
 end
 
---TODO make this work when clearing, in which case col[_links] is empty
+--TODO make this work when clearing, in which case row[_links] is empty
 --TODO always make sure reform is done before search
-do --colformation.unlink
+do --rowformation.unlink
   local math = math
-  function colformation:unlink(col, link)
-    local links = col[_links]
-    local index = indexof(col, link)
+  function rowformation:unlink(row, link)
+    local links = row[_links]
+    local index = indexof(row, link)
     assert(index)
     table.remove(links, index)
 
@@ -676,41 +679,41 @@ do --colformation.unlink
     link[_slot] = nil
 
     if links.n == 0 then
-      links.minh = 0
+      links.minw = 0
     elseif slot.flex == 0 then
-      links.minh = links.minh - slot.h - links.gap
+      links.minw = links.minw - slot.w - links.gap
     else
-      links.minh = links.minh - (slot.minh or link[_minh]) - links.gap
+      links.minw = links.minw - (slot.minw or link[_minw]) - links.gap
     end
 
-    if col[_metacel].__unlink then
-      col[_metacel]:__unlink(col, link, index)
+    if row[_metacel].__unlink then
+      row[_metacel]:__unlink(row, link, index)
     end
 
-    if col[_flux] == 0 then
-      reflex(col)
+    if row[_flux] == 0 then
+      reflex(row)
     end
   end
 end
 
-do --colformation.pick
-  function colformation:pick(col, _, yin)
-    local links = col[_links]
+do --rowformation.pick
+  function rowformation:pick(row, xin, yin)
+    local links = row[_links]
     local floor = math.floor
     local istart, iend, imid = 1, links.n, 0
     local gap = links.gap
 
     while istart <= iend do
       imid = floor( (istart+iend)/2 )
-      local value = links[imid][_slot].y
-      local range = links[imid][_slot].h + gap 
-      if yin >= value and yin < value + range then
+      local value = links[imid][_slot].x
+      local range = links[imid][_slot].w + gap 
+      if xin >= value and xin < value + range then
         return links[imid], imid
-      elseif yin < value then
+      elseif xin < value then
         iend = imid - 1
       else
-        if not (yin >= value + range) then
-          assert(yin >= value + range)
+        if not (xin >= value + range) then
+          assert(xin >= value + range)
         end
         istart = imid + 1
       end
@@ -718,20 +721,20 @@ do --colformation.pick
   end
 end
 
-do --colformation.describeslot
+do --rowformation.describeslot
   local cache = setmetatable({}, {__mode='kv'})
 
-  local function initdcache(col, a, b)
-    local dcache = col[_dcache]
+  local function initdcache(row, a, b)
+    local dcache = row[_dcache]
     if not dcache then
       dcache = setmetatable({}, {__mode='kv'})
-      col[_dcache] = dcache 
+      row[_dcache] = dcache 
     end
     dcache.offset = a-1
   end
 
-  local function getdescription(col, index)
-    local dcache = col[_dcache]
+  local function getdescription(row, index)
+    local dcache = row[_dcache]
     local t = dcache[index-dcache.offset]
    
     t = t or {
@@ -757,28 +760,28 @@ do --colformation.describeslot
     return t
   end
 
-  function colformation:describeslot(col, host, gx, gy, gl, gt, gr, gb, index, link, hasmouse, fullrefresh)
+  function rowformation:describeslot(row, host, gx, gy, gl, gt, gr, gb, index, link, hasmouse, fullrefresh)
     local slot = link[_slot]
 
-    gy = gy + slot.y
+    gx = gx + slot.x
 
-    if gy > gt then gt = gy end
-    if gy + slot.h < gb then gb = gy + slot.h end
+    if gx > gl then gl = gx end
+    if gx + slot.w < gr then gr = gx + slot.w end
 
     if gr <= gl or gb <= gt then return end
 
-    local face = slot.face or col[_slotface]
+    local face = slot.face or row[_slotface]
 
-    local t = getdescription(col, index)
+    local t = getdescription(row, index)
 
     t.id = 0 --virtual, find a way to assign an id
     t.metacel = '['.. index ..']'
     t.face = face
     t.host = host
-    t.x = 0
-    t.y = slot.y
-    t.w = col[_w]
-    t.h = slot.h
+    t.x = slot.x 
+    t.y = 0 
+    t.w = slot.w
+    t.h = row[_h]
     t.mousefocus = false
     t.mousefocusin = hasmouse --TODO only set if link doesn't have mouse
     t.index = index
@@ -790,28 +793,28 @@ do --colformation.describeslot
     t.clip.b = gb
     t.disabled = link[_disabled] or (host.disabled and 'host')
 
-    if col[_metacel].__describeslot then
-      col[_metacel]:__describeslot(col, link, index, t)
+    if row[_metacel].__describeslot then
+      row[_metacel]:__describeslot(row, link, index, t)
     end
 
     do
-      local y = link[_y] 
-      link[_y] = slot.linky or 0 --TODO bad hack, do this another way 
+      local x = link[_x] 
+      link[_x] = slot.linkx or 0 --TODO bad hack, do this another way 
       t[1] = describe(link, t, gx, gy, gl, gt, gr, gb, fullrefresh)
-      link[_y] = y
+      link[_x] = x
     end
 
     return t
   end
 
-  --colformation.describelinks
-  function colformation:describelinks(col, host, gx, gy, gl, gt, gr, gb, fullrefresh)
-    local links = col[_links]
+  --rowformation.describelinks
+  function rowformation:describelinks(row, host, gx, gy, gl, gt, gr, gb, fullrefresh)
+    local links = row[_links]
     local nlinks = links.n
 
     if nlinks > 0 then
-      local _, a = self:pick(col, gl - gx, gt - gy)
-      local _, b = self:pick(col, gr - gx, gb - gy)
+      local _, a = self:pick(row, gl - gx, gt - gy)
+      local _, b = self:pick(row, gr - gx, gb - gy)
 
       if a and a > 1 then a = a - 1 end
       if b and b < nlinks then b = b + 1 end
@@ -820,16 +823,16 @@ do --colformation.describeslot
       b = b or nlinks
 
       local vcel
-      if mouse[_focus][col] then
-        local x, y = col.X, col.Y
-        vcel = self:pick(col, mouse[_x] - x, mouse[_y] - y) --TODO allow pick to accept a search range
+      if mouse[_focus][row] then
+        local x, y = row.X, row.Y
+        vcel = self:pick(row, mouse[_x] - x, mouse[_y] - y) --TODO allow pick to accept a search range
       end
 
       local i = 1
       local n = #host
-      initdcache(col, a, b)
+      initdcache(row, a, b)
       for index = a, b do
-        host[i] = self:describeslot(col, host, gx, gy, gl, gt, gr, gb, index, links[index], vcel == links[index], fullrefresh)
+        host[i] = self:describeslot(row, host, gx, gy, gl, gt, gr, gb, index, links[index], vcel == links[index], fullrefresh)
         i = host[i] and i + 1 or i
       end
       for i = i, n do
@@ -840,9 +843,8 @@ do --colformation.describeslot
 end
 
 
---define col metacel
-local metacel, metatable = metacel:newmetacel('col')
-
+--define row metacel
+local metacel, metatable = metacel:newmetacel('row')
 
 function metacel:touch(cel, x, y)
   local formation = rawget(cel, _formation)
@@ -865,10 +867,10 @@ end
 
 --TODO its probably faster to drop the old _links, but formation:unlink calls out to metacel
 --with the index that was unlinked
-function metatable.clear(col) 
+function metatable.clear(row) 
   event:wait()
-  local links = col[_links] 
-  col:flux(function()
+  local links = row[_links] 
+  row:flux(function()
     repeat
       links[links.n]:unlink()
     until links.n == 0 
@@ -877,86 +879,86 @@ function metatable.clear(col)
 end
 
 do --metatable.ilinks
-  local function it(col, i)
+  local function it(row, i)
     i = i + 1
-    local link = col[_links][i]
+    local link = row[_links][i]
     if link then
       return i, link
     end
   end
 
-  function metatable.ilinks(col)
-    return it, col, 0
+  function metatable.ilinks(row)
+    return it, row, 0
   end
 end
 
-function metatable.len(col)
-  return col[_links].n
+function metatable.len(row)
+  return row[_links].n
 end
 
-function metatable.get(col, index)
-  return col[_links][index]
+function metatable.get(row, index)
+  return row[_links][index]
 end
 
 --TODO pcall, with errorhandler function, driver must provide an error handler
-function metatable.flux(col, callback, ...)
-  col[_flux] = col[_flux] + 1
-  reflex(col, true)
+function metatable.flux(row, callback, ...)
+  row[_flux] = row[_flux] + 1
+  reflex(row, true)
   if callback then
     callback(...)
-    reflex(col, true)
+    reflex(row, true)
   end
-  col[_flux] = col[_flux] - 1
-  return col
+  row[_flux] = row[_flux] - 1
+  return row
 end
 
 --TODO remove this, or put it in metacel too easy to mess up
-function metatable.beginflux(col, doreflex)
-  col[_flux] = col[_flux] + 1
+function metatable.beginflux(row, doreflex)
+  row[_flux] = row[_flux] + 1
   if doreflex then 
-    reflex(col, true) 
+    reflex(row, true) 
   end
-  return col
+  return row
 end
 
 --TODO remove this, or put it in metacel too easy to mess up
-function metatable.endflux(col, force)
-  col[_flux] = col[_flux] - 1
+function metatable.endflux(row, force)
+  row[_flux] = row[_flux] - 1
   if force == nil then force = true end
-  reflex(col, force)
-  return col
+  reflex(row, force)
+  return row
 end
 
 --TODO define so that nil input returns the first link
-function metatable.next(col, item)
-  if item[_host] ~= col then return nil end
+function metatable.next(row, item)
+  if item[_host] ~= row then return nil end
 
-  local index = indexof(col, item)
+  local index = indexof(row, item)
 
   if index then
-    return col[_links][1 + index]
+    return row[_links][1 + index]
   end
 end
 
 --TODO define so that nil input returns the last link
-function metatable.prev(col, item)
-  if item[_host] ~= col then return nil end
+function metatable.prev(row, item)
+  if item[_host] ~= row then return nil end
 
-  local index = indexof(col, item)
+  local index = indexof(row, item)
 
   if index then
-    return col[_links][-1 + index]
+    return row[_links][-1 + index]
   end
 end
 
-function metatable.insert(col, index, item, linker, xval, yval, option)
+function metatable.insert(row, index, item, linker, xval, yval, option)
   index = index or -1
 
-  col:beginflux()
+  row:beginflux()
 
-  if rawget(item, _host) == col then
+  if rawget(item, _host) == row then
     item:relink(linker, xval, yval, option)
-    local links = col[_links]
+    local links = row[_links]
     local n = links.n
 
     if index < -1 then
@@ -965,16 +967,16 @@ function metatable.insert(col, index, item, linker, xval, yval, option)
       index = n
     end
 
-    local currentindex = indexof(col, item) 
+    local currentindex = indexof(row, item) 
     if index ~= currentindex then
       links.reform = true
       table.remove(links, currentindex)
       table.insert(links, index, item)
-      col:refresh() --TODO may not have to refresh here, when refresh logic is working correctly
+      row:refresh() --TODO may not have to refresh here, when refresh logic is working correctly
     end
   else
-    item:link(col, linker, xval, yval, option)
-    local links = col[_links]
+    item:link(row, linker, xval, yval, option)
+    local links = row[_links]
     local n = links.n
 
     if index < -1 then
@@ -990,56 +992,56 @@ function metatable.insert(col, index, item, linker, xval, yval, option)
     end
   end
 
-  col:endflux()
-  return col
+  row:endflux()
+  return row
 end
 
---TODO if col is stable, should not have to do indexof in unlink
-function metatable.remove(col, index)
-  local item = col[_links][index]
+--TODO if row is stable, should not have to do indexof in unlink
+function metatable.remove(row, index)
+  local item = row[_links][index]
 
   if item then
     item:unlink()
   end
-  return col
+  return row
 end
 
 --TODO make work
-function metatable.indexof(col, item)
-  if item[_host] == col then 
-    local i = indexof(col, item)
+function metatable.indexof(row, item)
+  if item[_host] == row then 
+    local i = indexof(row, item)
 
-    if col[_links][i] == item then
+    if row[_links][i] == item then
       return i
     else
-      reflex(col, true)
-      return indexof(col, item)
+      reflex(row, true)
+      return indexof(row, item)
     end
   end
 end
 
 --returns item, index
-function metatable.pick(col, x, y)
-  return colformation:pick(col, x, y)
+function metatable.pick(row, x, y)
+  return rowformation:pick(row, x, y)
 end
 
-function metatable.sort(col, comp)
-  col:beginflux()
-  local links = col[_links]
+function metatable.sort(row, comp)
+  row:beginflux()
+  local links = row[_links]
   table.sort(links, comp)
   links.reform = true
-  col:endflux()
-  col:refresh() --TODO why is this here??
-  return col
+  row:endflux()
+  row:refresh()
+  return row 
 end
 
 --TODO does not quite work
-function metacel:onmousemove(col, x, y)
+function metacel:onmousemove(row, x, y)
   local vx, vy = mouse:vector()
-  local a = col:pick(x, y)
-  local b = col:pick(x - vx, y - vy)
+  local a = row:pick(x, y)
+  local b = row:pick(x - vx, y - vy)
   if a ~= b then
-    col:refresh()
+    row:refresh()
   end
 end
 
@@ -1053,48 +1055,49 @@ do --metacel.new, metacel.compile
   function metacel:new(gap, face)
     face = self:getface(face)
     local layout = face.layout or layout
-    local col = _new(self, 0, 0, face)
-    col[_flux] = 0
-    col[_links] = {
+    local row = _new(self, 0, 0, face)
+    row[_flux] = 0
+    row[_links] = {
       brace = false,
       reflex = false,
-      wrefelx = false,
-      minh = 0,
-      maxh = 0,
+      hreflex = false,
       minw = 0,
+      maxw = 0,
+      minh = 0,
       flex = 0,
-      w = 0,
+      h = 0,
       gap = gap or 0,
       n = 0,
     }
 
-    col[_maxh] = 0    
+    row[_maxw] = 0
 
     if layout.slotface then
       if M.isface(layout.slotface) then
-        col[_slotface] = layout.slotface
+        row[_slotface] = layout.slotface
       else
-        col[_slotface] = M.getface('cel', layout.slotface) or slotface
+        row[_slotface] = M.getface('cel', layout.slotface) or slotface
       end
     else
-      col[_slotface] = slotface
+      row[_slotface] = slotface
     end
-    col[_formation] = colformation
-    return col
+
+    row[_formation] = rowformation
+    return row
   end
 
   local _compile = metacel.compile
-  function metacel:compile(t, col)
-    col = col or metacel:new(t.gap, t.face)
-    col[_flux] = 1
-    col.onchange = t.onchange
-    _compile(self, t, col)
-    col[_flux] = 0 
-    reflex(col, false)
-    return col
+  function metacel:compile(t, row)
+    row = row or metacel:new(t.gap, t.face)
+    row[_flux] = 1
+    row.onchange = t.onchange
+    _compile(self, t, row)
+    row[_flux] = 0 
+    reflex(row, true)
+    return row
   end
 
-  function metacel:compileentry(col, entry, entrytype, linker, xval, yval, option)
+  function metacel:compileentry(row, entry, entrytype, linker, xval, yval, option)
     if 'table' == entrytype then
       --TODO interpret link how _cel does, need function like { linker, xval, yval, option = cel.decodelink(entry.link) }
       if entry.link then
@@ -1106,9 +1109,9 @@ do --metacel.new, metacel.compile
       end
 
       for i = 1, #entry do
-        local link = M.tocel(entry[i], col)
+        local link = M.tocel(entry[i], row)
         if link then
-          link:link(col, linker, xval, yval, option or entry)
+          link:link(row, linker, xval, yval, option or entry)
         end
       end 
     end
@@ -1116,6 +1119,4 @@ do --metacel.new, metacel.compile
 end
 
 return metacel:newfactory({layout=layout})
-
-end
 

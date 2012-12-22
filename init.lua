@@ -21,106 +21,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
-local M = {}
-local _ENV = setmetatable({}, {__index = function(_ENV, key) 
-                                           local v = _G[key]
-                                           if v then 
-                                             _ENV[key] = v 
-                                             --print('got gloable', key, v)
-                                           else
-                                             error(string.format('bad index %s', tostring(key)), 2)
-                                           end
-                                           return v
-                                         end})
-
+local M = require 'cel.core.module'
+local _ENV = require 'cel.core.env'
 setfenv(1, _ENV)
-
-
-
-do
-  local newproxy = newproxy
-  local function privatekey(name) 
-    return function() return name end
-    --return {} 
-    --return '__pk_' .. name 
-  end
-
-  _formation = privatekey('_formation')
-  _host = privatekey('_host')
-  _links = privatekey('_links')
-  _next = privatekey('_next')
-  _prev = privatekey('_prev')
-  _trap = privatekey('_trap')
-  _focus = privatekey('_focus')
-  _name = privatekey('_name')
-  _x = privatekey('_x')
-  _y = privatekey('_y')
-  _w = privatekey('_w')
-  _h = privatekey('_h')
-  _metacel = privatekey('_metacel')
-  _vectorx = privatekey('_vectorx')
-  _vectory = privatekey('_vectory')
-  _linker = privatekey('_linker')
-  _xval = privatekey('_xval')
-  _yval = privatekey('_yval')
-  _face = privatekey('_face')
-  _pick = privatekey('_pick')
-  _describe = privatekey('_describe')
-  _movelink = privatekey('_movelink')
-  _variations = privatekey('_variations')
-  _minw = privatekey('_minw')
-  _minh = privatekey('_minh')
-  _maxw = privatekey('_maxw')
-  _maxh = privatekey('_maxh')
-  _mousedownlistener = privatekey('_mousedownlistener')
-  _mouseuplistener = privatekey('_mouseuplistener')
-  _focuslistener = privatekey('_focuslistener')
-  _blurlistener = privatekey('_blurlistener')
-  _timerlistener = privatekey('_timerlistener')
-  _keys = privatekey('_keys') 
-  _states = privatekey('_states') 
-  _celid = privatekey('_celid')
-  _disabled = privatekey('_disabled')
-  _refresh = privatekey('_refresh')
-end
-
-maxdim = 2^31-1
-maxpos = 2^31-1
-minpos = -(2^31)
-
-function _getminw(cel) return cel[_minw] or 0 end
-function _getmaxw(cel) return cel[_maxw] or 2^31-1 end
-function _getminh(cel) return cel[_minh] or 0 end
-function _getmaxh(cel) return cel[_maxh] or 2^31-1 end
-
 
 M.util = require('cel.util')
 
-timer = {millis = 0} --ENV.timer
+local mouse = require('cel.core.mouse')
+local keyboard = require('cel.core.keyboard')
+require('cel.core.face')
+require('cel.core.event')
+require('cel.core.driver')
+require('cel.core.cel')
+require('cel.core.root')
 
-_ENV.mousetrackerfuncs = {}
-
---ENV.linkers
-linkers = require 'cel.linkers'
-
---ENV.joiners
-joiners = require 'cel.joiners'
-
-M.mouse = require('cel._mouse')(_ENV, M)
-
-M.keyboard = require('cel._keyboard')(_ENV, M)
-
-updaterect = { l = 0, r = 0, t = 0, b = 0 }
-
-require('cel._face')(_ENV, M)
-require('cel._event')(_ENV, M)
-require('cel._driver')(_ENV, M)
-require('cel._cel')(_ENV, M)
-
-_ENV.root = require('cel._root')(_ENV, M)
-_ENV.root:takefocus()
-
-M.match = M.util.match
+M.col = require('cel.core.col')
+M.row = require('cel.core.row')
+M.slot = require('cel.core.slot')
 
 do --cel.installdriver
   function M.installdriver(mousetable, keyboardtable, t)
@@ -128,11 +45,11 @@ do --cel.installdriver
       error('a driver is already installed')
     end
 
-    M.util.readonly(mousetable.buttons, M.mouse.buttons)
-    M.util.readonly(mousetable.states, M.mouse.states)
-    M.util.readonly(mousetable.wheel, M.mouse.wheel)
-    M.util.readonly(keyboardtable.keys, M.keyboard.keys)
-    M.util.readonly(keyboardtable.states, M.keyboard.states)
+    M.util.readonly(mousetable.buttons, mouse.buttons)
+    M.util.readonly(mousetable.states, mouse.states)
+    M.util.readonly(mousetable.wheel, mouse.wheel)
+    M.util.readonly(keyboardtable.keys, keyboard.keys)
+    M.util.readonly(keyboardtable.states, keyboard.states)
 
     driver.root = _ENV.root
     return driver
@@ -839,16 +756,6 @@ do --loadfont TODO make driver supply path and extension
   end
 end
 
-setmetatable(M, 
-  { 
-
-    __index = function(M, key)
-      M[key] = select(2, assert(pcall(require, 'cel.' .. key)))
-      return M[key]
-    end,
-
-  })
-
 do
   M.flows = {}
 
@@ -1037,9 +944,7 @@ do
 end
 
 ----[[ TODO load on demand
-M.col = require('cel._col')(_ENV, M)
-M.row = require('cel._row')(_ENV, M)
-M.slot = require('cel._slot')(_ENV, M)
+
 
 function M.colorface(color)
   local face = M.getface('cel', color..'#color#')
