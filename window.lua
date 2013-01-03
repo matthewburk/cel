@@ -100,7 +100,7 @@ end
 
 function metatable.settitle(window, title)
   window[_title] = title
-  window:refresh()
+  return window:refresh()
 end
 
 function metatable.gettittle(window)

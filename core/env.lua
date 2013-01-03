@@ -40,6 +40,8 @@ return setmetatable({
   _celid = privatekey('_celid'),
   _disabled = privatekey('_disabled'),
   _refresh = privatekey('_refresh'),
+  _appstatus = privatekey('_appstatus'),
+  _hidden = privatekey('_hidden'),
 
   maxdim = 2^31-1,
   maxpos = 2^31-1,
@@ -53,7 +55,7 @@ return setmetatable({
   mousetrackerfuncs = {},
   timer = {millis = 0},
   flows = {},
-  trackers = setmetatable({}, {__mode='k'}),
+  joins = setmetatable({}, {__mode='k'}),
 }, 
 {__index = function(_ENV, key)
   local v = _G[key]

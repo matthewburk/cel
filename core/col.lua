@@ -36,7 +36,7 @@ local _links = {}
 local _flux = {}
 local _slotface = {}
 local _slot = _next
-local colformation = {}
+local colformation = {__nojoin=true}
 
 local math = math
 local table = table
@@ -184,6 +184,18 @@ local function reflex(col, force, hreflex)
           slot.y = y
           link[_y] = slot.y + (slot.linky or 0)
           y = y + slot.h + gap
+
+          --joins
+          if joins[link] then
+            for joinedcel in pairs(joins[link]) do
+              if rawget(joinedcel, _linker) == joinlinker and rawget(joinedcel, _yval) == link then
+                joinanchormoved(joinedcel) 
+                --only if joinedcel is joined to the target, 
+                --relinking will unjoin but allow the join to reestablish if relinked with 
+                --linker, xval and yval that were assigned when it was joined
+              end
+            end
+          end
         end
 
         links.reform = false
@@ -266,6 +278,24 @@ function colformation:moved(col, x, y, w, h, ox, oy, ow, oh)
     end
     if col[_metacel].__resize then
       col[_metacel]:__resize(col, ow, oh)
+    end
+  end
+
+  --joins
+  if true then --TODO only do this if a link has joins at all
+    local links = col[_links]
+    for i = 1, links.n do
+      local link = links[i]
+      if joins[link] then
+        for joinedcel in pairs(joins[link]) do
+          if rawget(joinedcel, _linker) == joinlinker and rawget(joinedcel, _yval) == link then
+            joinanchormoved(joinedcel) 
+            --only if joinedcel is joined to the target, 
+            --relinking will unjoin but allow the join to reestablish if relinked with 
+            --linker, xval and yval that were assigned when it was joined
+          end
+        end
+      end
     end
   end
 end
@@ -463,7 +493,6 @@ end
 
 do --colformation:linker
   --called from dolinker/testlinker/movelink
-  local joinlinker = joinlinker
   function colformation:linker(col, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh, hh)
     local slot = link[_slot]
     local links = col[_links]
@@ -483,8 +512,6 @@ do --colformation:linker
     if w > hw then w = hw end
     if x + w > hw then x = hw - w end
     if x < 0 then x = 0 end
-
-    if linker == joinlinker then hh=h end
 
     if slot.flex == 0 then
       --if hh > slot.h and h ~= hh then hh = slot.h end 

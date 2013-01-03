@@ -32,6 +32,7 @@ local keyboard = require('cel.core.keyboard')
 require('cel.core.face')
 require('cel.core.event')
 require('cel.core.driver')
+require('cel.core.metacel')
 require('cel.core.cel')
 require('cel.core.root')
 
@@ -63,7 +64,7 @@ end
 
 --cel.newmetacel
 function M.newmetacel(name)
-  return metacel:newmetacel(name)
+  return _ENV.metacel:newmetacel(name)
 end
 
 --cel.new
@@ -81,6 +82,25 @@ function M.tocel(v, host)
   if typ == 'string' then
     if host then return host[_metacel]:__celfromstring(host, v) end
     return M.label.new(v) 
+  end
+end
+
+do --cel.debugjoins
+  function M.debugjoins()
+    dprint(string.rep('-', 40))
+    local a = 0
+    for anchor, t in pairs(joins) do
+      a = a + 1
+      dprint('anchor', anchor)
+
+      local j = 0
+      for joinedcel in pairs(t) do
+        dprint('  joinedcel', joinedcel)
+        j = j + 1
+      end
+      dprint(j, string.rep('j', j))
+    end
+    dprint(a, string.rep('a', a))
   end
 end
 
@@ -220,7 +240,7 @@ do --cel.doafter
   end
 end
 
-do --getlinker
+do --cel.getlinker
   function M.getlinker(name)
     return linkers[name] 
   end
@@ -1055,7 +1075,7 @@ do
     return metacel:compile(t)
   end
   getmetatable(proxyM).__metatable = function() error('protected table') end
-M.cel = proxyM --this makes new and compile as defined by a namespace able to follow same rules for all metacels
+  M.cel = proxyM --this makes new and compile as defined by a namespace able to follow same rules for all metacels
   return proxyM 
 end
 

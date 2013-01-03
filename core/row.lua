@@ -36,7 +36,7 @@ local _links = {}
 local _flux = {}
 local _slotface = {}
 local _slot = {}
-local rowformation = {}
+local rowformation = {__nojoin=true}
 
 local math = math
 local table = table
@@ -182,6 +182,18 @@ local function reflex(row, force, wreflex)
           slot.x = x
           link[_x] = slot.x + (slot.linkx or 0)
           x = x + slot.w + gap
+
+          --joins
+          if joins[link] then
+            for joinedcel in pairs(joins[link]) do
+              if rawget(joinedcel, _linker) == joinlinker and rawget(joinedcel, _yval) == link then
+                joinanchormoved(joinedcel) 
+                --only if joinedcel is joined to the target, 
+                --relinking will unjoin but allow the join to reestablish if relinked with 
+                --linker, xval and yval that were assigned when it was joined
+              end
+            end
+          end
         end
 
         links.reform = false
@@ -266,6 +278,24 @@ function rowformation:moved(row, x, y, w, h, ox, oy, ow, oh)
     end
     if row[_metacel].__resize then
       row[_metacel]:__resize(row, ow, oh)
+    end
+  end
+
+  --joins
+  if true then --TODO only do this if a link has joins at all
+    local links = row[_links]
+    for i = 1, links.n do
+      local link = links[i]
+      if joins[link] then
+        for joinedcel in pairs(joins[link]) do
+          if rawget(joinedcel, _linker) == joinlinker and rawget(joinedcel, _yval) == link then
+            joinanchormoved(joinedcel) 
+            --only if joinedcel is joined to the target, 
+            --relinking will unjoin but allow the join to reestablish if relinked with 
+            --linker, xval and yval that were assigned when it was joined
+          end
+        end
+      end
     end
   end
 end
@@ -463,7 +493,6 @@ end
 
 do --rowformation:linker
   --called from dolinker/testlinker/movelink
-  local joinlinker = joinlinker
   function rowformation:linker(row, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh, hw)
     local slot = link[_slot]
     local links = row[_links]
@@ -479,8 +508,6 @@ do --rowformation:linker
     y = math.modf(y)
     w = math.floor(w)
     h = math.floor(h)
-
-    if linker == joinlinker then hw=w end
 
     if slot.flex == 0 then
       if hw > slot.w and w ~= hw then hw = slot.w end 
