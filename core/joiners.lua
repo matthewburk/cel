@@ -27,7 +27,21 @@ M['identity'] = function(jx, jy, jw, jh, x, y, w, h, xval, yval)
   return jx, jy, jw, jh
 end
 
---join bottom of cel to top of target
+--join top of cel to top of anchor
+M['top'] = function(jx, jy, jw, jh, x, y, w, h, distance)
+  distance = distance or 0
+  y = jy-distance
+  return x, y, w, h
+end
+
+--join bottom of cel to bottom of anchor
+M['bottom'] = function(jx, jy, jw, jh, x, y, w, h, distance)
+  distance = distance or 0
+  y = jy+jh-h-distance
+  return x, y, w, h
+end
+
+--join bottom of cel to top of anchor
 M['bottom:top'] = function(jx, jy, jw, jh, x, y, w, h, distance)
   distance = distance or 0
   x = jx  
@@ -36,7 +50,7 @@ M['bottom:top'] = function(jx, jy, jw, jh, x, y, w, h, distance)
   return x, y, w, h
 end
 
---join top of cel to bottom of target
+--join top of cel to bottom of anchor
 M['top:bottom'] = function(jx, jy, jw, jh, x, y, w, h, distance)
   distance = distance or 0
   x = jx  

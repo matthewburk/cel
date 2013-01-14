@@ -186,8 +186,8 @@ local function reflex(row, force, wreflex)
           --joins
           if joins[link] then
             for joinedcel in pairs(joins[link]) do
-              if rawget(joinedcel, _linker) == joinlinker and rawget(joinedcel, _yval) == link then
-                joinanchormoved(joinedcel) 
+              if rawget(joinedcel, _linker) == joinlinker then
+                joinanchormoved(joinedcel, link) 
                 --only if joinedcel is joined to the target, 
                 --relinking will unjoin but allow the join to reestablish if relinked with 
                 --linker, xval and yval that were assigned when it was joined

@@ -39,20 +39,50 @@ local mouse = require('cel.core.mouse')
 local keyboard = require('cel.core.keyboard')
 
 do --ENV.joinlinker
-  function joinlinker(hw, hh, x, y, w, h, joinparams, anchor, ...)
-    local joinedcel = joinparams[4]
+  function joinlinker(hw, hh, x, y, w, h, joinparams1, joinparams2, ...)
+    local joinedcel = joinparams1.joinedcel
+    local anchor = joinparams1.anchor
+    local rx, ry, rw, rh
 
     if joinedcel[_host] ~= anchor[_host] then
       local ax, ay = M.translate(anchor[_host], anchor[_x], anchor[_y], joinedcel[_host])
-
-      return joinparams[1](ax, ay, anchor[_w], anchor[_h],
-        x, y, w, h, joinparams[2], joinparams[3], ...)
+      rx, ry, rw, rh = joinparams1.joiner(ax, ay, anchor[_w], anchor[_h], x, y, w, h, joinparams1.xval, joinparams1.yval, ...)
     else
-      return joinparams[1](anchor[_x], anchor[_y], anchor[_w], anchor[_h],
-        x, y, w, h, joinparams[2], joinparams[3], ...)
+      rx, ry, rw, rh = joinparams1.joiner(anchor[_x], anchor[_y], anchor[_w], anchor[_h], x, y, w, h, joinparams1.xval, joinparams1.yval, ...)
+    end
+
+    if joinparams2 then
+      assert(joinedcel == joinparams2.joinedcel)
+      anchor = joinparams2.anchor
+
+      if joinedcel[_host] ~= anchor[_host] then
+        local ax, ay = M.translate(anchor[_host], anchor[_x], anchor[_y], joinedcel[_host])
+        rx, ry, rw, rh = joinparams2.joiner(ax, ay, anchor[_w], anchor[_h], rx, ry, rw, rh, joinparams2.xval, joinparams2.yval, ...)
+      else
+        rx, ry, rw, rh = joinparams2.joiner(anchor[_x], anchor[_y], anchor[_w], anchor[_h], rx, ry, rw, rh, joinparams2.xval, joinparams2.yval, ...)
+      end
+    end
+
+    return rx, ry, rw, rh
+  end
+end
+
+do --ENV.joinanchormoved
+  local joinlinker = joinlinker
+  function joinanchormoved(joinedcel, anchor)
+    local joinparams1 = rawget(joinedcel, _xval)
+    local joinparams2 = rawget(joinedcel, _yval)
+
+    if joinparams1.anchor == anchor or (joinparams2 and joinparams2.anchor == anchor) then
+
+      local x, y, w, h = joinlinker(0, 0, joinedcel[_x], joinedcel[_y], joinedcel[_w], joinedcel[_h],
+                                    joinparams1, joinparams2,
+                                    joinedcel[_minw], joinedcel[_maxw], joinedcel[_minh], joinedcel[_maxh])
+      move(joinedcel, x, y, w, h)
     end
   end
 end
+
 
 do --ENV.links
   function links(host)
@@ -110,15 +140,6 @@ do --ENV.dolinker
   end
 end
 
-do --ENV.joinanchormoved
-  local joinlinker = joinlinker
-  function joinanchormoved(joinedcel)
-    local x, y, w, h = joinlinker(0, 0, joinedcel[_x], joinedcel[_y], joinedcel[_w], joinedcel[_h],
-                                  rawget(joinedcel, _xval), rawget(joinedcel, _yval),
-                                  joinedcel[_minw], joinedcel[_maxw], joinedcel[_minh], joinedcel[_maxh])
-    move(joinedcel, x, y, w, h)
-  end
-end
 
 do --ENV.move
   local math = math
@@ -349,13 +370,13 @@ do --ENV.celmoved
         end
       end
 
-      if joins[link] then
+      if joins[link] then  --if this cel is an anchor is a join
         for joinedcel in pairs(joins[link]) do
           if rawget(joinedcel, _linker) == joinlinker then
-            if rawget(joinedcel, _yval) == link then
-              joinanchormoved(joinedcel) --only if joinedcel is joined to the target, relinking will unjoin but allow the join to reestablish if relinked with 
+            --if rawget(joinedcel, _yval) == link then
+              joinanchormoved(joinedcel, link) --only if joinedcel is joined to the target, relinking will unjoin but allow the join to reestablish if relinked with 
               --linker, xval and yval that were assigned when it was joined
-            end
+            --end
           end
         end
       end

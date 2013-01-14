@@ -184,9 +184,13 @@ do --metatable.join
     event:wait()
 
     if rawget(cel, _host) == host then
-      metatable.relink(cel, joinlinker, {joiner, xval or false, yval, cel}, anchor)
+      if rawget(cel, _linker) == joinlinker then
+        metatable.relink(cel, joinlinker, cel[_xval], {joinedcel=cel, xval=xval, yval=yval, joiner=joiner, anchor=anchor})
+      else
+        metatable.relink(cel, joinlinker, {joinedcel=cel, xval=xval, yval=yval, joiner=joiner, anchor=anchor}, nil)
+      end
     else
-      metatable.link(cel, host, joinlinker, {joiner, xval or false, yval, cel}, anchor)
+      metatable.link(cel, host, joinlinker, {joinedcel=cel, xval=xval, yval=yval, joiner=joiner, anchor=anchor}, nil)
     end
 
     if joins[anchor] then
@@ -353,17 +357,19 @@ do --metatable.unlink
     if host then
       event:wait()
 
-      --unjoin
-      if joins[cel] then
-        for tracker in pairs(joins[cel]) do
-          tracker:relink()
+      --unjoin 
+      if joins[cel] then --if this cel is an anchor, unjoin all the cels joined to it
+        for joinedcel in pairs(joins[cel]) do
+          joinedcel:relink()  --TODO just remove the joins to this anchor, not all
         end
         joins[cel]=nil
       end
+      --if this cel is joined to an anchor, remove join from anchor to this cel
       if rawget(cel, _linker) == joinlinker then
         local anchor = cel[_yval]
         joins[anchor][cel] = nil
       end
+      --TODO remove join from anchor2 to this cel
 
       cel[_host] = nil
       cel[_linker] = nil

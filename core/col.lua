@@ -188,8 +188,8 @@ local function reflex(col, force, hreflex)
           --joins
           if joins[link] then
             for joinedcel in pairs(joins[link]) do
-              if rawget(joinedcel, _linker) == joinlinker and rawget(joinedcel, _yval) == link then
-                joinanchormoved(joinedcel) 
+              if rawget(joinedcel, _linker) == joinlinker then
+                joinanchormoved(joinedcel, link) 
                 --only if joinedcel is joined to the target, 
                 --relinking will unjoin but allow the join to reestablish if relinked with 
                 --linker, xval and yval that were assigned when it was joined
@@ -288,8 +288,8 @@ function colformation:moved(col, x, y, w, h, ox, oy, ow, oh)
       local link = links[i]
       if joins[link] then
         for joinedcel in pairs(joins[link]) do
-          if rawget(joinedcel, _linker) == joinlinker and rawget(joinedcel, _yval) == link then
-            joinanchormoved(joinedcel) 
+          if rawget(joinedcel, _linker) == joinlinker then
+            joinanchormoved(joinedcel, link) 
             --only if joinedcel is joined to the target, 
             --relinking will unjoin but allow the join to reestablish if relinked with 
             --linker, xval and yval that were assigned when it was joined
