@@ -107,6 +107,10 @@ local function initstr(text, str, font, layout)
 
     maxadvance, nlines, lines = font:wrap('line', str, penx, peny, {})
     maxw=math.floor(.5+maxadvance+l+r)
+  elseif text[_wrapmode] == 'width' then
+    minw = 10 --todo measure 1 char
+    maxw = text.maxw
+    maxadvance, nlines, lines = font:wrapat(text.w - text[_hpad], str, penx, peny, {})
   else
     local maxadvance
     maxadvance, nlines, lines = font:wrap('line', str, penx, peny, {})
@@ -115,7 +119,7 @@ local function initstr(text, str, font, layout)
   end
 
   text[_lines]=lines
-  text[_naturalh]=h+((nlines-1)*font.lineheight)
+  text[_naturalh]=h+((math.max(nlines-1, 0))*font.lineheight)
 
   text:setlimits(minw, maxw, text[_naturalh], text[_naturalh], maxw, text[_naturalh])
 
@@ -153,13 +157,11 @@ function metatable.getfont(text)
 end
 
 function metatable.getbaseline(text)
-  local line = text[_lines][1]
-  return line.peny
+  return text[_peny]
 end
 
 function metatable.getpenorigin(text)
-  local line = text[_lines][1]
-  return line.penx, line.peny
+  return text[_penx], text[_peny]
 end
 
 function metatable.getline(text, i, property, ...)

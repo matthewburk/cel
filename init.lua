@@ -287,6 +287,8 @@ do --loadfont TODO make driver supply path and extension
         return font.ascent + font.descent
       end
 
+      --returns advance, font height, xmin(ink), xmax(ink), ymin(ink), ymax(ink), nglphs
+      --whitespace is considred ink
       function fontmt.measure(font, s, i, j)
         if not s then return 0, 0, 0, 0, 0, 0, 0 end
 
@@ -334,7 +336,6 @@ do --loadfont TODO make driver supply path and extension
         return penx, font.ascent + font.descent, xmin, xmax, ymin, ymax, nglyphs
       end
 
-      ---[[
       function fontmt.measureadvance(font, s, i, j)
         if not s then return 0 end
         if not i or i < 1 then i=1 end
@@ -355,32 +356,8 @@ do --loadfont TODO make driver supply path and extension
         end
         return advance
       end
-      --]]
 
-      --[[
-      function fontmt.measureadvance(font, s, i, j)
-        if not s then
-          return 0
-        end
-
-        i = (i and math.max(i, 1)) or 1
-        j = j or #s
-        local advance = 0
-
-        for i=i, j do
-          local b = string_sub(s, i, i)
-
-          if not b then return 0 end
-
-          local glyph = font.metrics[b]
-          advance = advance + glyph.advance
-        end
-        return advance
-      end
-      --]]
-
-      --TODO move to utility package
-      local function lerp(a, b, p)
+      local function lerp(a, b, p) --TODO move to utility package
         return a + p * (b -a)
       end
 
@@ -422,14 +399,9 @@ do --loadfont TODO make driver supply path and extension
         local j=0
 
         for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
-        --for i=1, #s do local uchar = string_sub(s, i, i)
           local glyph = metrics[uchar]
 
-          if not iswhitespace[uchar] then
-            advance = advance+glyph.advance
-            --include uchar in line text
-            j=j+#uchar
-          else
+          if iswhitespace[uchar] then
             if j >= i then --haveword
               nlines=nlines+1
               if advance > maxadvance then maxadvance=advance end
@@ -444,6 +416,10 @@ do --loadfont TODO make driver supply path and extension
             j=j+#uchar
             --skip whitespace
             i=j+1
+          else
+            advance = advance+glyph.advance
+            --include uchar in line text
+            j=j+#uchar
           end
         end
 
@@ -471,14 +447,9 @@ do --loadfont TODO make driver supply path and extension
         local j=0
 
         for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
-        --for i=1, #s do local uchar = string_sub(s, i, i)
           local glyph = metrics[uchar]
 
-          if '\n' ~= uchar then
-            advance = advance+glyph.advance
-            --include uchar in line text
-            j=j+#uchar
-          else
+          if '\n' == uchar then
             nlines=nlines+1
             if advance > maxadvance then maxadvance=advance end
 
@@ -497,6 +468,10 @@ do --loadfont TODO make driver supply path and extension
             j=j+#uchar
             --skip whitespace
             i=j+1
+          else
+            advance = advance+glyph.advance
+            --include uchar in line text
+            j=j+#uchar
           end
         end
 
@@ -519,7 +494,7 @@ do --loadfont TODO make driver supply path and extension
       end
 
       --word wrapmode will remove all whitespace, and each word will be on its own line
-      --line wrapmode will remove \r and \n, all other whitspace is preserved
+      --line wrapmode will remove \n, all other whitspace is preserved
       --penx of first line, obtain via font:pad
       --peny of first line, obtain via font:pad
       function fontmt.wrap(font, wrapmode, s,  penx, peny, lines)
@@ -550,7 +525,6 @@ do --loadfont TODO make driver supply path and extension
         local wordfinished
 
         for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
-        --for i=1, #s do local uchar = string_sub(s, i, i)
           local glyph = metrics[uchar]
 
           if whitespace and (not iswhitespace[uchar]) then --if starting a word

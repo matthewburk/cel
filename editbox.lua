@@ -24,7 +24,7 @@ THE SOFTWARE.
 local cel = require 'cel'
 
 local metacel, metatable = cel.newmetacel('editbox') 
-metacel['.text'] = cel.label.newmetacel('editbox.text')
+metacel['.text'] = cel.text.newmetacel('editbox.text')
 
 local _font = {} 
 local _text = {} 
@@ -86,6 +86,8 @@ function metacel:__describe(editbox, t)
   t.font = editbox[_font]
 end
 
+--caret.i 0 is caret position before any text (on the left)
+--caret.i 1 is after the first glyh
 function metatable:movecaret(i)
   local text = self[_text]
   local caret = self[_caret]
@@ -207,9 +209,13 @@ end
 
 function metatable:deleteselection()
   local selection = self[_text].selection
-  local i, j = selection.i, selection.j
-  self:select(false)
-  return self:delete(i, j)
+  if selection.i then
+    local i, j = selection.i, selection.j
+    self:select(false)
+    self:delete(i, j)
+    self:movecaret(i-1)
+  end
+  return self
 end
 
 function metatable:delete(i, j)
@@ -218,8 +224,8 @@ function metatable:delete(i, j)
   local text = self[_text]
   local str = text:gettext()
   j = j or i
-  
-  if i > 0 then
+ 
+  if i > 0 and i <= text:len() then
     local len, nbytes = 0, 0
     local leftpart = ''
     local rightpart = ''
@@ -236,7 +242,6 @@ function metatable:delete(i, j)
       end
     end
 
-    --str = str:sub(0, i-1) .. str:sub(j+1, -1)
     self:settext(leftpart..rightpart)
   end
   return self
@@ -244,25 +249,30 @@ end
 
 function metacel:onchar(editbox, char, intercepted)
   if intercepted then return end
+  editbox:deleteselection()
   local text = editbox[_text]
   local i = editbox[_caret].i
-  editbox:deleteselection()
   local str = text:gettext()
   local len, nbytes = 0, 0
   local leftpart = ''
   local rightpart = ''
 
-  for uchar in string.gmatch(str, '([%z\1-\127\194-\244][\128-\191]*)') do
-    len=len+1
-    nbytes=nbytes+#uchar
-    if len == i then
-      leftpart=str:sub(1, nbytes)
-      rightpart=str:sub(nbytes+1, -1)
+  if i == 0 then
+    rightpart = str
+  elseif i == text:len() then
+    leftpart = str
+  else
+    for uchar in string.gmatch(str, '([%z\1-\127\194-\244][\128-\191]*)') do
+      len=len+1
+      nbytes=nbytes+#uchar
+      if len == i then
+        leftpart=str:sub(1, nbytes)
+        rightpart=str:sub(nbytes+1, -1)
+      end
     end
   end
 
   editbox:settext(leftpart .. char .. rightpart)
-  --editbox:settext(str:sub(0, i) .. char .. str:sub(i+1, -1))
   editbox:movecaret(i+1)
   return true
 end
@@ -298,10 +308,9 @@ function metacel:onkeypress(editbox, key, intercepted)
     end
     return true
   elseif key == keys.delete then
+    
     if editbox:getselection() then
-      local i = selection.i
       editbox:deleteselection()
-      editbox:movecaret(i-1)
     else
       editbox:delete(caret.i+1)
       editbox:movecaret(caret.i)
