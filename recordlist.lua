@@ -57,12 +57,12 @@ do
     return recordlist
   end
 
-  local _compile = metarecordlist.compile
-  function metarecordlist:compile(t, recordlist)
-    return _compile(self, t, recordlist or metarecordlist:new(t.gap, t.face))
+  local _assemble = metarecordlist.assemble
+  function metarecordlist:assemble(t, recordlist)
+    return _assemble(self, t, recordlist or metarecordlist:new(t.gap, t.face))
   end
 
-  function metarecordlist:compileentry(recordlist, entry, entrytype)
+  function metarecordlist:assembleentry(recordlist, entry, entrytype)
     if 'table' == entrytype then
       local linker, xval, yval
 

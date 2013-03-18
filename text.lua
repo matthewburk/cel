@@ -202,6 +202,11 @@ function metacel:__describe(text, t)
 end
 
 --TODO decrease calls to __resize for links in a col/row
+--__resize is allowed to change the the h if the width change, or the w if the height changed.
+--if the w changed __resize should not change the w
+--if the h changed __resize should not change the h
+--it must not do both a reactionary width change and a reactionary height change, even if they are done on different invocations of __resize, this will cause an infinite loop
+--in other words a cels width can be a function of its height OR a cels height can be a function of its width and the independent variable must not change as a result of the dependent variable changing
 function metacel:__resize(text, ow, oh)
   if text.w ~= ow then
     wrap(text)
@@ -234,8 +239,8 @@ do
     return text
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, text)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, text)
     text = text or metacel:new(t.text, t.face)
     if t.wrap then
       text:wrap(t.wrap)
@@ -243,7 +248,7 @@ do
     if t.justify then
       text:justify(t.justify)
     end
-    return _compile(self, t, text)
+    return _assemble(self, t, text)
   end
 end
 

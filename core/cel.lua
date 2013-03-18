@@ -41,10 +41,10 @@ local metatable = _ENV.metacel.metatable
 
 do --metatable.setlimits
   local floor = math.floor
+  --TODO replace max function with math.max
   local function max(a, b) if a >= b then return a else return b end end
 
   function metatable.setlimits(cel, minw, maxw, minh, maxh, nw, nh)
-
     if cel[_metacel].__setlimits then
       minw, maxw, minh, maxh = cel[_metacel]:__setlimits(cel, minw, maxw, minh, maxh, nw, nh)
     end
@@ -64,22 +64,20 @@ do --metatable.setlimits
     cel[_minh] = minh
     cel[_maxh] = maxh
 
-    if not (ominw ~= minw or omaxw ~= maxw or ominh ~= minh or omaxh ~= maxh) then
-      return cel
-    end
+    local limitschanged = ominw ~= minw or omaxw ~= maxw or ominh ~= minh or omaxh ~= maxh
 
     local w = nw or cel[_w]
     local h = nh or cel[_h]
 
-    if w < minw then w = minw end
-    if h < minh then h = minh end
     if w > maxw then w = maxw end
+    if w < minw then w = minw end
     if h > maxh then h = maxh end
+    if h < minh then h = minh end
 
     event:wait()
 
     local host = rawget(cel, _host)
-    if host then
+    if host and limitschanged then
       local formation = rawget(host, _formation)
       if formation and formation.linklimitschanged then
         formation:linklimitschanged(host, cel, ominw, omaxw, ominh, omaxh)
@@ -240,7 +238,7 @@ do --metatable.link
     --[[ don't do this becuase option would be ignored, document that this will unlink the cel from its host and link it again
     --with new linker and option, use relink to avoid the unlink
     if rawget(cel, _host) == host then
-      return metatable.relink(cel, linker, xval, yval)
+      return metatable.relink(cel, linker,   xval, yval)
     end
     --]]
 
@@ -366,7 +364,7 @@ do --metatable.unlink
       end
       --if this cel is joined to an anchor, remove join from anchor to this cel
       if rawget(cel, _linker) == joinlinker then
-        local anchor = cel[_yval]
+        local anchor = cel[_xval].anchor
         joins[anchor][cel] = nil
       end
       --TODO remove join from anchor2 to this cel
@@ -397,7 +395,6 @@ end
 
 do --metatable.disable
   function metatable.disable(cel)
-    --print('metatable.unlink', cel)
     if cel[_disabled] then return cel end
 
     cel[_disabled] = true --TODO use bit flags for this
@@ -727,7 +724,6 @@ do --metatable.endflow
 
     flows[cel] = nil --TODO may want to keep this until final context is seen in description
 
-    --print('endflow', cel, flow)
     local context = t.context
     local ox, oy, ow, oh = t.ox, t.oy, t.ow, t.oh
     local fx, fy, fw, fh = t.fx, t.fy, t.fw, t.fh 
@@ -1038,6 +1034,12 @@ do --metatable.sink
   end
 end
 
+do --metatable.set_
+  function metatable:set_(t)
+    self._ = t
+    return self
+  end
+end
 do --metatable.__index
   local rawsub = {
     x = _x, 
@@ -1094,5 +1096,15 @@ function metatable:dump()
 
   if self[_metacel].__dump then
     self[_metacel]:__dump(self)
+  end
+end
+
+do
+  local cel_metacel = metacel
+  function metatable:setface(face)
+    local metacel = self[_metacel]
+    self[_face] = metacel[_face][_variations][face] or cel_metacel[_face][_variations][face] or metacel[_face]
+    assert(self[_face])
+    return metacel:setface(self, self[_face])
   end
 end

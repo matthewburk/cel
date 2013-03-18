@@ -119,4 +119,16 @@ function M.setalpha(color, a)
   return M.rgb(r, g, b, a)
 end
 
+function M.setsaturation(color, s)
+  local r, g, b, a = M.torgb(color)
+  local h, _, l = M.rgbtohsl(r, g, b)
+  return M.hsl(h, s, l, a)
+end
+
+function M.getcomplement(color, news, newl, newa)
+  local h, s, l, a = M.tohsl(color)
+  
+  return M.hsl(h+180, news or s, newl or l, newa or a)
+end
+
 return M

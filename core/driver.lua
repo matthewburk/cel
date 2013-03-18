@@ -161,6 +161,8 @@ end
 
 --TODO state is implied do not let it be passed in
 function driver.mousedown(x, y, button, alt, ctrl, shift)
+  if button == nil then return end --protect against bad input
+
   driver.mousemove(x,y)
   event:wait()
 
@@ -187,6 +189,8 @@ function driver.mousedown(x, y, button, alt, ctrl, shift)
 end
 
 function driver.mouseup(x, y, button, alt, ctrl, shift)
+  if button == nil then return end --protect against bad input
+
   driver.mousemove(x,y)
   event:wait()
 
@@ -234,6 +238,8 @@ function driver.mousewheel(x, y, direction, lines)
 end
 
 function driver.keydown(key, alt, ctrl, shift)
+  if key == nil then return end --protect against bad input
+
   event:wait()
 
   keyboard[_keys][key] = key
@@ -258,6 +264,8 @@ function driver.keydown(key, alt, ctrl, shift)
 end
 
 function driver.keypress(key, alt, ctrl, shift)
+  if key == nil then return end --protect against bad input
+
   event:wait()
 
   keyboard[_keys][key] = key
@@ -281,6 +289,8 @@ function driver.keypress(key, alt, ctrl, shift)
 end
 
 function driver.keyup(key, alt, ctrl, shift)
+  if key == nil then return end --protect against bad input
+
   event:wait()
 
   keyboard[_keys][key] = nil
@@ -304,6 +314,8 @@ function driver.keyup(key, alt, ctrl, shift)
 end
 
 function driver.char(char)
+  if char == nil then return end --protect against bad input
+
   event:wait()
 
   local device_focus = keyboard[_focus]

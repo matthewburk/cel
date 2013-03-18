@@ -185,7 +185,7 @@ local function reflexandalign(col)
   end
 end
 
-local function setwidthandheight(col, ow, oh)
+local function setwidthandheight(col)
   local links = col[_links]
 
   if links.n == 0 then return end --TODO set w and h and limits before returning
@@ -194,11 +194,8 @@ local function setwidthandheight(col, ow, oh)
   local newcolw = links.minw
   local newcolh = links.minh
 
-  if col.__debug then
-    dprint('reconcile links.minw', links.minw)
-    dprint('reconcile newcolw', newcolw)
-    dprint('reconcile newcolh', newcolh)
-  end
+  dprint('reconcile links.minw', links.minw)
+  dprint('reconcile newcolw', newcolw)
 
 
   --if a linker prevents collapse to min size
@@ -209,17 +206,12 @@ local function setwidthandheight(col, ow, oh)
     newcolh = math.max(newcolh, math.min(h, links.maxh))
     --TODO links.maxh must be set when a slot is created, it can increase to maxdim
     --unlinking or changing the maxh of a slot will force a new links.maxh to be calculated
-    if col.__debug then
-      dprint('reconcile newcolw', newcolw, col[_w], w)
-      dprint('reconcile newcolh', newcolh, col[_h], h)
-    end
+    dprint('reconcile newcolw', newcolw, w)
   end
 
 
-  ow = ow or col[_w]
-  oh = oh or col[_h]
-
-  if oh ~= col[_h] or ow ~= col[_w] or newcolw ~= col[_w] or newcolh ~= col[_h] or col[_minw] ~= links.minw or col[_minh] ~= links.minh or col[_maxh] ~= links.maxh then
+  if newcolw ~= col[_w] or newcolh ~= col[_h] or col[_minw] ~= links.minw or col[_minh] ~= links.minh or col[_maxh] ~= links.maxh then
+    local ow = col[_w]
     if col.__debug then
       dprint('col', col.id, 'setlimits', links.minw, nil, links.minh, links.maxh, newcolw, newcolh)
     end
@@ -248,10 +240,6 @@ local function setwidthandheight(col, ow, oh)
 
       newcolh = links.minh
 
-      if col.__debug then
-        dprint('col after setlimits', col.id, 'newcolh', newcolh)
-      end
-
       if newcolh ~= col[_h] or col[_minh] ~= links.minh or col[_maxh] ~= links.maxh then
         if col.__debug then
           dprint('col', col.id, 'setlimits2', links.minw, nil, links.minh, links.maxh, col[_w], newcolh)
@@ -262,9 +250,7 @@ local function setwidthandheight(col, ow, oh)
     end
   end
 
-  if col.__debug then
-    dprint('links.minh', links.minh)
-  end
+  dprint('links.minh', links.minh)
   assert(col[_h] >= links.minh, col[_h], links.minh)
 end
 
@@ -342,23 +328,19 @@ end
 --called anytime col is moved by any method
 do --colformation.moved
 
-  
   local function moveandreconcile(col, x, y, w, h, ox, oy, ow, oh)
     if w ~= ow or h ~= oh then
-      col.marc = col.marc and col.marc + 1 or 1
-      dprint('col', col.id, 'moveandreconcile', col.marc)
+      dprint('col', col.id, 'moveandreconcile')
       event:onresize(col, ow, oh)
 
       col[_flux] = 1
-      setwidthandheight(col, ow, oh)
+      setwidthandheight(col)
       reflexandalign(col)
       col[_flux] = col[_flux] - 1 
 
       if col[_metacel].__resize then
         col[_metacel]:__resize(col, ow, oh)
       end
-      col.marc = col.marc - 1
-      dprint('col', col.id, 'finish moveandreconcile', col.marc)
     end
   end
 
@@ -423,7 +405,7 @@ do --colformation.link
     link[_slot] = slot
 
     if col.__debug then
-      dprint('col slot.minh', slot.minh)
+      print('col slot.minh', slot.minh)
     end
 
     do
@@ -1041,37 +1023,47 @@ do --metatable.setslotflexandlimits
     local slot = link[_slot]
     assert(slot)
 
+    flex = flex or 0
+
     --undo slot.flex
     links.flex = links.flex - slot.flex
 
-    --undo slot.minh/maxh
+    --undo slot.minh
     if slot.flex == 0 then
-      links.minh = links.minh - slot.h
-      links.maxh = links.maxh - slot.h
+      if links[1] ~= link then
+        links.minh = links.minh - links.gap - slot.h
+      else
+        links.minh = links.minh - slot.h
+      end
     else
-      links.minh = links.minh - slot.minh
-      links.maxh = links.maxh - slot.maxh
+      if links[1] ~= link then
+        links.minh = links.minh - links.gap - slot.minh
+      else
+        links.minh = links.minh - slot.minh
+      end
     end
 
-    slot.fixedlimits = (type(minh) == 'number' and 1 or 0) + (type(maxh) == 'number' and 2 or 0) --0, 1, 2 or 3
-    slot.flex = flex and math.floor(flex) or 0 
+    slot.flex = flex
+    slot.minh = minh or link[_minh]
+    slot.maxh = maxh or link[_maxh]
+    slot.h = math.min(math.max(link[_h], slot.minh), slot.maxh) --TODO to row
+
+    --apply slot.flex
+    links.flex = links.flex + slot.flex
 
     --apply slot.minh
     if slot.flex == 0 then
-      slot.minh = minh == true and link[_minh] or math.floor(minh or link[_minh])
-      slot.maxh = math.max(slot.minh, maxh == true and link[_maxh] or math.floor(maxh or link[_maxh]))
-
-      slot.h = math.max(math.min(slot.maxh, link[_h]), slot.minh)
-      links.minh = links.minh + slot.h
-      links.maxh = math.min(links.maxh + slot.h, maxdim)
+      if links[1] ~= link then
+        links.minh = links.minh + links.gap + slot.h
+      else
+        links.minh = links.minh + slot.h
+      end
     else
-      slot.minh = minh == true and link[_minh] or math.floor(minh or 0)
-      slot.maxh = math.max(slot.minh, maxh == true and link[_maxh] or math.floor(maxh or maxdim))
-
-      slot.h = slot.minh
-      links.minh = links.minh + slot.minh
-      links.maxh = math.min(links.maxh + slot.maxh, maxdim)
-      links.flex = links.flex + slot.flex
+      if links[1] ~= link then
+        links.minh = links.minh + links.gap + slot.minh
+      else
+        links.minh = links.minh + slot.minh
+      end
     end
 
     links.reform = true

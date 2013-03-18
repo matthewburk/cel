@@ -31,26 +31,32 @@ local _task = {}
 local _layout = {}
 local _root = {}
 
---TODO this is broke by depending on a root cel, fix that
-local meta, mt = cel.col.newmetacel('menu')
-meta['.slot'] = cel.slot.newmetacel('menu.slot')
+local metacel, mt = cel.col.newmetacel('menu')
+metacel['.slot'] = cel.slot.newmetacel('menu.slot')
 
 local layout = {
-  showdelay = 200;
-  hidedelay = 200;
-  slot = {
-    margin = {
-      l = 40,
-      r = 40,
-      t = function(w, h) return h*.25 end; 
-      b = function(w, h) return h*.25 end;
-    };
-    link = 'center',
-  };
+  showdelay = 200,
+  hidedelay = 200,
+  menuslot = {
+    face = nil,
+    link = nil, --how subject is linked in menuslot
+  },
   divider = {
     w = 1; h = 1;
     link = {'width', 2};
   };
+}
+
+local menuslotlayout = {
+  margin = nil,
+  --[[
+  margin = {
+    l = 40,
+    r = 40,
+    t = function(w, h) return h*.25 end; 
+    b = function(w, h) return h*.25 end;
+  },
+  --]]
 }
 
 local function ismenuslot(slot)
@@ -65,8 +71,8 @@ end
 
 function mt.fork(menu, fork, submenu)
   local fork = type(fork) == 'string' and cel.label.new(fork, cel.menu) or fork
-  local slot = meta.new_menuslot(menu, fork)
-  fork:link(slot, menu[_layout].slot.link)
+  local slot = metacel.new_menuslot(menu, fork)
+  fork:link(slot, menu[_layout].menuslot.link)
   slot[_submenu] = submenu
   return menu
 end
@@ -79,9 +85,6 @@ end
 function mt.showat(menu, x, y, root)
   root = root or menu[_root]
   menu[_root] = root
-
-  --x = x + root.X
-  --y = y + root.Y
 
   local hw, hh = root.w, root.h
   local w, h = menu.w, menu.h
@@ -196,29 +199,35 @@ local function showat(menu, x, y, parent)
 end
 
 do
-  function meta:__link(menu, link, linker, xval, yval, option)
+  function metacel:__link(menu, link, linker, xval, yval, option)
     if option == 'divider' then
       return
     elseif not ismenuslot(link) then
       local slot = self.new_menuslot(menu, link)
-      return slot, menu[_layout].slot.link
+      local layout = menu.face.layout or layout
+
+      if linker then
+        return slot, linker, xval, yval
+      else
+        return slot, layout.menuslot.link 
+      end
     end
   end
 end
 
-function meta:onmousein(menu)
+function metacel:onmousein(menu)
   local parentmenu = menu[_parentmenu]
   if parentmenu then
     parentmenu[_task] = false
   end
 end
 
-function meta:__celfromstring(menu, s)
+function metacel:__celfromstring(menu, s)
   return cel.label.new(s, cel.menu)
 end
 
-do --meta['.slot']
-  local meta_slot = meta['.slot']
+do --metacel['.slot']
+  local meta_slot = metacel['.slot']
 
   function meta_slot:__describe(slot, t)
     local submenu = slot[_submenu]
@@ -292,10 +301,19 @@ do --meta['.slot']
 
   do
     local normalize = cel.util.normalize_padding
+
     local _new = meta_slot.new
     function meta_slot:new(menu, item)
-      local layout = menu[_layout].slot
-      local slot = _new(self, normalize(layout.margin, item.w, item.h))
+      local layout = menu.face.layout -- or layout
+      local face = self:getface(layout.menuslot.face)
+
+      local slot 
+      if face.layout and face.layout.margin then
+        slot = _new(self, face, normalize(face.layout.margin, item.w, item.h))
+      else
+        slot = _new(self, face)
+      end
+      
       slot[_menu] = menu
       slot.item = item
       slot:link(menu, 'width')
@@ -306,8 +324,8 @@ do --meta['.slot']
 end
 
 do
-  local _new = meta.new
-  function meta:new(face)
+  local _new = metacel.new
+  function metacel:new(face)
     local face = self:getface(face)
     local layout = face.layout or layout
     local menu = _new(self, 0, face)
@@ -315,30 +333,30 @@ do
     return menu
   end
 
-  local _compile = meta.compile
-  function meta:compile(t, menu)
-    menu = menu or meta:new(t.face)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, menu)
+    menu = menu or metacel:new(t.face)
     menu.onchoose = t.onchoose
-    return _compile(self, t, menu)
+    return _assemble(self, t, menu)
   end
 
-  local _compileentry = meta.compileentry
-  function meta:compileentry(menu, entry, entrytype)
+  local _assembleentry = metacel.assembleentry
+  function metacel:assembleentry(menu, entry, entrytype)
     if 'table' == entrytype and entry.submenu then
       menu:fork(entry.submenu, cel.menu(entry))
     else
-      _compileentry(self, menu, entry, entrytype)
+      _assembleentry(self, menu, entry, entrytype)
     end
   end
 end
 
 do
-  local slotmeta = meta['.slot']
-  meta.new_menuslot = slotmeta:newfactory().new
+  local slotmeta = metacel['.slot']
+  metacel.new_menuslot = slotmeta:newfactory().new
 end
 
 local function divider(menu)
   menu:putdivider()
 end
 
-return meta:newfactory({layout = layout, divider=divider})
+return metacel:newfactory({layout = layout, divider=divider})

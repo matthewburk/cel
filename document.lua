@@ -288,10 +288,10 @@ do
     return document
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, doc)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, doc)
     doc = doc or t.self or metacel:new(t.face)
-    return _compile(self, t, doc)
+    return _assemble(self, t, doc)
   end
 end
 
@@ -339,9 +339,9 @@ do --hyperlink
     return hyperlink 
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, hyperlink)
-    return _compile(self, t, hyperlink or metacel:new(t.text, t.target, t.face))
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, hyperlink)
+    return _assemble(self, t, hyperlink or metacel:new(t.text, t.target, t.face))
   end
 
   document.hyperlink = metacel:newfactory() 

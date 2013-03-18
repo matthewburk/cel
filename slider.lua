@@ -123,11 +123,11 @@ do --TODO min, max and step should not be new params, but set via setrange, sets
     return slider
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, slider)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, slider)
     slider = slider or metacel:new(t.direction, t.min, t.max, t.step, t.face)
     slider.onchange = t.onchange
-    return _compile(self, t, slider)
+    return _assemble(self, t, slider)
   end
 end
 

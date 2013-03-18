@@ -70,6 +70,10 @@ function metatable:settext(str)
   return self
 end
 
+function metatable:printf(format, ...)
+  return self:settext(string.format(format, ...))
+end
+
 function metatable:gettext()
   return self[_text]:gettext()
 end
@@ -405,13 +409,13 @@ do
     return editbox
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, editbox)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, editbox)
     editbox = editbox or metacel:new(t.text, t.w, t.face)
 
     editbox.filter = t.filter
 
-    return _compile(self, t, editbox)
+    return _assemble(self, t, editbox)
   end
 end
 

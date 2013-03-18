@@ -373,14 +373,14 @@ do
     return window
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, window)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, window)
     window = window or metacel:new(t.w, t.h, t.title, t.face)
 
     if t.title then window:settitle(t.title) end
 
     window.onchange = t.onchange
-    return _compile(self, t, window)
+    return _assemble(self, t, window)
   end
 
   local _newmetacel = metacel.newmetacel

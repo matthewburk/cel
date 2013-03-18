@@ -126,13 +126,13 @@ do
     return mutexpanel
   end
 
-  local _compile = meta.compile
-  function meta:compile(t, mutexpanel)
+  local _assemble = meta.assemble
+  function meta:assemble(t, mutexpanel)
     mutexpanel = mutexpanel or meta:new(t.w, t.h, t.face)
-    return _compile(self, t, mutexpanel)
+    return _assemble(self, t, mutexpanel)
   end
 
-  function meta:compileentry(mutexpanel, entry, entrytype, linker, xval, yval, option)
+  function meta:assembleentry(mutexpanel, entry, entrytype, linker, xval, yval, option)
     if 'table' == entrytype then
       --TODO interpret link how _cel does, need function like { linker, xval, yval, option = cel.decodelink(entry.link) }
       if entry.link then

@@ -216,8 +216,8 @@ end
 
 M['width'] = function(hw, hh, x, y, w, h, xval, yval)
   xval = xval or 0
-  yval = yval or 0
-  return xval, y, hw - (xval * 2), h
+  yval = yval or xval 
+  return xval, y, hw - (xval + yval), h
 end
 
 M['width.top'] = function(hw, hh, x, y, w, h, xval, yval)

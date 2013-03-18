@@ -136,10 +136,10 @@ do
     return vlistbox
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, vlistbox)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, vlistbox)
     vlistbox = vlistbox or metacel:new(t.face)
-    _compile(self, t, vlistbox)
+    _assemble(self, t, vlistbox)
     if t.items then
       vlistbox:setitems(t.items)
     end

@@ -120,13 +120,13 @@ do
     return _new(self, w, h, face)
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, button)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, button)
     button = button or metacel:new(t.w, t.h, t.face)
     button.onclick = t.onclick
     button.onpress = t.onpress
     button.onhold = t.onhold
-    return _compile(self, t, button)
+    return _assemble(self, t, button)
   end
 
   

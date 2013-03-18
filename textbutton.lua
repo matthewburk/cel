@@ -68,13 +68,13 @@ do
     return textbutton               
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, textbutton)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, textbutton)
     textbutton = textbutton or metacel:new(t.text, t.face)
     textbutton.onclick = t.onclick
     textbutton.onpress = t.onpress
     textbutton.onhold = t.onhold
-    return _compile(self, t, textbutton)
+    return _assemble(self, t, textbutton)
   end
 end
 

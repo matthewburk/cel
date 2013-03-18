@@ -59,15 +59,7 @@ function metatable.len(label)
   return label[_len]
 end
 
-function metatable.settext(label, text)
-  if not rawget(label, _font) then
-    return false, 'not a label'
-  end
-
-  if label[_text] == text then
-    return label
-  end
-
+local function settext(label, text)
   label[_text] = text
 
   local font = label[_font]
@@ -82,6 +74,15 @@ function metatable.settext(label, text)
   label[_texth] = texth
   label:setlimits(w, w, h, h)
   label:refresh()
+end
+
+function metatable.settext(label, text)
+  if label[_text] == text then
+    return label
+  else
+    settext(label, text)
+  end
+  
   return label
 end
 
@@ -128,9 +129,18 @@ do
     return label
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, label)
-    return _compile(self, t, label or metacel:new(t.text, t.face))
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, label)
+    return _assemble(self, t, label or metacel:new(t.text, t.face))
+  end
+
+  local _setface = metacel.setface
+  function metacel:setface(label, face)
+    local font = face.font
+    label[_font] = face.font
+    label[_layout] = face.layout or layout
+    settext(label, label[_text])
+    return _setface(self, label, face)
   end
 end
 

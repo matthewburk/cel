@@ -194,11 +194,9 @@ do --cel.describe, cel.printdescription
 
   function M.printdescription(t, metadescription)
     if metadescription then
-      io.write(string.format('count:%d\ntimer:%d\n', t.count, t.timer))
+      io.write(string.format('count:%d\ntimer:%d\n', metadescription.count, metadescription.timer))
       io.write(string.format('updaterect { l:%d t:%d r:%d b:%d }\n',
-                t.updaterect.l, t.updaterect.t, t.updaterect.r, t.updaterect.b))
-
-      t = t.description 
+                metadescription.updaterect.l, metadescription.updaterect.t, metadescription.updaterect.r, metadescription.updaterect.b))
     end
     if t then
       printdescription(t, '')
@@ -290,7 +288,7 @@ do --loadfont TODO make driver supply path and extension
       --returns advance, font height, xmin(ink), xmax(ink), ymin(ink), ymax(ink), nglphs
       --whitespace is considred ink
       function fontmt.measure(font, s, i, j)
-        if not s then return 0, 0, 0, 0, 0, 0, 0 end
+        if not s then return 0, font.ascent + font.descent, 0, 0, 0, 0, 0 end
 
         local start = i or 1
         local len = j and j-i+1 or #s 
@@ -524,6 +522,8 @@ do --loadfont TODO make driver supply path and extension
         local whitespace
         local wordfinished
 
+        --local slen = #s
+        --local repeats = 0
         for uchar in string.gmatch(s, '([%z\1-\127\194-\244][\128-\191]*)') do
           local glyph = metrics[uchar]
 
@@ -628,6 +628,10 @@ do --loadfont TODO make driver supply path and extension
 
         return maxadvance, nlines, lines
       end
+
+      if jit then --crashes (sometimes) when jit is on for this function
+        jit.off(fontmt.wrapat)
+      end
     end
 
     do
@@ -687,9 +691,6 @@ do --loadfont TODO make driver supply path and extension
           local b = padding.b or t
           if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
 
-          local advance = font.metrics[' '].advance
-          l=l+math.floor(advance/2)
-          r=r+math.floor(.9+advance/2)
           w = w + l + r 
           h = h + t + b
 
@@ -704,9 +705,6 @@ do --loadfont TODO make driver supply path and extension
           local b = padding.b or t
           if type(b) == 'function' then b = math.floor(b(w,h,font) + .5) end
 
-          --local advance = font.metrics[' '].advance
-          --l=l+math.floor(advance/2)
-          --r=r+math.floor(.9+advance/2)
           w = w + l + r 
           h = h + t + b
 
@@ -731,19 +729,14 @@ do --loadfont TODO make driver supply path and extension
       error('driver does not implement loadfont')
     end
 
-    name = name .. ':normal:normal'
-    local name, weight, slant = name:match("([^:]*):([^:]*):([^:]*)")
-    local weight = weight or 'normal'
-    local slant = slant or 'normal'
-
     size = math.modf(96/72 * size) --convert point to pixels
 
-    local ok, ret = pcall(driver.loadfont, name, weight, slant, size)
+    local ok, ret = pcall(driver.loadfont, name, size)
     if ok then
       font = setmetatable(ret, {__index=fontmt})
     else
       print('ERROR loading font', ret)
-      font = setmetatable(driver.loadfont('default', weight, slant, size), {__index=fontmt})
+      font = setmetatable(driver.loadfont('default', size), {__index=fontmt})
     end
     fonts[key] = font
     return font
@@ -960,7 +953,7 @@ function M.newnamespace(N)
 
   N.cel = setmetatable({}, {
     __call=function(_, t)
-      return N.compile('cel', t)      
+      return N.assemble('cel', t)      
     end})
 
   N.cel.new = function(...)
@@ -974,7 +967,7 @@ function M.newnamespace(N)
       namespace[k] = setmetatable({}, {
         __index = v,
         __call = function(_, t)
-          return N.compile(k, t)
+          return N.assemble(k, t)
         end,
       })
 
@@ -1046,10 +1039,10 @@ do
   getmetatable(proxyM).__index = M 
   getmetatable(proxyM).__newindex = function() error('attempt to update a read-only table', 2) end
   getmetatable(proxyM).__call = function(proxyM, t)
-    return metacel:compile(t)
+    return metacel:assemble(t)
   end
   getmetatable(proxyM).__metatable = function() error('protected table') end
-  M.cel = proxyM --this makes new and compile as defined by a namespace able to follow same rules for all metacels
+  M.cel = proxyM --this makes new and assemble as defined by a namespace able to follow same rules for all metacels
   return proxyM 
 end
 

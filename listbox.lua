@@ -34,7 +34,10 @@ local _changes = {}
 
 local layout = {
   gap = 0,
-  slotface = nil,  
+  list = {
+    face = nil,  
+    slotface = nil,
+  }
 }
 
 function metatable:beginflux(...)
@@ -361,6 +364,12 @@ end
 do -- items metacel
   local metacel = metacel['.list'] 
 
+  do --metacel.touch
+    function metacel:touch(cel, x, y)
+      return true
+    end
+  end
+
   do --metacel.dispatchevents
     function metacel:dispatchevents(listbox)
       local changes = listbox[_changes]
@@ -475,7 +484,7 @@ do
 
     local listbox = _new(self, w, h, face)
 
-    local items = metacel['.list']:new(layout.gap, layout)
+    local items = metacel['.list']:new(layout.gap, layout.list.face, layout.list.slotface)
 
     items[_listbox] = listbox
     listbox[_items] = items
@@ -485,11 +494,11 @@ do
     return listbox
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, listbox)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, listbox)
     listbox = listbox or metacel:new(t.w, t.h, t.face)
     listbox.onchange = t.onchange
-    _compile(self, t, listbox)
+    _assemble(self, t, listbox)
     return listbox
   end
 end

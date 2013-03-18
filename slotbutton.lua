@@ -35,25 +35,25 @@ do
   local __describe = metacel.__describe
   function metacel:__describe(slotbutton, t)
     metabutton:__describe(slotbutton, t)
-    __describe(self, slotbutton, t)
+    return __describe and __describe(self, slotbutton, t)
   end
 end
 
-do --TODO slot and slotbutton should not take margins as new args, use a setmargins function instead
+do 
   local _new = metacel.new
-  function metacel:new(l, t, r, b, minw, minh, face)
+  function metacel:new(face, l, t, r, b, minw, minh)
     face = self:getface(face)
-    local slotbutton = _new(l, t, r, b, minw, minh, face)
+    local slotbutton = _new(self, face, l, t, r, b, minw, minh)
     return slotbutton               
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, slotbutton)
-    slotbutton = slotbutton or metacel:new(t.text, t.face)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, slotbutton)
+    slotbutton = slotbutton or metacel:new(t.face) --TODO margins
     slotbutton.onclick = t.onclick
     slotbutton.onpress = t.onpress
     slotbutton.onhold = t.onhold
-    return _compile(self, t, slotbutton)
+    return _assemble(self, t, slotbutton)
   end
 end
 

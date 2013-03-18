@@ -144,13 +144,31 @@ end
 do --ENV.move
   local math = math
   function move(cel, x, y, w, h)
-    --print('move', cel, x, y, w, h)
-    local host = rawget(cel, _host)
-    if host and rawget(host, _formation) then
-      return host[_formation]:movelink(host, cel, x, y, w, h)
-    else
-      return stackformation:movelink(host, cel, x, y, w, h)
+    x, y, w, h = math.modf(x), math.modf(y), math.floor(w), math.floor(h)
+    local ox, oy, ow, oh = cel[_x], cel[_y], cel[_w], cel[_h]
+    local minw, maxw = cel[_minw], cel[_maxw]
+    local minh, maxh = cel[_minh], cel[_maxh]
+
+    assert(minw)
+    assert(maxw)
+    assert(minh)
+    assert(maxh)
+    if w ~= ow or h ~= oh then 
+      if w > maxw then w = maxw end
+      if w < minw then w = minw end
+      if h > maxh then h = maxh end    
+      if h < minh then h = minh end
     end
+
+    if not(x ~= ox or y ~= oy or w ~= ow or h ~= oh) then return cel end
+
+    local host = rawget(cel, _host)
+    local formation = host and rawget(host, _formation) or stackformation
+
+    assert(minw)
+    local ok = formation:movelink(host, cel, x, y, w, h, minw, maxw, minh, maxh, ox, oy, ow, oh)
+
+    return cel
   end
 end
 
@@ -185,40 +203,36 @@ end
 
 do --ENV.linkall
   function linkall(host, t)
-    --linkall = function(host, t)
-      event:wait()
+    event:wait()
 
-      local linker = t.link
-      local xval, yval, option
+    local linker = t.link
+    local xval, yval, option
 
-      if linker then
-        if type(linker) == 'table' then
-          linker, xval, yval, option = unpack(linker, 1, 4)
-        elseif type(linker) ~= 'function' then
-          linker = linkers[linker]
-        end
+    if linker then
+      if type(linker) == 'table' then
+        linker, xval, yval, option = unpack(linker, 1, 4)
+      elseif type(linker) ~= 'function' then
+        linker = linkers[linker]
       end
+    end
 
-      for i=1, #t do
-        local link = t[i]
-        local linktype = type(link)
+    for i=1, #t do
+      local link = t[i]
+      local linktype = type(link)
 
-        if linktype == 'function' then
-          link(host, t, linker, xval, yval, option)
-        elseif linktype == 'string' then
-          --TODO __celfromstring should merge with compile entry
-          host[_metacel]:__celfromstring(host, link):link(host, linker, xval, yval, option)
-        elseif linktype == 'table' and link[_metacel] then --if link is a cel
-          link:link(host, linker, xval, yval, option)
-        else
-          host[_metacel]:compileentry(host, link, linktype, linker, xval, yval, option)
-        end
+      if linktype == 'function' then
+        link(host, t, linker, xval, yval, option)
+      elseif linktype == 'string' then
+        --TODO __celfromstring should merge with assemble entry
+        host[_metacel]:__celfromstring(host, link):link(host, linker, xval, yval, option)
+      elseif linktype == 'table' and link[_metacel] then --if link is a cel
+        link:link(host, linker, xval, yval, option)
+      else
+        host[_metacel]:assembleentry(host, link, linktype, linker, xval, yval, option)
       end
+    end
 
-      event:signal()
-    --end
-   
-    --return linkall(host, t)
+    event:signal()
   end
 end
 
@@ -456,25 +470,24 @@ do --ENV.testlinker
   local math = math
 
   --TODO need to support option parameter
-  function testlinker(cel, host, linker, xval, yval)
+  function testlinker(cel, host, linker, xval, yval, nx, ny, nw, nh, minw, maxw, minh, maxh)
     if linker and type(linker) ~= 'function' then linker = linkers[linker] end
     --linker = linker and linkers[linker] or linker --TODO this is probably quicker than checking the type of the linker do this everywhere
-    local x, y, w, h = cel[_x], cel[_y], cel[_w], cel[_h]
-
-    if not linker then return x, y, w, h end
+    if not linker then return cel[_x], cel[_y], cel[_w], cel[_h] end
 
     if rawget(host, _formation) then
-      return host[_formation]:testlinker(host, cel, linker, xval, yval)
+      return host[_formation]:testlinker(host, cel, linker, xval, yval, nx, ny, nw, nh, minw, maxw, minh, maxh)
     else
-      local minw, maxw = cel[_minw], cel[_maxw]
-      local minh, maxh = cel[_minh], cel[_maxh]
+      local x, y, w, h = nx or cel[_x], ny or cel[_y], nw or cel[_w], nh or cel[_h]
+      minw, maxw = minw or cel[_minw], maxw or cel[_maxw]
+      minh, maxh = minh or cel[_minh], maxh or cel[_maxh]
 
       x, y, w, h = linker(host[_w], host[_h], x, y, w, h, xval, yval, minw, maxw, minh, maxh)
 
-      if w < minw then w = minw end
       if w > maxw then w = maxw end
-      if h < minh then h = minh end
+      if w < minw then w = minw end
       if h > maxh then h = maxh end
+      if h < minh then h = minh end
 
       return math.modf(x), math.modf(y), math.floor(w), math.floor(h)
     end
@@ -568,34 +581,26 @@ do --stackformation.unlink
 end
 
 do --stackformation.movelink
-  function stackformation:movelink(host, cel, x, y, w, h)
-    local ox, oy, ow, oh = cel[_x], cel[_y], cel[_w], cel[_h]
-    local minw, maxw = cel[_minw], cel[_maxw]
-    local minh, maxh = cel[_minh], cel[_maxh]
-
-    if w ~= ow or h ~= oh then 
-      if w < minw then w = minw end
-      if w > maxw then w = maxw end
-      if h < minh then h = minh end
-      if h > maxh then h = maxh end    
-    end
-
-    if not(x ~= ox or y ~= oy or w ~= ow or h ~= oh) then return cel end
-
+  function stackformation:movelink(host, cel, x, y, w, h, minw, maxw, minh, maxh, ox, oy, ow, oh)
     if host and rawget(cel, _linker) then
-      x, y, w, h = cel[_linker](host[_w], host[_h], x, y, w, h, cel[_xval], cel[_yval], minw, maxw, minh, maxh)
-      if w < minw then w = minw end
-      if w > maxw then w = maxw end
-      if h < minh then h = minh end
-      if h > maxh then h = maxh end    
-    end
+      x, y, w, h = cel[_linker](host[_w], host[_h], x, y, w, h, rawget(cel, _xval), rawget(cel, _yval), minw, maxw, minh, maxh)
+      x = math.modf(x)
+      y = math.modf(y)
+      w = math.floor(w)
+      h = math.floor(h)
 
-    if x ~= ox then x = math.modf(x); cel[_x] = x; end
-    if y ~= oy then y = math.modf(y); cel[_y] = y; end
-    if w ~= ow then w = math.floor(w); cel[_w] = w; end
-    if h ~= oh then h = math.floor(h); cel[_h] = h; end
+      if w > maxw then w = maxw end
+      if w < minw then w = minw end
+      if h > maxh then h = maxh end    
+      if h < minh then h = minh end
+    end
 
     if x ~= ox or y ~= oy or w ~= ow or h ~= oh then
+      cel[_x] = x
+      cel[_y] = y
+      cel[_w] = w
+      cel[_h] = h
+
       event:wait()
       celmoved(host, cel, x, y, w, h, ox, oy, ow, oh)  
       event:signal()
@@ -638,13 +643,14 @@ do --metacel.new
   end
 end
 
-do --metacel.compile
+do --metacel.assemble
   local metacel = metacel
 
   local unpack = unpack
-  function metacel:compile(t, cel)
+  function metacel:assemble(t, cel)
     assert(type(cel) == 'table' or type(cel) == 'nil')
     cel = cel or metacel:new(t.w, t.h, t.face)
+    cel._ = t._ or cel._
     if cel.beginflux then cel:beginflux(false) end
     event:wait()
 
@@ -717,7 +723,7 @@ do --metacel.newfactory
     end
 
     metatable = {__call = function (factory, t)
-      return metacel:compile(t)
+      return metacel:assemble(t)
       --TODO protect metatable
     end}
 
@@ -730,10 +736,10 @@ do --metacel.newfactory
         },
         {
           __call = function(outerfactory, t)
-            if outerfactory.compile then
-              return metacel:compile(t, outerfactory.compile(t))
+            if outerfactory.assemble then
+              return metacel:assemble(t, outerfactory.assemble(t))
             else 
-              return metacel:compile(t)
+              return metacel:assemble(t)
             end
           end,
 
@@ -824,8 +830,14 @@ do --metacel.getface
   end
 end
 
-do --metacel.compileentry 
-  function metacel:compileentry(host, entry, entrytype, linker, xval, yval, option)
+do --metacel.setface
+  function metacel:setface(cel, face)
+    return cel:refresh()
+  end
+end
+
+do --metacel.assembleentry 
+  function metacel:assembleentry(host, entry, entrytype, linker, xval, yval, option)
     if 'table' == entrytype then
       if entry.link then
         if type(entry.link) == 'table' then
@@ -838,6 +850,7 @@ do --metacel.compileentry
       for i, v in ipairs(entry) do
         local link = M.tocel(v, host)
         if link then
+          link._ = entry._ or link._
           link:link(host, linker, xval, yval, option)
         end
       end

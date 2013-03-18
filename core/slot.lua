@@ -153,6 +153,9 @@ do --slotformation.dolinker
       return stackformation:dolinker(host, link, linker, xval, yval)
     end
 
+    if link.__debuglimits then
+      dprint('running linker from', host, link, linker)
+    end
     local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
     local x, y, w, h = self:linker(host, link, ox, oy, ow, oh, linker, xval, yval, 
                                    rawget(link, _minw) or 0, rawget(link, _maxw) or maxdim,
@@ -193,6 +196,9 @@ do --slotformation.linker
     local hw = host[_w] - margin.w
     local hh = host[_h] - margin.h
 
+    if link.__debuglimits then
+      dprint('%%%% slotformation:linker hw, hh', hw, hh)
+    end
     maxw = math.min(hw, maxw)
     maxh = math.min(hh, maxh)
 
@@ -233,21 +239,10 @@ end
 do --slotformation.movelink
   --movelink should only be called becuase move was explicitly called, make sure that is the case
   local math = math
-  function slotformation:movelink(host, link, x, y, w, h)
+  function slotformation:movelink(host, link, x, y, w, h, minw, maxw, minh, maxh, ox, oy, ow, oh)
     if link ~= host[_slotlink] then
-      return stackformation:movelink(host, link, x, y, w, h)
+      return stackformation:movelink(host, link, x, y, w, h, minw, maxw, minh, maxh, ox, oy, ow, oh)
     end
-
-    local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
-    local minw, maxw = rawget(link, _minw) or 0, rawget(link, _maxw) or maxdim
-    local minh, maxh = rawget(link, _minh) or 0, rawget(link, _maxh) or maxdim
-
-    if w < minw then w = minw end
-    if w > maxw then w = maxw end
-    if h < minh then h = minh end
-    if h > maxh then h = maxh end    
-
-    if not(x ~= ox or y ~= oy or w ~= ow or h ~= oh) then return link end
 
     local margin = host[_margin]
 
@@ -260,15 +255,16 @@ do --slotformation.movelink
 
       x, y, w, h = linker(hw, hh, x, y, w, h, xval, yval, minw, maxw, minh, maxh)
 
-      if w < minw then w = minw end
-      if w > maxw then w = maxw end
-      if h < minh then h = minh end
-      if h > maxh then h = maxh end
-
       x = math.modf(x)
       y = math.modf(y)
       w = math.floor(w)
       h = math.floor(h)
+
+      if w > maxw then w = maxw end
+      if w < minw then w = minw end
+      if h > maxh then h = maxh end
+      if h < minh then h = minh end
+
     end
 
     event:wait()
@@ -277,10 +273,13 @@ do --slotformation.movelink
     --local edgex, edgey = self:getbraceedges(host, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
 
     if w ~= ow or h ~= oh then
-      local linker, xval, yval = rawget(host, _linker), rawget(host, _xval), rawget(host, _yval)
-      host:relink() --this is to make slot size to subject even if the slot is constrained by linker, like in a sequence
+      if link.__debuglimits then
+        dprint('YAY WE ARE CHANING.... $#@#!$@!$#@!$#$', link, w, h)
+      end
+      --TODO removed becuase it looks like it does nothinglocal linker, xval, yval = rawget(host, _linker), rawget(host, _xval), rawget(host, _yval)
+      --TODO removed becuase it looks like it does nothing host:relink() --this is to make slot size to subject even if the slot is constrained by linker, like in a sequence
       host:resize(w + margin.w, h + margin.h) 
-      host:relink(linker, xval, yval)
+      --TODO removed because it looks like it does nothing host:relink(linker, xval, yval)
       --TODO to make a super tight fit force maxw/h to same value as w/h 
     end 
 
@@ -291,8 +290,15 @@ do --slotformation.movelink
     link[_y] = y
     link[_w] = w
     link[_h] = h
-   
+  
+    if link.__debuglimits then
+        dprint('POST LINKER', link, x, y, w, h)
+      end
+
     if x ~= ox or y ~= oy or w ~= ow or h ~= oh then
+      if link.__debuglimits then
+        dprint('CELMOVED', link, h, oh)
+      end
       celmoved(host, link, x, y, w, h, ox, oy, ow, oh)  
     end
 
@@ -327,11 +333,43 @@ end
 
 local metacel, metatable = metacel:newmetacel('slot')
 
---TODO remove this function make all links private
-do --metatable.get
-  function metatable.get()
-    error('strongly deprecated function')
+do
+  function metatable:setmargins(l, t, r, b)
+    l = l or 0
+    t = t or l
+    r = r or l
+    b = b or t
+
+    local margin = self[_margin]
+    local minw = self[_defaultminw]
+    local minh = self[_defaultminh]
+    self[_minw] = math.max(l + r, minw or 0) --TODO set in assemble
+    self[_minh] = math.max(t + b, minh or 0) --TODO set in assemble
+    margin.l = l
+    margin.r = r
+    margin.t = t
+    margin.b = b
+    margin.w = l + r
+    margin.h = t + b
+
+    local link = rawget(slot, _slotlink)
+    if link then
+      local edgex, edgey = slotformation:getbraceedges(self, link, link.linker, link.xval, link.yval)
+      local minw = math.max(edgex + margin.w, self[_defaultminw])
+      local minh = math.max(edgey + margin.h, self[_defaultminh])
+
+      if minw ~= self[_minw] or minh ~= self[_minh] then
+        self:setlimits(minw, self[_maxw], minh, self[_maxh])
+      end
+
+      return self:resize(margin.w + link[_w], margin.h + link[_h])
+    else
+      return self:resize(0, 0)
+    end
   end
+end
+
+do --metatable.get
   function metatable.getsubject(slot)
     return rawget(slot, _slotlink) or nil
   end
@@ -354,21 +392,22 @@ function metatable.dump(slot)
   end
 end
 
-do --metacel.new, metacel.compile
+do --metacel.new, metacel.assemble
   local math = math
 
   local _new = metacel.new
-  function metacel:new(l, t, r, b, minw, minh, face)
+  function metacel:new(face, l, t, r, b, minw, minh)
     face = self:getface(face)
-    local slot = _new(self, 0, 0, face) --add minw, minh
     l = math.max(0, math.floor(l or 0))
-    r = math.max(0, math.floor(r or 0))
     t = math.max(0, math.floor(t or 0))
-    b = math.max(0, math.floor(b or 0))
+    r = math.max(0, math.floor(r or l))
+    b = math.max(0, math.floor(b or t))
+
+    local slot = _new(self, 0, 0, face) --add minw, minh
     slot[_defaultminw] = minw or 0
     slot[_defaultminh] = minh or 0
-    slot[_minw] = math.max(l + r, minw or 0) --TODO set in compile
-    slot[_minh] = math.max(t + b, minh or 0) --TODO set in compile
+    slot[_minw] = math.max(l + r, minw or 0) --TODO set in assemble
+    slot[_minh] = math.max(t + b, minh or 0) --TODO set in assemble
     slot[_margin] = {l = l, t = t, r = r, b = b, w = l + r, h = t + b}
     slot[_formation] = slotformation
     slot[_slotlink] = false 
@@ -376,15 +415,15 @@ do --metacel.new, metacel.compile
     return slot
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, slot)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, slot)
     local margin = t.margin
     if margin then
-      slot = slot or metacel:new(margin.l, margin.t, margin.r, margin.b, t.minw, t.minh, t.face)
+      slot = slot or metacel:new(t.face, margin.l, margin.t, margin.r, margin.b, t.minw, t.minh)
     else
-      slot = slot or metacel:new(0, 0, 0, 0, t.minw, t.minh, t.face)
+      slot = slot or metacel:new(t.face, 0, 0, 0, 0, t.minw, t.minh)
     end
-    _compile(self, t, slot)
+    _assemble(self, t, slot)
     return slot
   end
 end

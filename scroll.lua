@@ -1082,8 +1082,8 @@ do
     return scroll
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, scroll)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, scroll)
     scroll = scroll or metacel:new(t.w, t.h, t.face)
     if t.subject then
       if cel.iscel(t.subject) then
@@ -1097,7 +1097,7 @@ do
       scroll.stepsize = t.stepsize
     end
 
-    return _compile(self, t, scroll)
+    return _assemble(self, t, scroll)
   end
 
   local _newmetacel = metacel.newmetacel

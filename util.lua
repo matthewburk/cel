@@ -170,26 +170,6 @@ function M.loadfilein(_ENV, name)
   return setfenv(f, _ENV)
 end
 
---[[
---if padding then
-    local l = padding.l or 0
-    local t = padding.t or 0
-    if type(l) == 'function' then l = math.floor(l(w) + .5) end
-    if type(t) == 'function' then t = math.floor(t(h) + .5) end
-
-    local r = padding.r or l
-    local b = padding.b or t
-    if type(r) == 'function' then r = math.floor(r(w) + .5) end
-    if type(b) == 'function' then b = math.floor(b(h) + .5) end
-
-    w = w + l + r 
-    h = h + t + b
-
-    --subtractig b from h becuase t and b were both alrady added to h
-    return -xmin + l, (h + ymin - b), w, h, l, t, r, b
-  end
---]]
-
 function M.normalize_padding(padding, w, h, ...)
   if not padding then
     return 0, 0, 0, 0, ...

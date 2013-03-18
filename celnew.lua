@@ -41,9 +41,8 @@ local colformation = {__nojoin=true}
 local math = math
 local table = table
 
-local function dprint() end
-
 local lastindex = 0 --not storing lastindex on per col basis on purpose
+
 
 local function getbraceedge(link, linker, xval, yval)
   if not linker then
@@ -66,7 +65,6 @@ end
 --col w, h and limits shall not mutate as a side effect of this funtion
 --assigns links.brace and links.minw
 local function rebrace(col)
-  dprint('col', col.id, 'rebrace')
   local links = col[_links]
 
   if not links.brace then
@@ -91,11 +89,6 @@ local function rebrace(col)
 
     assert(brace)
 
-    if col.__debug then
-      dprint('rebrace minw', minw)
-      dprint('rebrace brace', brace.minw, brace.w, brace.r)
-    end
-
     links.brace = brace
     links.minw = minw
   end
@@ -103,13 +96,11 @@ end
 
 --col w, h and limits shall not mutate as a side effect of this funtion
 local function reflexandalign(col)
-  dprint('col', col.id, 'reflexandalign')
   local links = col[_links]
   local unmaxedflex = links.flex
   local extra = col[_h] - links.minh
 
-  assert(extra>=0)
-  if unmaxedflex > 0 then 
+  if unmaxedflex > 0 and extra > 0 then 
     local mult = extra/unmaxedflex
     unmaxedflex = 0
 
@@ -119,12 +110,12 @@ local function reflexandalign(col)
       link = links[i]
       slot = link[_slot]
 
-      if slot.flex > 0 then
+      if slot.flex > 0 and slot.h < slot.maxh then
         --flex
-        local maxfromflex = slot.maxh - slot.minh
+        local maxfromflex = slot.maxh - (slot.minh or link[_minh])
         local take = math.min(maxfromflex, math.floor(slot.flex * mult))
         --note that height is reduced if link[_minh] > slot.maxh 
-        local h = slot.minh + take
+        local h = (slot.minh or link[_minh]) + take
    
         extra = extra - take
 
@@ -133,16 +124,15 @@ local function reflexandalign(col)
         end
 
         slot.h = h
-        if col.__debug then
-          dprint('col.reflexandalign', col.id, 'slot.h', slot.h)
-        end
       end
     end
   end
 
   --dolinkers to respond to new slot.h
 
-  if true then -- do --reform TODO only reform when it is necessary, avoid on initial build of col
+  do --reform
+    local colformation = colformation
+    local dolinker = colformation.dolinker
     local y = 0
     local gap = links.gap
     local colmaxh = 0
@@ -153,7 +143,7 @@ local function reflexandalign(col)
       link = links[i]
       slot = link[_slot]
 
-      if extra > 0 and unmaxedflex > 0 and slot.flex > 0 then
+      if extra > 0 and unmaxedflex > 0 and slot.flex > 0 and slot.h < slot.maxh then
         local take = math.min(math.ceil(slot.flex/unmaxedflex*extra), slot.maxh - slot.h)
         slot.h = slot.h + take
         extra = extra - take
@@ -163,7 +153,7 @@ local function reflexandalign(col)
       --TODO limit maxh of col if necessary 
 
       if rawget(link, _linker) then
-        colformation:dolinker(col, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
+        dolinker(colformation, col, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
       end
 
       slot.y = y
@@ -185,60 +175,54 @@ local function reflexandalign(col)
   end
 end
 
-local function setwidthandheight(col, ow, oh)
+--reflex becuase the flex ratio of a slot changes
+--which means total flex changes or a sinlge slot flex changes
+--relex if the *excess* height of a col changes
+local function reconcile(col, force)
+  assert(col[_flux] == 0)
+
   local links = col[_links]
 
-  if links.n == 0 then return end --TODO set w and h and limits before returning
+  if links.n == 0 then return end
 
-   --collapse col to its min size
+  --if we don't have a brace then links.minw may be invalid find the brace
+  rebrace(col)
+  
+  event:wait()
+
+  --collapse col to its min size
   local newcolw = links.minw
   local newcolh = links.minh
 
-  if col.__debug then
-    dprint('reconcile links.minw', links.minw)
-    dprint('reconcile newcolw', newcolw)
-    dprint('reconcile newcolh', newcolh)
-  end
 
+  col[_flux] = 1
 
   --if a linker prevents collapse to min size
   if (newcolw ~= col[_w] or newcolh ~= col[_h]) and rawget(col, _linker) then
-    local x, y, w, h = testlinker(col, col[_host], rawget(col, _linker), rawget(col, _xval), rawget(col, _yval), nil, nil, newcolw, newcolh, newcolw, nil, newcolh, links.maxh)
+    local x, y, w, h = testlinker(col, col[_host], rawget(col, _linker), rawget(col, _xval), rawget(col, _yval))
     --the linker may only increase the col w and h from its minimum values
     newcolw = math.max(newcolw, w)
     newcolh = math.max(newcolh, math.min(h, links.maxh))
     --TODO links.maxh must be set when a slot is created, it can increase to maxdim
     --unlinking or changing the maxh of a slot will force a new links.maxh to be calculated
-    if col.__debug then
-      dprint('reconcile newcolw', newcolw, col[_w], w)
-      dprint('reconcile newcolh', newcolh, col[_h], h)
-    end
   end
 
 
-  ow = ow or col[_w]
-  oh = oh or col[_h]
-
-  if oh ~= col[_h] or ow ~= col[_w] or newcolw ~= col[_w] or newcolh ~= col[_h] or col[_minw] ~= links.minw or col[_minh] ~= links.minh or col[_maxh] ~= links.maxh then
-    if col.__debug then
-      dprint('col', col.id, 'setlimits', links.minw, nil, links.minh, links.maxh, newcolw, newcolh)
-    end
+  if newcolw ~= col[_w] or newcolh ~= col[_h] or col[_minw] ~= links.minw or col[_minh] ~= links.minh or col[_maxh] ~= links.maxh then
+    local ow = col[_w]
     col:setlimits(links.minw, nil, links.minh, links.maxh, newcolw, newcolh)
-
-    if col.__debug then
-      dprint('col', col.id, 'w', col.w, 'h', col.h)
-    end
     --col is now potentially sized and limited properly
     --a link could have changed its height, through metacel.__resize in response to its width changing
     --so recheck minh, maxh
 
     if ow ~= col[_w] then
       local colformation = colformation
+      local dolinker = colformation.dolinker
       local link
       for i = 1, links.n do
         link = links[i]
         if rawget(link, _linker) then
-          colformation:dolinker(col, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
+          dolinker(colformation, col, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
         end
       end
       --at this point a link could have changed its height, through metacel.__resize
@@ -248,41 +232,15 @@ local function setwidthandheight(col, ow, oh)
 
       newcolh = links.minh
 
-      if col.__debug then
-        dprint('col after setlimits', col.id, 'newcolh', newcolh)
-      end
-
       if newcolh ~= col[_h] or col[_minh] ~= links.minh or col[_maxh] ~= links.maxh then
-        if col.__debug then
-          dprint('col', col.id, 'setlimits2', links.minw, nil, links.minh, links.maxh, col[_w], newcolh)
-        end
         col:setlimits(links.minw, nil, links.minh, links.maxh, col[_w], newcolh)
         --col is now sized and limited properly
       end
     end
   end
 
-  if col.__debug then
-    dprint('links.minh', links.minh)
-  end
-  assert(col[_h] >= links.minh, col[_h], links.minh)
-end
+  assert(col[_h] >= links.minh)
 
---reflex becuase the flex ratio of a slot changes
---which means total flex changes or a sinlge slot flex changes
---relex if the *excess* height of a col changes
-local function reconcile(col, force)
-  dprint('col', col.id, 'reconcile')
-  assert(col[_flux] == 0)
-
-  --if we don't have a brace then links.minw may be invalid find the brace
-  rebrace(col)
-  
-  event:wait()
-
-  col[_flux] = 1
-
-  setwidthandheight(col)
   reflexandalign(col)
 
   col[_flux] = col[_flux] - 1
@@ -342,31 +300,82 @@ end
 --called anytime col is moved by any method
 do --colformation.moved
 
-  
-  local function moveandreconcile(col, x, y, w, h, ox, oy, ow, oh)
+  local function moveandreconcile()
     if w ~= ow or h ~= oh then
-      col.marc = col.marc and col.marc + 1 or 1
-      dprint('col', col.id, 'moveandreconcile', col.marc)
       event:onresize(col, ow, oh)
 
-      col[_flux] = 1
-      setwidthandheight(col, ow, oh)
-      reflexandalign(col)
-      col[_flux] = col[_flux] - 1 
+      local links = col[_links]
+      if col[_flux] == 0 and links.n > 0 then
+        assert(links.brace)
+
+        col[_flux] = 1
+        local link
+        for i = 1, links.n do
+          link = links[i] 
+          if rawget(link, _linker) then
+            self:dolinker(col, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
+          end
+        end
+        assert(links.brace)
+        --at this point a link could have changed its height, through metacel.__resize 
+        --in response to its width changing
+
+
+        if links.minh > h then
+          col:setlimits(links.minw, nil, links.minh, links.maxh)
+          assert(col[_h] == links.minh)
+
+          --no need for flexing at minh
+
+        end
+
+        do --reform
+          local colformation = colformation
+          local dolinker = colformation.dolinker
+          local y = 0
+          local gap = links.gap
+          local colmaxh = 0
+
+          local link
+          local slot
+          for i = 1, links.n do
+            link = links[i]
+            slot = link[_slot]
+
+            if rawget(link, _linker) then
+              dolinker(colformation, col, link, link[_linker], rawget(link, _xval), rawget(link, _yval))
+            end
+
+            slot.y = y
+            link[_y] = slot.y + (slot.linky or 0)
+            y = y + slot.h + gap
+
+            --joins
+            if joins[link] then
+              for joinedcel in pairs(joins[link]) do
+                if rawget(joinedcel, _linker) == joinlinker then
+                  joinanchormoved(joinedcel, link) 
+                  --only if joinedcel is joined to the target, 
+                  --relinking will unjoin but allow the join to reestablish if relinked with 
+                  --linker, xval and yval that were assigned when it was joined
+                end
+              end
+            end
+          end
+        end
+
+        assert(col[_h] >= links.minh)
+
+        col[_flux] = col[_flux] - 1
+      end
 
       if col[_metacel].__resize then
         col[_metacel]:__resize(col, ow, oh)
       end
-      col.marc = col.marc - 1
-      dprint('col', col.id, 'finish moveandreconcile', col.marc)
     end
   end
 
   function colformation:moved(col, x, y, w, h, ox, oy, ow, oh)
-    if col.__debug then
-      dprint('col.moved', col.id, x, y, w, h, ox, oy, ow, oh)
-    end
-
     if col[_flux] == 0 then
       moveandreconcile(col, x, y, w, h, ox, oy, ow, oh)
     elseif w ~= ow or h ~= oh then
@@ -408,71 +417,57 @@ do --colformation.link
     links.n = links.n + 1
     links[links.n] = link
 
+
     --TODO resolve when option.minh > option.maxh, minh should prevail
     local slot = {
-      fixedlimits = (type(option.minh) == 'number' and 1 or 0) + (type(option.maxh) == 'number' and 2 or 0), --0, 1, 2 or 3
       h = 0,
       y = 0,
-      minh = 0,
-      maxh = maxdim,
-      flex = option.flex and math.floor(option.flex) or 0, 
+      minh = option.minh or false,
+      maxh = option.maxh or false,
+      flex = option.flex or 0, 
       face = option.face and getface('cel', option.face) or false,
       linky = 0,
     }
 
     link[_slot] = slot
 
-    if col.__debug then
-      dprint('col slot.minh', slot.minh)
-    end
-
     do
-      local gap = links.n > 1 and links.gap or 0
+      local gap = links.n > 0 and links.gap or 0
    
       --slot.minh is the minh of the slot, if false then minh is inherited from the link
       --slot.maxh is the maxh of the slot, if false then maxh is inherited from the link
       --when a slot has flex it starts flexing from the minh of the slot
       
       slot.y = gap + links.minh
+      local maxh = math.min(slot.maxh or maxdim, link[_maxh])
 
       if slot.flex == 0 then
-        slot.minh = option.minh == true and link[_minh] or math.floor(option.minh or link[_minh])
-        slot.maxh = math.max(slot.minh, option.maxh == true and link[_maxh] or math.floor(option.maxh or link[_maxh]))
-
-        --slot.h = math.max(math.min(slot.maxh, link[_h]), slot.minh)
-        slot.h = math.max(math.min(slot.maxh, link[_h]), slot.minh)
-        links.minh = links.minh + gap + slot.h
-        links.maxh = math.min(links.maxh + gap + slot.h, maxdim)
+        slot.h = math.min(math.max(link[_h], slot.minh or link[_minh]), maxh)
       else
-        slot.minh = option.minh == true and link[_minh] or math.floor(option.minh or 0)
-        slot.maxh = math.max(slot.minh, option.maxh == true and link[_maxh] or math.floor(option.maxh or maxdim))
-
-        --local maxh = math.min(slot.maxh, link[_maxh])
-        --slot.h = math.min(slot.minh, maxh)
-        slot.h = slot.minh
-        links.minh = links.minh + gap + slot.minh
-        links.maxh = math.min(links.maxh + gap + slot.maxh, maxdim)
-        links.flex = links.flex + slot.flex
+        slot.h = math.min(slot.minh or link[_minh], maxh)
       end
 
+      links.minh = links.minh + gap + slot.h
+      links.maxh = math.min(links.maxh + gap + maxh, maxdim)
+      links.flex = links.flex + slot.flex
     end
-
+    
     link[_y] = slot.y
    
-    if linker then
-      --get edge before running linker so that links.minw is up to date for current link
-      local edge = getbraceedge(link, linker, xval, yval)
-      if edge > links.minw then 
-        links.brace = link 
-        links.minw = edge
+    do 
+      local edge
+
+      if linker then
+        edge = getbraceedge(link, linker, xval, yval)
+        link[_linker] = linker
+        link[_xval] = xval
+        link[_yval] = yval
+        self:dolinker(col, link, linker, xval, yval)
+      else
+        link[_x] = math.max(0, math.floor(xval))
+        edge = link[_x] + link[_w]
       end
-      link[_linker] = linker
-      link[_xval] = xval
-      link[_yval] = yval
-      self:dolinker(col, link, linker, xval, yval)
-    else
-      link[_x] = math.max(0, math.floor(xval))
-      local edge = link[_x] + link[_w]
+
       if edge > links.minw then 
         links.brace = link 
         links.minw = edge
@@ -490,40 +485,26 @@ end
 function colformation:relink(col, link, linker, xval, yval)
   local links = col[_links]
   local slot = link[_slot]
+  local edge
 
   if linker then
-    --get edge before running linker so that links.minw is up to date for current link
-    local edge = getbraceedge(link, linker, xval, yval)
-    if edge > links.minw then 
-      links.brace = link 
-      links.minw = edge
-    elseif links.brace == link and edge < links.minw then
-      links.brace = false
-    end
+    edge = getbraceedge(link, linker, xval, yval)
     link[_linker] = linker
     link[_xval] = xval
     link[_yval] = yval
     self:dolinker(col, link, linker, xval, yval)
   else
-    local edge = link[_x] + link[_w]
-    if edge > links.minw then 
-      links.brace = link 
-      links.minw = edge
-    elseif links.brace == link and edge < links.minw then
-      links.brace = false
-    end
+    edge = link[_x] + link[_w]
   end
 
-  if slot.flex == 0 then
-    links.minh = links.minh - slot.h
-    slot.h = math.max(math.min(slot.maxh, link[_h]), slot.minh)
-    links.minh = links.minh + slot.h
-  end
-
-  if col.__debug then
-    dprint('relink brace', links.brace)
+  if edge > links.minw then 
+    links.brace = link 
+    links.minw = edge
+  elseif links.brace == link and edge < links.minw then
+    links.brace = false
   end
  
+  --possible changes(links.minw, links.brace)
   if col[_flux] == 0 then
     reconcile(col)
   end
@@ -547,22 +528,19 @@ function colformation:dolinker(col, link, linker, xval, yval)
     link[_w] = w
     link[_y] = y
     link[_h] = h
-    if col.__debug then
-          dprint('link.w', link.w)
-        end
     celmoved(col, link, x, y, w, h, ox, oy, ow, oh)
   end
 end
 
---colformation.testlinker  TODO make all test linkers optionally take new x, y, w, h
-function colformation:testlinker(col, link, linker, xval, yval, nx, ny, nw, nh, minw, maxw, minh, maxh)
-  nx, ny, nw, nh = nx or link[_x], ny or link[_y], nw or link[_w], nh or link[_h]
-  minw, maxw, minh, maxh = minw or link[_minw], maxw or link[_maxw], minh or link[_minh], maxh or link[_maxh]
+--colformation.testlinker
+function colformation:testlinker(col, link, linker, xval, yval)
+  local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
+  local minw, maxw, minh, maxh = link[_minw], link[_maxw], link[_minh], link[_maxh]
   local slot = link[_slot]
 
   --TODO if this link is the brace, then account for the new width wehn linked with the linker
   local sloty = slot.linky
-  local x, y, w, h = self:linker(col, link, linker, xval, yval, nx, ny, nw, nh, minw, maxw, minh, maxh)
+  local x, y, w, h = self:linker(col, link, linker, xval, yval, ox, oy, ow, oh, minw, maxw, minh, maxh)
   slot.linky = sloty
 
   if w > maxw then w = maxw end
@@ -574,12 +552,12 @@ function colformation:testlinker(col, link, linker, xval, yval, nx, ny, nw, nh, 
 end
 
 do --colformation:linker
-  --called from dolinker/testlinker
-  function colformation:linker(col, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh)
+  --called from dolinker/testlinker/movelink
+  function colformation:linker(col, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh, hh)
     local slot = link[_slot]
     local links = col[_links]
     local hw = math.max(links.minw, col[_w])
-    local hh = slot.h
+    local hh = hh or slot.h
 
     x, y, w, h = linker(hw, hh, x, y - slot.y, w, h, xval, yval, minw, maxw, minh, maxh)
 
@@ -594,23 +572,41 @@ do --colformation:linker
     if h < minh then h = minh end
 
     --prevent linker from exceeding left and right edge of host
-    w = math.min(w, hw)
-    x = math.max(0, x)
+    if w > hw then w = hw end
     if x + w > hw then x = hw - w end
+    if x < 0 then x = 0 end
 
     --linker cannot change the slot under any circumstances, slot does not have a w, that is inherited from col
     --TODO does not have to be 0 and hh, take minh and maxh of slot into consideration
     if slot.flex == 0 then
-      if h < hh then
+      h = math.max(minh, math.min(maxh, hh))
+      if h == minh then
+        if h > hh then
+        elseif h < hh then
+        end
+      elseif h == maxh then
+
+      end
+
+      if hh == slot.minh then
+        if h > hh then h = hh end
         if y + h > hh then y = hh - h end
-        y = math.max(0, y)
-      elseif hh < minh then
-        h = minh
-        if y + h < hh then y = hh - h end
-        y = math.min(0, y)
+        if y < 0 then 
+          y = 0
+        end
+      elseif hh == slot.maxh then
+
       else
         y = 0
         h = hh
+      end
+      h = math.max(math.min(h, hh), if h > hh 
+      if (h > hh and hh ~= slot.maxh) or (h < hh and hh ~= slot.minh) then
+        h = hh
+      end
+
+      y = 0
+      if slot.minh then
       end
     end
 
@@ -620,48 +616,57 @@ do --colformation:linker
   end
 end
 
-do --colformation.movelink
-  --movelink should only be called becuase move was explicitly called, make sure that is the case
-  local math = math
+do --colformation.linklimitschanged
+  function colformation:linklimitschanged(col, link, ominw, omaxw, ominh, omaxh)
+    local links = col[_links]
+    local slot = link[_slot]
 
-  local function movelinker(hw, hh, slot, link, linker, xval, yval, x, y, w, h, minw, maxw, minh, maxh)
-    x, y, w, h = linker(hw, hh, x, y - slot.y, w, h, xval, yval, minw, maxw, minh, maxh)
-
-    x = math.modf(x)
-    y = math.modf(y)
-    w = math.floor(w)
-    h = math.floor(h)
-
-    if w > maxw then w = maxw end
-    if w < minw then w = minw end
-    if h > maxh then h = maxh end   
-    if h < minh then h = minh end
-
-    --prevent linker from exceeding left and right edge of host
-    x = math.max(0, x)
-
-    --linker cannot change the slot under any circumstances, slot does not have a w, that is inherited from col
-    --TODO does not have to be 0 and hh, take minh and maxh of slot into consideration
     if slot.flex == 0 then
-      if h < hh then
-        if y + h > hh then y = hh - h end
-        y = math.max(0, y)
-      elseif hh < minh then
-        h = minh
-        if y + h < hh then y = hh - h end
-        y = math.min(0, y)
-      else
-        y = 0
-        h = hh
+      if slot.h < link[_minh] then
+        links.minh = links.minh - slot.h
+        slot.h = math.min(math.max(link[_h], slot.minh or 0), slot.maxh)
+        links.minh = links.minh + slot.h
+      end
+    else
+      if not slot.minh then
+        local original = slot.h
+        slot.h = math.min(link[_minh], slot.maxh)
+        if slot.h ~= original then
+          links.minh = links.minh - original
+          links.minh = links.minh + slot.h
+        end
       end
     end
 
-    slot.linky = y
+    if link == links.brace and link[_minw] < link[_w] then
+      local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
+      if edge < links.minw then
+        links.brace = false 
+      end
+    end
 
-    return x, slot.y + y, w, h
+    --possible changes (links.brace, slot.h, links.minh, reflex)
+    if col[_flux] == 0 then
+      reconcile(col)
+    end
   end
+end
 
-  function colformation:movelink(col, link, x, y, w, h, minw, maxw, minh, maxh, ox, oy, ow, oh)
+do --colformation.movelink
+  --movelink should only be called becuase move was explicitly called, make sure that is the case
+  local math = math
+  function colformation:movelink(col, link, x, y, w, h)
+    local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
+    local minw, maxw = link[_minw], link[_maxw]
+    local minh, maxh = link[_minh], link[_maxh]
+
+    if w > maxw then w = maxw end 
+    if w < minw then w = minw end
+    if h > maxh then h = maxh end    
+    if h < minh then h = minh end
+
+    if not(x ~= ox or y ~= oy or w ~= ow or h ~= oh) then return link end
+
     local links = col[_links]
     local slot = link[_slot]
 
@@ -669,47 +674,50 @@ do --colformation.movelink
       --when a link with no flex is moved explicitly, it will change the height of the slot
       --bounded by the maxh of the link and the minh of the slot/link
       if rawget(link, _linker) then
-        x, y, w, h = movelinker(col[_w], math.max(math.min(slot.maxh, h), slot.minh), slot, 
-                                link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
-                                x, y, w, h, minw, maxw, minh, maxh)
+        --passing in new h as hh to linker as last param to allow h of link to change
+        x, y, w, h = self:linker(col, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
+                                 x, y, w, h, minw, maxw, minh, maxh,  
+                                 math.max(math.min(h, slot.maxh or maxh), slot.minh or minh))
       else
-        local hh = math.max(math.min(slot.maxh, h), slot.minh)
-        y = y - slot.y  
-
-        if h < hh then
-          if y + h > hh then y = hh - h end
-          y = math.max(0, y)
-        elseif hh < minh then
-          h = minh
-          if y + h < hh then y = hh - h end
-          y = math.min(0, y)
-        else
-          y = 0
-          h = hh
-        end
+        local hh = math.max(h, slot.minh or 0)
+        y = math.modf(y) - slot.y        
+        if y + h > hh then y = hh - h end
+        if y < 0 then y = 0 end
 
         slot.linky = y
         y = slot.y + y      
 
-        x = math.max(0, x)
+        if x ~= ox then x = math.max(0, math.modf(x)) end
+        if w ~= ow then w = math.floor(w) end
       end
+
+      if w > maxw then w = maxw end
+      if w < minw then w = minw end
+      if h > maxh then h = maxh end   
+      if h < minh then h = minh end
 
       if h ~= oh then
         links.minh = links.minh - slot.h
-        slot.h = math.max(math.min(slot.maxh, h), slot.minh)
+        slot.h = math.min(math.max(h, slot.minh or 0), slot.maxh)
         links.minh = links.minh + slot.h
       end
     else
       if rawget(link, _linker) then
-        x, y, w, h = movelinker(col[_w], slot.h, slot,
-                                link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
-                                x, y, w, h, minw, maxw, minh, maxh)
+        x, y, w, h = self:linker(col, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
+                     x, y, w, h, minw, maxw, minh, maxh)
       else
-        y = y - slot.y        
+        y = math.modf(y) - slot.y        
         slot.linky = y
         y = slot.y + y      
-        x = math.max(0, x)
+
+        if x ~= ox then x = math.max(0, math.modf(x)) end
+        if w ~= ow then w = math.floor(w) end
       end
+
+      if w > maxw then w = maxw end
+      if w < minw then w = minw end
+      if h > maxh then h = maxh end
+      if h < minh then h = minh end
     end
 
     link[_x] = x
@@ -744,65 +752,6 @@ do --colformation.movelink
   end
 end
 
-do --colformation.linklimitschanged
-  function colformation:linklimitschanged(col, link, ominw, omaxw, ominh, omaxh)
-    local links = col[_links]
-    local slot = link[_slot]
-
-    if slot.flex == 0 then
-      links.minh = links.minh - slot.h
-      links.maxh = links.maxh - slot.h
-
-      if slot.fixedlimits % 2 ~= 1 then --if slot.minh is inherited from link
-        slot.minh = link[_minh]  
-      end
-      if slot.fixedlimits < 2 then --if slot.maxh is inherited from link
-        slot.maxh = link[_maxh]
-      end
-
-      slot.maxh = math.max(slot.minh, slot.maxh)
-
-      slot.h = math.max(math.min(slot.maxh, link[_h]), slot.minh)
-      links.minh = links.minh + slot.h
-      links.maxh = math.min(links.maxh + slot.h, maxdim)
-    else
-      links.minh = links.minh - slot.minh
-      links.maxh = links.maxh - slot.maxh
-
-      if slot.fixedlimits % 2 ~= 1 then --if slot.minh is inherited from link
-        slot.minh = link[_minh]  
-      end
-      if slot.fixedlimits < 2 then --if slot.maxh is inherited from link
-        slot.maxh = link[_maxh]
-      end
-
-      slot.maxh = math.max(slot.minh, slot.maxh)
-
-      slot.h = slot.minh
-      links.minh = links.minh + slot.minh
-      links.maxh = math.min(links.maxh + slot.maxh, maxdim)
-    end
-
-    if link[_minw] > links.minw then
-      local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
-      if edge > links.minw then
-        links.minw = edge
-        links.brace = link
-      end
-    elseif link == links.brace and link[_minw] < link[_w] then
-      local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
-      if edge < links.minw then
-        links.brace = false 
-      end
-    end
-
-    if col[_flux] == 0 then
-      reconcile(col)
-    end
-  end
-end
-
-
 --TODO make this work when clearing, in which case col[_links] is empty
 --TODO always make sure reform is done before search
 do --colformation.unlink
@@ -822,7 +771,7 @@ do --colformation.unlink
     local slot = link[_slot]
     link[_slot] = nil
 
-    local gap = links.n > 1 and links.gap or 0
+    local gap = links.n > 0 and links.gap or 0
   
     if slot.flex == 0 then
       links.minh = links.minh - gap - slot.h
@@ -1041,37 +990,50 @@ do --metatable.setslotflexandlimits
     local slot = link[_slot]
     assert(slot)
 
+    flex = flex or 0
+
     --undo slot.flex
     links.flex = links.flex - slot.flex
 
-    --undo slot.minh/maxh
+    --undo slot.minh
     if slot.flex == 0 then
-      links.minh = links.minh - slot.h
-      links.maxh = links.maxh - slot.h
+      if links[1] ~= link then
+        links.minh = links.minh - links.gap - slot.h
+      else
+        links.minh = links.minh - slot.h
+      end
     else
-      links.minh = links.minh - slot.minh
-      links.maxh = links.maxh - slot.maxh
+      if links[1] ~= link then
+        links.minh = links.minh - links.gap - (slot.minh or link[_minh])
+      else
+        links.minh = links.minh - (slot.minh or link[_minh])
+      end
     end
 
-    slot.fixedlimits = (type(minh) == 'number' and 1 or 0) + (type(maxh) == 'number' and 2 or 0) --0, 1, 2 or 3
-    slot.flex = flex and math.floor(flex) or 0 
+    maxh = maxh or maxdim
+
+    slot.flex = flex
+    slot.minh = minh
+    slot.maxh = maxh
+    assert(slot.maxh)
+    slot.h = math.min(math.max(link[_h], minh or 0), slot.maxh) --TODO to row
+
+    --apply slot.flex
+    links.flex = links.flex + slot.flex
 
     --apply slot.minh
     if slot.flex == 0 then
-      slot.minh = minh == true and link[_minh] or math.floor(minh or link[_minh])
-      slot.maxh = math.max(slot.minh, maxh == true and link[_maxh] or math.floor(maxh or link[_maxh]))
-
-      slot.h = math.max(math.min(slot.maxh, link[_h]), slot.minh)
-      links.minh = links.minh + slot.h
-      links.maxh = math.min(links.maxh + slot.h, maxdim)
+      if links[1] ~= link then
+        links.minh = links.minh + links.gap + slot.h
+      else
+        links.minh = links.minh + slot.h
+      end
     else
-      slot.minh = minh == true and link[_minh] or math.floor(minh or 0)
-      slot.maxh = math.max(slot.minh, maxh == true and link[_maxh] or math.floor(maxh or maxdim))
-
-      slot.h = slot.minh
-      links.minh = links.minh + slot.minh
-      links.maxh = math.min(links.maxh + slot.maxh, maxdim)
-      links.flex = links.flex + slot.flex
+      if links[1] ~= link then
+        links.minh = links.minh + links.gap + (slot.minh or link[_minh])
+      else
+        links.minh = links.minh + (slot.minh or link[_minh])
+      end
     end
 
     links.reform = true
@@ -1139,7 +1101,7 @@ end
 --TODO pcall, with errorhandler function, driver must provide an error handler
 function metatable.flux(col, callback, ...)
   col[_flux] = col[_flux] + 1
-  --reconcile(col, true)
+  reconcile(col, true)
   if callback then
     callback(...)
   end
@@ -1152,15 +1114,13 @@ end
 function metatable.beginflux(col, doreconcile)
   col[_flux] = col[_flux] + 1
   if doreconcile then 
-    --reconcile(col, true) 
+    reconcile(col, true) 
   end
   return col
 end
 
 --TODO remove this, or put it in metacel too easy to mess up
 function metatable.endflux(col, force)
-  --ignore force for now
-  force = false
   col[_flux] = col[_flux] - 1
   if force == nil then force = true end
   if force or col[_flux] == 0 then

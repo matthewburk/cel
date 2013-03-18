@@ -169,8 +169,8 @@ do
     return _new(self, w, h, self:getface(face))
   end
 
-  local _compile = metacel.compile
-  function metacel:compile(t, grip)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, grip)
     grip = grip or metacel:new(t.w, t.h, t.face)
     grip.ongrab = t.ongrab
     grip.ondrag = t.ondrag
@@ -180,7 +180,7 @@ do
       grip:grip(t.target, t.mode)
     end
 
-    return _compile(self, t, grip)
+    return _assemble(self, t, grip)
   end
 end
 

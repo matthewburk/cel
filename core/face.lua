@@ -43,7 +43,6 @@ end
 function celfacemt:register(name)
   assert(name)
   self[_variations][name] = self
-  self[_name] = name
   return self
 end
 
@@ -55,6 +54,7 @@ function celfacemt.print(f, t, pre, facename)
   local s = string.format('%s[%d:%s] { x:%d y:%d w:%d h:%d [refresh:%s]',
     t.metacel, t.id, tostring(facename), t.x, t.y, t.w, t.h, tostring(t.refresh))
   io.write(pre, s)
+  if t.mousefocusin then io.write('\n>>>>>>>>MOUSEFOCUSIN') end
   if t.font then
     io.write('\n', pre, '  @@', string.format('font[%s:%d]', t.font.name, t.font.size))
   end
