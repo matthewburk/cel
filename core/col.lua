@@ -36,6 +36,7 @@ local _links = {}
 local _flux = {}
 local _slotface = {}
 local _slot = _next
+local _index = {}
 local colformation = {__nojoin=true}
 
 local math = math
@@ -89,7 +90,7 @@ local function rebrace(col)
       end
     end
 
-    assert(brace)
+    assert(brace or links.n == 0)
 
     if col.__debug then
       dprint('rebrace minw', minw)
@@ -151,6 +152,7 @@ local function reflexandalign(col)
     local slot
     for i = 1, links.n do
       link = links[i]
+      link[_index] = i
       slot = link[_slot]
 
       if extra > 0 and unmaxedflex > 0 and slot.flex > 0 then
@@ -188,7 +190,7 @@ end
 local function setwidthandheight(col, ow, oh)
   local links = col[_links]
 
-  if links.n == 0 then return end --TODO set w and h and limits before returning
+  --if links.n == 0 then return end --TODO set w and h and limits before returning
 
    --collapse col to its min size
   local newcolw = links.minw
@@ -244,7 +246,7 @@ local function setwidthandheight(col, ow, oh)
       --at this point a link could have changed its height, through metacel.__resize
       --in response to its width changing
 
-      assert(links.brace)
+      assert(links.brace or links.n == 0)
 
       newcolh = links.minh
 
@@ -290,6 +292,7 @@ local function reconcile(col, force)
   event:signal() --TODO move wait/signal outside of this function
 end
 
+--[[
 local function indexof(col, link)
   local links = col[_links]
   
@@ -326,6 +329,27 @@ local function indexof(col, link)
       istart = imid + 1
     end
   end
+end
+--]]
+--
+
+local function indexof(col, link)
+  local links = col[_links]
+  local index = link[_index]
+  assert(index)
+
+  if links[index] ~= link then
+    for i = 1, links.n do
+      links[i][_index] = i
+      if links[i] == link then
+        index = i
+        break
+      end
+    end
+  end
+
+  assert(index == link[_index])
+  return index
 end
 
 --links = {
@@ -407,6 +431,7 @@ do --colformation.link
     local links = col[_links]
     links.n = links.n + 1
     links[links.n] = link
+    link[_index] = links.n --TODO remove index on unlink
 
     --TODO resolve when option.minh > option.maxh, minh should prevail
     local slot = {
@@ -810,7 +835,7 @@ do --colformation.unlink
   function colformation:unlink(col, link)
     local links = col[_links]
     local index = indexof(col, link)
-    assert(index)
+
     table.remove(links, index)
 
     links.n = links.n - 1
@@ -826,8 +851,10 @@ do --colformation.unlink
   
     if slot.flex == 0 then
       links.minh = links.minh - gap - slot.h
+      links.maxh = links.minh - gap - slot.h
     else
-      links.minh = links.minh - gap - slot.h
+      links.minh = links.minh - gap - slot.minh
+      links.maxh = links.minh - gap - slot.maxh
     end
 
     if col[_metacel].__unlink then
@@ -877,6 +904,7 @@ end
 
 
 do --colformation.pick
+  --TODO make sure works with 0 height slots
   function colformation:pick(col, _, yin)
     local links = col[_links]
     local floor = math.floor
@@ -1175,9 +1203,7 @@ function metatable.next(col, item)
 
   local index = indexof(col, item)
 
-  if index then
-    return col[_links][1 + index]
-  end
+  return col[_links][1 + index]
 end
 
 --TODO define so that nil input returns the last link
@@ -1186,9 +1212,7 @@ function metatable.prev(col, item)
 
   local index = indexof(col, item)
 
-  if index then
-    return col[_links][-1 + index]
-  end
+  return col[_links][-1 + index]
 end
 
 function metatable.insert(col, index, item, linker, xval, yval, option)
@@ -1249,14 +1273,7 @@ end
 --TODO make work, TODO make not possible infinite loop
 function metatable.indexof(col, item)
   if item[_host] == col then 
-    local i = indexof(col, item)
-
-    if col[_links][i] == item then
-      return i
-    else
-      reconcile(col, true)
-      return indexof(col, item)
-    end
+    return indexof(col, item)
   end
 end
 

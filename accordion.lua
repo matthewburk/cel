@@ -39,9 +39,7 @@ do --mt.minimize
 end
 
 do --mt.add
-  local linkoption = {
-    flex=0, minh=0, maxh=0,
-  }
+  local linkoption = { minh=0, maxh=0 }
 
   function mt:add(header, content)
     assert(header)
@@ -55,28 +53,26 @@ do --mt.add
 end
 
 do
-  local flex = 1000 
   local function transition(list, maximize, minimize, p)
-    if minimize then
-      list:setslotflexandlimits(minimize, flex-math.floor(flex*p), 0, minimize.minh)
-    end
     if maximize then
-      list:setslotflexandlimits(maximize, flex*p, 0, maximize.minh)
+      list:setslotflexandlimits(maximize, 0, maximize.minh*p, maximize.minh*p)
+    end
+    if minimize then
+      list:setslotflexandlimits(minimize, 0, 0, minimize.maxh - minimize.maxh*p)
     end
   end
 
   local function transitionfinal(list, maximize, minimize)
-    if minimize then
-      dprint('minimize', minimize, minimize.id)
-      list:setslotflexandlimits(minimize, 1, 0, 0)
-    end
     if maximize then
-      dprint('maximize', maximize, maximize.id)
-      list:setslotflexandlimits(maximize, 1, true, true)
+      list:setslotflexandlimits(maximize, 0, true, true)
     end
-    list:resize(nil, 0)
+    if minimize then
+      list:setslotflexandlimits(minimize, 0, 0, 0)
+    end
+    --list:resize(nil, 0)
   end
 
+  --TODO do not allow selet or toggle select while flowing
   function mt:select(header)
     local list = self[_list]
 
@@ -85,6 +81,7 @@ do
 
       local maximize = content
       local minimize = self[_current] and list:next(self[_current])
+
       self[_current] = header
 
       self:flowvalue(self:getflow('transition'), 0, 1, function(self, p)
@@ -99,20 +96,24 @@ do
     return self
   end
 
-  --[[
   function mt:toggleselect(header)
     if header == self[_current] then
-      return self:select(
       local list = self[_list]
-      local content = list:next(header)
-      list:flux(changeflexandminh, list, nil, list:next(header))
+      local minimize = self[_current] and list:next(self[_current])
+
+      self:flowvalue(self:getflow('transition'), 0, 1, function(self, p)
+        list:flux(transition, list, maximize, minimize, p)
+      end, 
+      function()
+        list:flux(transitionfinal, list, maximize, minimize)
+      end)
+
       self[_current] = false
       return self
     else
       return self:select(header)
     end
   end
-  --]]
 end
 
 do
@@ -122,7 +123,6 @@ do
     local layout = face.layout or layout
     local accordion = _new(self, face)
     accordion[_list] = cel.col.new(0):link(accordion, 'width')
-    
     return accordion
   end
 
