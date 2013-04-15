@@ -96,7 +96,6 @@ function metatable:remove(index)
   return self
 end
 
-
 function metatable:next(item)
   return self[_items]:next(item)
 end
@@ -164,28 +163,6 @@ local function changecurrent(listbox, item)
     item:takefocus()
   end
   return listbox:refresh()
-end
-
---TODO implement mode, for 'top', 'bottom', 'center', 'current postion of cursor'
-function metatable:scrolltoitem(item, mode)
-  if type(item) == 'number' then
-    item = self:get(item)
-  end
-
-  if not item then
-    return self
-  end
-
-  local x, y, w, h = self:getportalrect()
-  x, y = self:getvalues();
-
-  if y + h < item.y + item.h then
-    self:scrollto(nil, item.y + item.h - h)
-  elseif item.y < y then
-    self:scrollto(nil, item.y)
-  else
-  end
-  return self
 end
 
 function metatable:setcurrent(item)
@@ -265,68 +242,20 @@ function metatable:select(v, mode)
   return self
 end
 
-do
-  local function map(listbox, value)
-    local items = listbox[_items]
-    local cel = items:pick(0, value)
-    if cel and value ~= cel.y then
-      cel = items:next(cel)
-      if cel then
-        return cel.y
-      else
-        return items.h
-      end
-    end
-    return value
+--TODO implement mode, for 'top', 'bottom', 'center', 'current postion of cursor'
+function metatable:scrolltoitem(item, mode)
+  if type(item) == 'number' then
+    item = self:get(item)
   end
 
-  local _scrollto = metatable.scrollto
-  function metatable.scrollto(listbox, x,  y)
-    listbox[_items]:endflow()
-    y = y and map(listbox, y)
-    return _scrollto(listbox, x, y)
+  if not item then
+    return self
   end
 
-  function metatable.step(listbox, xstep, ystep, mode)
-    local items = listbox[_items]
-
-    items:endflow()
-
-    local x, y = listbox:getvalues()
-    if ystep and ystep ~= 0 then
-      local item = items:pick(0, y)
-
-      if item then
-        if ystep > 0 then
-          item = items:next(item)
-        else 
-          if y <= item.y then --to keep step to the top of a cel if we are in the middle of it
-            item = items:prev(item)
-          end
-        end
-      end
-
-      if item then
-        y = item.y
-      elseif ystep > 0 then
-        y = items.h
-      else
-        y = 0
-      end
-    else
-      y = nil
-    end
-
-    if xstep then
-      x = x + (xstep * listbox.stepsize)
-    else
-      x = nil
-    end
-
-    return _scrollto(listbox, x, y)
-  end
-
+  return self:scrolltocel(item)
 end
+
+metatable.step = cel.scroll.colstep
 
 do
   local __link = metacel.__link
@@ -339,9 +268,6 @@ do
   end
 end
 
---TODO why does listbox.big test take twice as long as col.big test
---
---
 function metacel:onkey(listbox, state, key, intercepted)
   --[[do it even if key was already intercepted
   if state > 0 then
@@ -393,37 +319,37 @@ do -- items metacel
     end
   end
 
-  do --metacel.__qchange
-    function metacel:__qchange(listbox, link, index, value, sink)
+  do
+    local function __qchange(metacel, listbox, link, index, value, sink)
       local changes = listbox[_changes]
       if changes then
         changes[#changes+1] = {link, index, value, sink}
       else
         listbox[_changes] = {{link, index, value, sink}}
-        self:asyncall('dispatchevents', listbox)
+        metacel:asyncall('dispatchevents', listbox)
       end
     end
-  end
 
-  do --metacel.__link
-    function metacel:__link(items, item, linker, xval, yval)
-      local listbox = items[_listbox]
-      if listbox.onchange then
-        self:__qchange(listbox, item, items:len(), true, listbox.onchange)
+    do --metacel.__link
+      function metacel:__link(items, item, linker, xval, yval)
+        local listbox = items[_listbox]
+        if listbox.onchange then
+          __qchange(self, listbox, item, items:len(), true, listbox.onchange)
+        end
       end
     end
-  end
 
-  do --metacel.__unlink
-    function metacel:__unlink(items, item, index)
-      local listbox = items[_listbox]
-      if listbox.onchange then
-        self:__qchange(listbox, item, index, false, listbox.onchange)
-      else
-        if listbox[_selected] and listbox[_selected][item] then
-          self:__qchange(listbox, item, index, false, nil)
-        elseif listbox[_current] == item then
-          self:__qchange(listbox, item, index, false, nil)
+    do --metacel.__unlink
+      function metacel:__unlink(items, item, index)
+        local listbox = items[_listbox]
+        if listbox.onchange then
+          __qchange(self, listbox, item, index, false, listbox.onchange)
+        else
+          if listbox[_selected] and listbox[_selected][item] then
+            __qchange(self, listbox, item, index, false, nil)
+          elseif listbox[_current] == item then
+            __qchange(self, listbox, item, index, false, nil)
+          end
         end
       end
     end
@@ -443,30 +369,6 @@ do -- items metacel
         t.current = true
       else
         t.current = false
-      end
-    end
-  end
-
-  do --metacel.onmousedown
-    function metacel:onmousedown(items, button, x, y, intercepted)
-      local listbox = items[_listbox]
-      if listbox.rowevent and listbox.rowevent.onmousedown then
-        local item, row = items[_listbox], items:pick(x, y)
-        if item then
-          return listbox.rowevent.onmousedown(listbox, row, item, button, x, y, intercepted)
-        end
-      end
-    end
-  end
-
-  do --metacel.onmouseup
-    function metacel:onmouseup(items, button, x, y, intercepted)
-      local listbox = items[_listbox]
-      if listbox.rowevent and listbox.rowevent.onmouseup then
-        local item, row = items[_listbox], items:pick(x, y)
-        if item then
-          return listbox.rowevent.onmouseup(listbox, row, item, button, x, y, intercepted)
-        end
       end
     end
   end

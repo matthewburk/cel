@@ -875,7 +875,7 @@ function metatable:setrightborder(bordercel, linker, xval, yval, option)
   return self
 end
 
---autohide is line or page
+--mode is line or page
 function metatable.step(scroll, xsteps, ysteps, mode)
   scroll[_subject]:endflow(scroll:getflow('scroll'))      
   local xdim = scroll[_xdim]
@@ -922,6 +922,31 @@ do
       scroll[_subject]:flow(scroll:getflow('scroll'), -x, -y, nil, nil,  scroll[_updateflow])
     end
     return scroll
+  end
+
+  function metatable:scrolltocel(acel)
+    dprint('scroll', 'scrolltocel', acel)
+
+    if not acel or not self[_subject] then
+      return self
+    end
+
+    local ix, iy = cel.translate(acel, 0, 0, self[_subject])
+
+    if not ix then
+      return self
+    end
+
+    local x, y, w, h = self:getportalrect()
+    x, y = self:getvalues()
+
+    if y + h < iy + acel.h then
+      self:scrollto(nil, iy + acel.h - h)
+    elseif iy < y then
+      self:scrollto(nil, iy)
+    else
+    end
+    return self
   end
 end
 
@@ -1107,4 +1132,43 @@ do
   end
 end
 
-return metacel:newfactory({layout = layout})
+return metacel:newfactory({layout = layout,
+  colstep = function(scroll, xstep, ystep, mode)
+    local col = scroll[_subject]
+
+    col:endflow()
+
+    local x, y = scroll:getvalues()
+    if ystep and ystep ~= 0 then
+      local item = col:pick(0, y)
+
+      if item then
+        if ystep > 0 then
+          item = col:next(item)
+        else 
+          if y <= item.y then --to keep step to the top of a cel if we are in the middle of it
+            item = col:prev(item)
+          end
+        end
+      end
+
+      if item then
+        y = item.y
+      elseif ystep > 0 then
+        y = col.h
+      else
+        y = 0
+      end
+    else
+      y = nil
+    end
+
+    if xstep then
+      x = x + (xstep * scroll.stepsize)
+    else
+      x = nil
+    end
+
+    return scroll:scrollto(x, y)
+  end
+})

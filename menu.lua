@@ -135,6 +135,8 @@ function mt.showat(menu, x, y, root)
       return true
     end)
   end
+
+  return menu
 end
 
 do

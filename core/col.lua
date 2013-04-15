@@ -1001,9 +1001,11 @@ do --colformation.describeslot
     t.clip.b = gb
     t.disabled = link[_disabled] or (host.disabled and 'host')
 
+    --[[
     if col[_metacel].__describeslot then
       col[_metacel]:__describeslot(col, link, index, t)
     end
+    --]]
 
     do
       local y = link[_y] 
@@ -1121,7 +1123,7 @@ do --metatable.setslotface
       face = getface('cel', face)
     end
 
-    slot.face = face
+    slot.face = face or false
 
     link:refresh()
 
@@ -1195,6 +1197,14 @@ function metatable.endflux(col, force)
     reconcile(col, force)
   end
   return col
+end
+
+function metatable:first()
+  return self[_links][1]
+end
+
+function metatable:last()
+  return self[_links][self[_links].n]
 end
 
 --TODO define so that nil input returns the first link
@@ -1328,7 +1338,7 @@ do --metacel.new, metacel.assemble
 
   local _assemble = metacel.assemble
   function metacel:assemble(t, col)
-    col = col or metacel:new(t.gap, t.face)
+    col = col or metacel:new(t.gap, t.face, t.slotface)
     col[_flux] = 1
     col.onchange = t.onchange
     _assemble(self, t, col)

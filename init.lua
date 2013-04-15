@@ -307,18 +307,10 @@ do --loadfont TODO make driver supply path and extension
             local glyph_xmin = penx + glyph.xmin
             local glyph_xmax = penx + glyph.xmax
 
-            if glyph_xmin < xmin then
-              xmin = glyph_xmin
-            end
-            if glyph_xmax > xmax then
-              xmax = glyph_xmax
-            end
-            if glyph.ymin < ymin then
-              ymin = glyph.ymin
-            end
-            if glyph.ymax > ymax then
-              ymax = glyph.ymax
-            end
+            xmin = glyph_xmin < xmin and glyph_xmin or xmin
+            ymin = glyph.ymin < ymin and glyph.ymin or ymin
+            xmax = glyph_xmax > xmax and glyph_xmax or xmax
+            ymax = glyph.ymax > ymax and glyph.ymax or ymax
 
             penx = penx + glyph.advance
             nglyphs = nglyphs + 1
