@@ -310,7 +310,6 @@ do --ENV.describe
   local _hidden = _hidden
   local updaterect = _ENV.updaterect
   function describe(cel, host, gx, gy, gl, gt, gr, gb, fullrefresh)
-    if cel[_hidden] then return end
 
     gx = gx + cel[_x] --TODO clamp to maxint
     gy = gy + cel[_y] --TODO clamp to maxint
@@ -331,7 +330,9 @@ do --ENV.describe
       fullrefresh = fullrefresh or (t.refresh == 'full' and 'full')
 
       local formation =  rawget(cel, _formation) or stackformation
-      formation:describelinks(cel, t, gx, gy, gl, gt, gr, gb, fullrefresh)
+      if not cel[_hidden] then
+        formation:describelinks(cel, t, gx, gy, gl, gt, gr, gb, fullrefresh)
+      end
       if t.refresh == 'full' then
         if gl < updaterect.l then updaterect.l = gl end
         if gt < updaterect.t then updaterect.t = gt end
@@ -341,7 +342,11 @@ do --ENV.describe
     end
 
     cel[_refresh] = false
-    return t
+    if cel[_hidden] then --TODO this is done so late to allow updaterect to updated, optimize further
+      return 
+    else 
+      return t
+    end
   end
 
   do --stackformation.describelinks
@@ -518,10 +523,10 @@ do --stackformation.dolinker
     assert(maxh)
 
     if w ~= ow or h ~= oh then
-      if w < minw then w = minw end
       if w > maxw then w = maxw end
-      if h < minh then h = minh end
+      if w < minw then w = minw end
       if h > maxh then h = maxh end
+      if h < minh then h = minh end
     end
 
     if x ~= ox then x = math.modf(x); link[_x] = x; end
