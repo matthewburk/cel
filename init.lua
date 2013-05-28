@@ -35,9 +35,7 @@ require('cel.core.driver')
 require('cel.core.metacel')
 require('cel.core.cel')
 require('cel.core.root')
-
-M.col = require('cel.core.col')
-M.row = require('cel.core.row')
+require('cel.core.colrow')
 M.slot = require('cel.core.slot')
 
 do --cel.installdriver
@@ -621,9 +619,11 @@ do --loadfont TODO make driver supply path and extension
         return maxadvance, nlines, lines
       end
 
-      if jit then --crashes (sometimes) when jit is on for this function
+      ---[[
+      if _G.jit then --crashes (sometimes) when jit is on for this function
         jit.off(fontmt.wrapat)
       end
+      --]]
     end
 
     do
