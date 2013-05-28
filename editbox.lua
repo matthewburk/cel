@@ -37,11 +37,12 @@ local _multiline = {}
 local _selection = {}
 local _nglyphs = {}
 
+
 local keyboard = cel.keyboard
 local mouse = cel.mouse
 
 local layout = {
-  text = cel.getface('editbox.text')
+  textface = cel.getface('editbox.text')
 }
 
 do --editbox.text
@@ -60,6 +61,11 @@ end
 
 function metatable:settext(str)
   self:select(false)
+  if str == nil or str == '' then
+    self[_text]:settext(str)
+    return self
+  end
+
   if self.filter then
     str = self.filter(str)
   end
@@ -122,9 +128,10 @@ end
 
 function metatable:showcaret()
   local text = self[_text]
+  local penx = text:getpenorigin()
   local caret = self[_caret]
-  local left = self[_padl]
-  local right = self.w - self[_padr]
+  local left = self[_padl] + penx
+  local right = self.w - self[_padr] - penx
   local caretleft = cel.translate(text, caret.x, caret.y, self)
   local caretright = caretleft + caret.w
 
@@ -163,12 +170,19 @@ function metatable:dragcaret(i)
   end
 end
 
+--true selects all
+--false selects none
 function metatable:select(i, j)
   local selection = self[_text].selection
   local text = self[_text]  
   local str = text:gettext()
   local font = text:getfont()
   local penx = text:getpenorigin()
+
+  if i == true then
+    i = 1
+    j = text:len()
+  end
 
   j = j or i
   selection.i = i
@@ -211,6 +225,36 @@ function metatable:getselection()
   return selection.i, selection.j
 end
 
+function metatable:getselectedtext()
+  local selection = self[_text].selection
+  if selection.i then
+    local i, j = selection.i, selection.j
+    
+    local text = self[_text]
+    local str = text:gettext()
+    j = j or i
+   
+    if i > 0 and i <= text:len() then
+      local len, nbytes = 0, 0
+      local a, b
+
+      for uchar in string.gmatch(str, '([%z\1-\127\194-\244][\128-\191]*)') do
+        len=len+1
+        if len == i then
+          a = nbytes + 1 
+        end
+
+        nbytes=nbytes+#uchar
+
+        if len == j then
+          b = nbytes
+          return str:sub(a, b) 
+        end
+      end
+    end
+  end
+end
+
 function metatable:deleteselection()
   local selection = self[_text].selection
   if selection.i then
@@ -251,11 +295,10 @@ function metatable:delete(i, j)
   return self
 end
 
-function metacel:onchar(editbox, char, intercepted)
-  if intercepted then return end
-  editbox:deleteselection()
-  local text = editbox[_text]
-  local i = editbox[_caret].i
+function metatable:insert(newstr)
+  self:deleteselection()
+  local text = self[_text]
+  local i = self[_caret].i
   local str = text:gettext()
   local len, nbytes = 0, 0
   local leftpart = ''
@@ -276,8 +319,21 @@ function metacel:onchar(editbox, char, intercepted)
     end
   end
 
-  editbox:settext(leftpart .. char .. rightpart)
-  editbox:movecaret(i+1)
+  self:settext(leftpart .. newstr .. rightpart)
+
+  do
+    local newlen = 0
+    for uchar in string.gmatch(newstr, '([%z\1-\127\194-\244][\128-\191]*)') do
+      newlen = newlen+1
+    end
+    self:movecaretby(newlen)
+  end
+  return self
+end
+
+function metacel:onchar(editbox, char, intercepted)
+  if intercepted then return end
+  editbox:insert(char)
   return true
 end
 
@@ -341,6 +397,19 @@ function metacel:onmouseup(editbox, button, x, y, intercepted)
   end
 end
 
+function metacel:onfocus(editbox)
+  if not editbox:hasmousetrapped() then
+    editbox:movecaret(math.huge)
+    editbox:select(true)
+  end
+  editbox[_caret]:unhide()
+end
+
+function metacel:onblur(editbox)
+  editbox:select(false)
+  editbox[_caret]:hide()
+end
+
 function metacel:onmousedown(editbox, button, x, y, intercepted)
   if intercepted then return end
 
@@ -369,7 +438,27 @@ function metacel:onmouseup(editbox, button, x, y, intercepted)
   return true
 end
 
-function metacel:oncommand(editbox, command, data,  intercepted)
+function metacel:oncommand(editbox, command, data, intercepted)
+  if intercepted then return end
+  if command == 'copy' then
+    local data = editbox:getselectedtext()
+    if data then
+      cel.clipboard('put', data)
+    end
+  elseif command == 'cut' then
+    local data = editbox:getselectedtext()
+    if data then
+      cel.clipboard('put', data)
+      editbox:deleteselection()
+    end
+  elseif command == 'paste' then
+    local data = cel.clipboard('get')
+    if data then
+      editbox:insert(data)
+    end
+  end
+
+  return editbox
 end
 
 --TODO document that the font of a cel should always check the 
@@ -386,7 +475,7 @@ do
     local layout = face.layout or layout
 
     --TODO somehow make a font useable as an alias for a face thats name is the font
-    local text = self['.text']:new(str, layout.text.face)
+    local text = self['.text']:new(str, layout.textface)
     local font = text:getfont() 
 
     --TODO set editbox font to text:getfont()
@@ -397,7 +486,7 @@ do
     text.editbox = editbox
     text.selection = {i=false, j=false}
     editbox[_text] = text
-    editbox[_caret] = cel.new(2, text.h, '@caret'):link(text, (text:getpenorigin()))
+    editbox[_caret] = cel.new(2, text.h, '@caret'):link(text, (text:getpenorigin())):hide()
     editbox[_caret].i = 0
     editbox[_font] = font
     editbox[_padl] = 1
