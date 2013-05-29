@@ -153,9 +153,6 @@ do --slotformation.dolinker
       return stackformation:dolinker(host, link, linker, xval, yval)
     end
 
-    if link.__debuglimits then
-      dprint('running linker from', host, link, linker)
-    end
     local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
     local x, y, w, h = self:linker(host, link, ox, oy, ow, oh, linker, xval, yval, 
                                    rawget(link, _minw) or 0, rawget(link, _maxw) or maxdim,
@@ -196,9 +193,6 @@ do --slotformation.linker
     local hw = host[_w] - margin.w
     local hh = host[_h] - margin.h
 
-    if link.__debuglimits then
-      dprint('%%%% slotformation:linker hw, hh', hw, hh)
-    end
     maxw = math.min(hw, maxw)
     maxh = math.min(hh, maxh)
 
@@ -273,9 +267,6 @@ do --slotformation.movelink
     --local edgex, edgey = self:getbraceedges(host, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
 
     if w ~= ow or h ~= oh then
-      if link.__debuglimits then
-        dprint('YAY WE ARE CHANING.... $#@#!$@!$#@!$#$', link, w, h)
-      end
       --TODO removed becuase it looks like it does nothinglocal linker, xval, yval = rawget(host, _linker), rawget(host, _xval), rawget(host, _yval)
       --TODO removed becuase it looks like it does nothing host:relink() --this is to make slot size to subject even if the slot is constrained by linker, like in a sequence
       host:resize(w + margin.w, h + margin.h) 
@@ -291,14 +282,7 @@ do --slotformation.movelink
     link[_w] = w
     link[_h] = h
   
-    if link.__debuglimits then
-        dprint('POST LINKER', link, x, y, w, h)
-      end
-
     if x ~= ox or y ~= oy or w ~= ow or h ~= oh then
-      if link.__debuglimits then
-        dprint('CELMOVED', link, h, oh)
-      end
       celmoved(host, link, x, y, w, h, ox, oy, ow, oh)  
     end
 
@@ -372,23 +356,6 @@ end
 do --metatable.get
   function metatable.getsubject(slot)
     return rawget(slot, _slotlink) or nil
-  end
-end
-
-function metatable.dump(slot)
-  print('SLOTDUMP-------------------------------', slot, slot[_celid])
-  print('SLOTDUMP l', slot[_margin].l)
-  print('SLOTDUMP t', slot[_margin].t)
-  print('SLOTDUMP r', slot[_margin].r)
-  print('SLOTDUMP b', slot[_margin].b)
-  print('SLOTDUMP w', slot.w)
-  print('SLOTDUMP h', slot.h)
-  print('SLOTDUMP minw', slot.minw)
-  print('SLOTDUMP minh', slot.minh)
-  print('SLOTDUMP slotlink', slot[_slotlink])
-  if slot[_slotlink] then
-    print('SLOTDUMP slotlink w', slot[_slotlink].w )
-    print('SLOTDUMP slotlink h', slot[_slotlink].h )
   end
 end
 

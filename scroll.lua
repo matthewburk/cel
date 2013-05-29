@@ -54,7 +54,7 @@ local _scrollbar = {}
 local _track = {}
 local _thumb = {}
 local _portal = {}
-local _subject = {}
+local _slot = {}
 local _xdim = {}
 local _ydim = {}
 local _xbar = {}
@@ -163,7 +163,7 @@ do
     --TODO why am i moving subject here, but not for flowybar.showbar?
     --this pins it to the bottom if its alreayd on the bottom, is that always
     --the correct thing to do?  I think it is
-    local movesubject = scroll[_subject] and scroll[_subject].b == portal.h
+    local movesubject = scroll[_slot] and scroll[_slot].b == portal.h
 
     xbar:relink(xbar.linker, p, ybar)
 
@@ -185,9 +185,9 @@ do
     end
 
     if movesubject then
-      scroll[_subject]:moveby(nil, -math.huge)
+      scroll[_slot]:moveby(nil, -math.huge)
     else
-      --print('not moving for xbar', scroll[_subject].b, portal.h)
+      --print('not moving for xbar', scroll[_slot].b, portal.h)
     end
   end
 
@@ -305,8 +305,8 @@ do
       syncportal(scroll)
       syncportal(scroll)
 
-      if scroll[_subject] then
-        scroll[_subject]:move(-scroll[_xdim].value, -scroll[_ydim].value)
+      if scroll[_slot] then
+        scroll[_slot]:move(-scroll[_xdim].value, -scroll[_ydim].value)
       end
 
       sync.model(scroll)
@@ -582,7 +582,7 @@ do --portal
   end
 
   function metaportal:__link(portal, link, linker, xval, yval, option)
-    if 'subject' == option then
+    if 'subjectslot' == option then
       local scroll = portal[_scroll]
       __updaterange(scroll, scroll[_xdim], link.w)
       __updaterange(scroll, scroll[_ydim], link.h)
@@ -594,7 +594,7 @@ do --portal
   metaportal.metatable.__tostring = nil
   function metaportal:onlink(portal, link)
     local scroll = portal[_scroll]
-    if scroll[_subject] == link then
+    if scroll[_slot] == link then
       sync.scroll(portal[_scroll])
       for name, border in pairs(scroll[_borders]) do
         if border.subject then
@@ -610,8 +610,8 @@ do --portal
 
   function metaportal:__unlink(portal, link)
     local scroll = portal[_scroll]
-    if scroll[_subject] == link then
-      scroll[_subject] = nil
+    if scroll[_slot] == link then
+      scroll[_slot] = nil
       __updaterange(scroll, scroll[_xdim], 0)
       __updaterange(scroll, scroll[_ydim], 0)
       __checkbars(scroll, portal)
@@ -623,7 +623,7 @@ do --portal
   function metaportal:__linkmove(portal, link, ox, oy, ow, oh)
     local scroll = portal[_scroll]
    
-    if scroll[_subject] == link then
+    if scroll[_slot] == link then
       if scroll[_insync] ~= 'syncing' then
         local checkbars = false 
         if ox ~= link.x then __updatevalue(scroll, scroll[_xdim], -link.x) end
@@ -642,7 +642,7 @@ do --portal
 
   function metaportal:onlinkmove(portal, link)
     local scroll = portal[_scroll]
-    if scroll[_subject] == link then
+    if scroll[_slot] == link then
       sync.scroll(portal[_scroll])
       for name, border in pairs(scroll[_borders]) do
         if border.subject then
@@ -742,8 +742,8 @@ function metatable:settopborder(bordercel, linker, xval, yval, option)
     border.subject = border.subject or cel.new(0, h):link(border, 'height')
     target = border.subject
 
-    if self[_subject] then 
-      border.subject:move(self[_subject].x, 0, self[_subject].w)
+    if self[_slot] then 
+      border.subject:move(self[_slot].x, 0, self[_slot].w)
     end
   else
     if border.subject then
@@ -781,8 +781,8 @@ function metatable:setleftborder(bordercel, linker, xval, yval, option)
     border.subject = border.subject or cel.new(w, 0):link(border, 'width')
     target = border.subject
 
-    if self[_subject] then 
-      border.subject:move(0, self[_subject].y, nil, self[_subject].h)
+    if self[_slot] then 
+      border.subject:move(0, self[_slot].y, nil, self[_slot].h)
     end
   else
     if border.subject then
@@ -820,8 +820,8 @@ function metatable:setbottomborder(bordercel, linker, xval, yval, option)
     border.subject = border.subject or cel.new(0, h):link(border, 'height')
     target = border.subject
 
-    if self[_subject] then 
-      border.subject:move(self[_subject].x, 0, self[_subject].w)
+    if self[_slot] then 
+      border.subject:move(self[_slot].x, 0, self[_slot].w)
     end
   else
     if border.subject then
@@ -859,8 +859,8 @@ function metatable:setrightborder(bordercel, linker, xval, yval, option)
     border.subject = border.subject or cel.new(w, 0):link(border, 'width')
     target = border.subject
 
-    if self[_subject] then 
-      border.subject:move(0, self[_subject].y, nil, self[_subject].h)
+    if self[_slot] then 
+      border.subject:move(0, self[_slot].y, nil, self[_slot].h)
     end
   else
     if border.subject then
@@ -876,8 +876,9 @@ function metatable:setrightborder(bordercel, linker, xval, yval, option)
 end
 
 --mode is line or page
+--TODO implement in metacel:step and call from this
 function metatable.step(scroll, xsteps, ysteps, mode)
-  scroll[_subject]:endflow(scroll:getflow('scroll'))      
+  scroll[_slot]:endflow(scroll:getflow('scroll'))      
   local xdim = scroll[_xdim]
   local ydim = scroll[_ydim]
   local x, y = xdim.value, ydim.value
@@ -906,7 +907,7 @@ do
 
   function metatable.scrollto(scroll, x, y)
     sync.scroll(scroll)
-    if scroll[_subject] then
+    if scroll[_slot] then
       local xdim, ydim = scroll[_xdim], scroll[_ydim]
       x = x or xdim.value
       y = y or ydim.value
@@ -918,8 +919,8 @@ do
         scroll[_updateflow] = function(...) return updateflow(scroll, ...) end
       end
 
-      scroll[_subject]:endflow(scroll:getflow('scroll'))      
-      scroll[_subject]:flow(scroll:getflow('scroll'), -x, -y, nil, nil,  scroll[_updateflow])
+      scroll[_slot]:endflow(scroll:getflow('scroll'))      
+      scroll[_slot]:flow(scroll:getflow('scroll'), -x, -y, nil, nil,  scroll[_updateflow])
     end
     return scroll
   end
@@ -927,11 +928,11 @@ do
   function metatable:scrolltocel(acel)
     dprint('scroll', 'scrolltocel', acel)
 
-    if not acel or not self[_subject] then
+    if not acel or not self[_slot] then
       return self
     end
 
-    local ix, iy = cel.translate(acel, 0, 0, self[_subject])
+    local ix, iy = cel.translate(acel, 0, 0, self[_slot])
 
     if not ix then
       return self
@@ -958,22 +959,24 @@ function metatable.getmaxvalues(scroll)
   return scroll[_xdim].max, scroll[_ydim].max 
 end
 
-function metatable.setsubject(scroll, subject, fillx, filly)
+function metatable.setsubject(scroll, subject, linker, xval, yval)
   assert(scroll)
   assert(subject)
   assert(scroll[_portal])
-  if scroll[_subject] then
-    scroll[_subject]:unlink()
+
+  local current = scroll[_slot]:getsubject()
+
+  if current then
+    current:unlink()
   end
 
-  scroll[_subject] = subject
-  subject:link(scroll[_portal], 'scroll', fillx, filly, 'subject') 
+  subject:link(scroll[_slot], linker, xval, yval, 'slot') 
   return scroll
 end
 
 --THIS makes scroll a container, its item is getable and setable
-function metatable.getsubject(scroll, subject)
-  return scroll[_subject]
+function metatable.getsubject(scroll)
+  return scroll[_slot]:getsubject()
 end
 
 function metatable.getportalrect(scroll)
@@ -981,8 +984,8 @@ function metatable.getportalrect(scroll)
 end
 
 function metacel:__link(scroll, link, linker, xval, yval, option)
-  if scroll[_subject] and not option then
-    return scroll[_subject], linker, xval, yval, option 
+  if scroll[_slot] and not option then
+    return scroll[_slot], linker, xval, yval, option 
   elseif option == 'portal' then
     return scroll[_portal], linker, xval, yval
   elseif option == 'ybar' then
@@ -991,8 +994,8 @@ function metacel:__link(scroll, link, linker, xval, yval, option)
     return scroll[_xbar], linker, xval, yval
   elseif option == 'raw' then
     return scroll, linker, xval, yval
-  elseif scroll[_subject] then
-    return scroll[_subject], linker, xval, yval, option 
+  elseif scroll[_slot] then
+    return scroll[_slot], linker, xval, yval, option 
   end
   return scroll[_portal], linker, xval, yval
 end
@@ -1006,14 +1009,14 @@ function metacel:__relink(scroll, link)
 end
 
 function metacel:onmousewheel(scroll, direction, x, y, intercepted)
-  if not intercepted and scroll[_subject] then
-    local invalue = scroll[_subject].y
+  if not intercepted and scroll[_slot] then
+    local invalue = scroll[_slot].y
     if cel.mouse.wheel.down == direction then
       scroll:step(nil, cel.mouse.scrolllines or 1)
     elseif cel.mouse.wheel.up == direction then
       scroll:step(nil, -(cel.mouse.scrolllines or 1))
     end
-    return invalue ~= scroll[_subject].y
+    return invalue ~= scroll[_slot].y
   end
 end
 
@@ -1104,22 +1107,20 @@ do
       end
     end
 
+    scroll[_slot] = cel.slot.new()
+    scroll[_slot]:link(scroll[_portal], 'scroll', true, true, 'subjectslot') 
     return scroll
   end
 
   local _assemble = metacel.assemble
   function metacel:assemble(t, scroll)
     scroll = scroll or metacel:new(t.w, t.h, t.face)
-    if t.subject then
-      if cel.iscel(t.subject) then
-        scroll:setsubject(t.subject, false, false) 
-      else
-        scroll:setsubject(t.subject[1], not not t.subject.fillwidth, not not t.subject.fillheight) 
-      end
-    end
-
     if t.stepsize then
       scroll.stepsize = t.stepsize
+    end
+
+    if t.step then
+      scroll.step = t.step
     end
 
     return _assemble(self, t, scroll)
@@ -1134,10 +1135,9 @@ end
 
 return metacel:newfactory({layout = layout,
   colstep = function(scroll, xstep, ystep, mode)
-    local col = scroll[_subject]
+    scroll[_slot]:endflow()
 
-    col:endflow()
-
+    local col = scroll:getsubject()
     local x, y = scroll:getvalues()
     if ystep and ystep ~= 0 then
       local item = col:pick(0, y)

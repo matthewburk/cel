@@ -186,7 +186,7 @@ do
   do --metacel.__link
     function metacel:__link(list, item, linker, xval, yval)
       if list.onchange then
-        __qchange(self, list, item, items:len(), true, list.onchange)
+        __qchange(self, list, item, list:len(), true, list.onchange)
       end
     end
   end

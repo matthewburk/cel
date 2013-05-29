@@ -97,7 +97,6 @@ function _ENV.pick(mouse, debug)
   --x and y are now relative to cel[_host]
   
   mouse_focus.focus = nil
-  --print('TRAP', trap)
 
   while cel do
     --make x and y relative to cel
@@ -186,17 +185,6 @@ function _ENV.pick(mouse, debug)
     end
   end
 
-  --final fixup
-  --[[
-  if not _G.tripped then
-    print('MOUSE FOCUS')
-    for j, k in pairs(mouse_focus) do
-      print(j, k)
-    end
-    print('----------')
-  end
-  --]]
-
   for i = #mouse_focus, 1, -1 do
     --assert(mouse_focus[i])
 
@@ -211,12 +199,11 @@ function _ENV.pick(mouse, debug)
         mouse_focus[i] = nil
       end
     else
-      dprint('BIG BAD PICK', mouse_focus[1], mouse_focus.focus, i, #mouse_focus)
-      dprint('BIG BAD PICK DATA', unpack(mouse_focus))
+      dprint('BAD PICK', mouse_focus[1], mouse_focus.focus, i, #mouse_focus)
+      dprint('BAD PICK DATA', unpack(mouse_focus))
       for j, k in pairs(mouse_focus) do
         dprint(j, k)
       end
-      --_G.tripped = true
     end
   end
 
