@@ -40,13 +40,6 @@ local layout = {
   }
 }
 
-function metatable:beginflux(...)
-  return self[_items]:beginflux(...)
-end
-
-function metatable:endflux(...)
-  return self[_items]:endflux(...)
-end
 function metatable:flux(...)
   self[_items]:flux(...)
   return self 

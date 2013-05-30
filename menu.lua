@@ -139,7 +139,7 @@ function mt.showat(menu, x, y, root)
   return menu
 end
 
-do
+do --TODO do not do this, against the rules
   local _unlink = mt.unlink
   function mt.unlink(menu)
     local ret = menu
@@ -161,10 +161,6 @@ do
 
     return ret 
   end
-end
-
-function mt.hide(menu)
-  menu:unlink()
 end
 
 local function showat(menu, x, y, parent)

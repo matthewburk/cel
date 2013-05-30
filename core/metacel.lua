@@ -26,7 +26,6 @@ local M = require 'cel.core.module'
 local _ENV = require 'cel.core.env'
 setfenv(1, _ENV)
 
-local _celhandle = {}
 local _host = _host
 local _links = _links
 local _x, _y, _w, _h = _x, _y, _w, _h
@@ -246,7 +245,6 @@ do --ENV.describe
   local function getdescription(cel)
     local t = cache[cel]
     t = t or {
-      celhandle = cel[_celhandle],
       host = false,
       id = 0,
       metacel = cel[_metacel][_name],
@@ -273,7 +271,6 @@ do --ENV.describe
   --describe for all cels
   local function __describe(cel, host, gx, gy, gl, gt, gr, gb, t, fullrefresh)
     t.host = host
-    t.celhandle = cel[_celhandle]
     t.id = cel[_celid]
     t.face = cel[_face] or cel[_metacel][_face]
     t.x = cel[_x]
@@ -641,7 +638,6 @@ do --metacel.new
       --TODO add _variations to metacel to avoid extra lookup
       [_face] = self[_face][_variations][face] or metacel[_face][_variations][face],
       [_celid] = celid,
-      [_celhandle] = newproxy(), --TODO this is way too much overhead for an uncommon case
     }
     celid = celid + 1
     return setmetatable(cel, self.metatable)
@@ -656,7 +652,6 @@ do --metacel.assemble
     assert(type(cel) == 'table' or type(cel) == 'nil')
     cel = cel or metacel:new(t.w, t.h, t.face)
     cel._ = t._ or cel._
-    if cel.beginflux then cel:beginflux(false) end
     event:wait()
 
     cel.onresize = t.onresize
@@ -677,7 +672,6 @@ do --metacel.assemble
     linkall(cel, t)
 
     event:signal()
-    if cel.endflux then cel:endflux(false) end
     return cel
   end
 end

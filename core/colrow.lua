@@ -1492,21 +1492,6 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     return self
   end
 
-  --TODO remove this, or put it in metacel too easy to mess up
-  function metatable:beginflux()
-    self[_flux] = self[_flux] + 1
-    return self
-  end
-
-  --TODO remove this, or put it in metacel too easy to mess up
-  function metatable:endflux()
-    self[_flux] = self[_flux] - 1
-    if self[_flux] == 0 then
-      reconcile(self)
-    end
-    return self
-  end
-
   function metatable:first()
     return self[_links][1]
   end
@@ -1536,7 +1521,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   function metatable:insert(index, item, linker, xval, yval, option)
     index = index or -1
 
-    self:beginflux()
+    self[_flux] = self[_flux] + 1
 
     if rawget(item, _host) == self then
       item:relink(linker, xval, yval, option)
@@ -1572,7 +1557,10 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
       end
     end
 
-    self:endflux()
+    self[_flux] = self[_flux] - 1
+    if self[_flux] == 0 then
+      reconcile(self)
+    end
     return self
   end
 
@@ -1599,9 +1587,12 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   end
 
   function metatable:sort(comp)
-    self:beginflux()
+    self[_flux] = self[_flux] + 1
     table.sort(self[_links], comp)
-    self:endflux()
+    self[_flux] = self[_flux] - 1
+    if self[_flux] == 0 then
+      reconcile(self)
+    end
     self:refresh() --TODO why is this here??
     return self
   end
