@@ -250,6 +250,15 @@ do
     end
     return _assemble(self, t, text)
   end
+
+  local _setface = metacel.setface
+  function metacel:setface(text, face)
+    local font = face.font
+    text[_font] = face.font
+    text[_layout] = face.layout or layout
+    text:settext(text[_str])
+    return _setface(self, text, face)
+  end
 end
 
 return metacel:newfactory({layout = layout})
