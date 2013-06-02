@@ -375,7 +375,7 @@ do
 
   local _assemble = metacel.assemble
   function metacel:assemble(t, window)
-    window = window or metacel:new(t.w, t.h, t.title, t.face)
+    window = window or metacel:new(t.w, t.h, t.face)
 
     if t.title then window:settitle(t.title) end
 

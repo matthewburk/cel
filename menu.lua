@@ -245,7 +245,7 @@ do --metacel['.slot']
     if not slot[_submenu] then
       while menu do
         if menu.onchoose then
-          menu:onchoose(slot.item)
+          menu:onchoose(slot.item, slot[_menu])
           break
         end
         menu = menu[_parentmenu]
