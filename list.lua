@@ -135,8 +135,9 @@ function metacel.metatable:select(itemorindex, mode)
   end
 
   if op == 'select' then
+    local layout = self.face.layout or layout
     selected[item] = true
-    self:setslotface(item, self.face.layout.selectedslotface)
+    self:setslotface(item, layout.selectedslotface)
   elseif op == 'unselect' then
     selected[item] = nil
     self:setslotface(item, false)
