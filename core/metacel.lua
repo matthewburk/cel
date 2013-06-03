@@ -819,13 +819,22 @@ do --metacel.getface
   local _face = _face
   function metacel:getface(face)
     --TODO add _variations to metacel
-    if face then
-      --local rawface = rawget(self[_face][_variations], face) or rawget(metacel[_face][_variations], face)
-      --return rawface or self[_face]
-      return self[_face][_variations][face] or metacel[_face][_variations][face] or self[_face]
-    else
-      return self[_face]
+    local result = face and (self[_face][_variations][face] or metacel[_face][_variations][face])
+
+    if not result and type(face) == 'string'
+    and type(face) == "string" 
+    and face:sub(1,1)=="#" 
+    and #face == 7 then
+      local r = tonumber(face:sub(2,3), 16)
+      local g = tonumber(face:sub(4,5), 16)
+      local b = tonumber(face:sub(6,7), 16)
+
+      result = M.getface('cel'):new {
+        color = M.color.rgb8(r, g, b)
+      }:register(face)
     end
+
+    return result or self[_face]
   end
 end
 

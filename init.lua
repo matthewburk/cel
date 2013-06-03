@@ -721,8 +721,6 @@ do --loadfont TODO make driver supply path and extension
       error('driver does not implement loadfont')
     end
 
-    --size = math.modf(96/72 * size) --convert point to pixels
-
     local ok, ret = pcall(driver.loadfont, name, size)
     if ok then
       font = setmetatable(ret, {__index=fontmt})
