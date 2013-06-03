@@ -133,15 +133,15 @@ end
 
 do --slotformation.testlinker --TODO need to pass option to testlinker and reroute this to stacklinker
   local math = math
-  function slotformation:testlinker(host, link, linker, xval, yval)
+  function slotformation:testlinker(host, link, linker, xval, yval, nx, ny, nw, nh, minw, maxw, minh, maxh)
     if link ~= host[_slotlink] then
       return stackformation:testlinker(host, link, linker, xval, yval)
     end
 
-    local ox, oy, ow, oh = link[_x], link[_y], link[_w], link[_h]
-    return self:linker(host, link, ox, oy, ow, oh, linker, xval, yval, 
-                       rawget(link, _minw) or 0, rawget(link, _maxw) or maxdim,
-                       rawget(link, _minh) or 0, rawget(link, _maxh) or maxdim)
+    local x, y, w, h = nx or link[_x], ny or link[_y], nw or link[_w], nh or link[_h]
+    minw, maxw = minw or link[_minw], maxw or link[_maxw]
+    minh, maxh = minh or link[_minh], maxh or link[_maxh]
+    return self:linker(host, link, x, y, w, h, linker, xval, yval, minw, maxw, minh, maxh)
   end
 end
 
