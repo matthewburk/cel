@@ -853,7 +853,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
         --when a link with no flex is moved explicitly, it will change the as of the slot
         --bounded by the maxas of the link and the minas of the slot/link
         if rawget(link, _linker) then
-          b, a, bs, as = movelinker(slot, math.max(math.min(slot.maxas, as), slot.minas), seq[_bs], 
+          b, a, bs, as = movelinker(slot, math.max(math.min(slot.maxas, as), slot.minas), math.max(links.minbs, links.bs), 
                                     link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
                                     a, b, as, bs, minas, maxas, minbs, maxbs)
         else
@@ -890,7 +890,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
         end
       else
         if rawget(link, _linker) then
-          b, a, bs, as = movelinker(slot, slot.as, seq[_bs], 
+          b, a, bs, as = movelinker(slot, slot.as, math.max(links.minbs, links.bs), 
                                     link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
                                     a, b, as, bs, minas, maxas, minbs, maxbs)
         else
@@ -989,7 +989,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
         --when a link with no flex is moved explicitly, it will change the as of the slot
         --bounded by the maxas of the link and the minas of the slot/link
         if rawget(link, _linker) then
-          a, b, as, bs = movelinker(slot, math.max(math.min(slot.maxas, as), slot.minas), seq[_bs], 
+          a, b, as, bs = movelinker(slot, math.max(math.min(slot.maxas, as), slot.minas), math.max(links.minbs, links.bs), 
                                     link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
                                     a, b, as, bs, minas, maxas, minbs, maxbs)
         else
@@ -1023,7 +1023,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
         end
       else
         if rawget(link, _linker) then
-          a, b, as, bs = movelinker(slot, slot.as, seq[_bs], 
+          a, b, as, bs = movelinker(slot, slot.as, math.max(links.minbs, links.bs), 
                                     link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval),
                                     a, b, as, bs, minas, maxas, minbs, maxbs)
         else
