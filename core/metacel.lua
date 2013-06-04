@@ -821,17 +821,12 @@ do --metacel.getface
     --TODO add _variations to metacel
     local result = face and (self[_face][_variations][face] or metacel[_face][_variations][face])
 
-    if not result and type(face) == 'string'
-    and type(face) == "string" 
-    and face:sub(1,1)=="#" 
-    and #face == 7 then
-      local r = tonumber(face:sub(2,3), 16)
-      local g = tonumber(face:sub(4,5), 16)
-      local b = tonumber(face:sub(6,7), 16)
-
-      result = M.getface('cel'):new {
-        color = M.color.rgb8(r, g, b)
-      }:register(face)
+    --TODO remove this from here, it slows down everything, not worth the convenience
+    if not result 
+    and type(face) == 'string'
+    and #face == 7 
+    and face:sub(1,1)=="#" then
+      result = M.getface('cel', face)
     end
 
     return result or self[_face]

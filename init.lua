@@ -913,13 +913,6 @@ end
 
 
 
-do
-  function M.newfactory(metacel, metatable)
-    print(debug.traceback('deprecated function'))
-    return metacel:newfactory(metatable) 
-  end
-end
-
 ----[[ TODO load on demand
 
 

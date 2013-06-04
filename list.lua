@@ -140,10 +140,12 @@ function metacel.metatable:select(itemorindex, mode)
     self:setslotface(item, layout.selectedslotface)
   elseif op == 'unselect' then
     selected[item] = nil
-    self:setslotface(item, false)
+    if index then
+      self:setslotface(item, false)
+    end
   end
 
-  if self.onchange then
+  if index and self.onchange then
     return self:onchange(item, index, selected[item] and 'selected' or 'unselected')
   end
 

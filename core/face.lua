@@ -98,7 +98,23 @@ do
     local face = getmetaface(metacelname)
 
     if name then
-      return face[_variations][name]
+      local result = face[_variations][name]
+
+      --TODO remove this from here, it slows down everything, not worth the convenience
+      if not result 
+      and type(name) == 'string'
+      and #name == 7 
+      and name:sub(1,1)=="#" then
+        local r = tonumber(name:sub(2,3), 16)
+        local g = tonumber(name:sub(4,5), 16)
+        local b = tonumber(name:sub(6,7), 16)
+
+        result = metafaces['cel']:new {
+          color = M.color.rgb8(r, g, b)
+        }:register(name)
+      end
+
+      return result
     else
       return face
     end

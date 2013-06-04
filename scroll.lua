@@ -33,7 +33,7 @@ THE SOFTWARE.
 --is equal to scrollbar.range - scrollbar.size
 --the size of the scrollbar, 
 --is equal to scrollbar.h for y scrollbars and srollbar.w for x scrollbar
-----TODO this thing is fucked, too messy, unwanted recursion happens too easily
+----TODO this thing is too messy, unwanted recursion happens too easily
 local cel = require 'cel'
 
 --local --print = function() end
@@ -391,13 +391,75 @@ end
 local function trackpressed(button)
 end
 
+--mode is line or page
+local function scrollstep(scroll, xsteps, ysteps, mode)
+  scroll[_slot]:endflow(scroll:getflow('scroll'))  
+
+  local subject = scroll:getsubject()
+
+  if not subject then
+    return scroll
+  end
+
+  if scroll.step then
+    return scroll:step(xsteps, ysteps, mode)
+  elseif cel.col.iscol(subject) then
+    local x, y = scroll:getvalues()
+    if ysteps and ysteps ~= 0 then
+      local item = subject:pick(0, y)
+
+      if item then
+        if ysteps > 0 then
+          item = subject:next(item)
+        else 
+          if y <= item.y then --to keep step to the top of a cel if we are in the middle of it
+            item = subject:prev(item)
+          end
+        end
+      end
+
+      if item then
+        y = item.y
+      elseif ysteps > 0 then
+        y = subject.h
+      else
+        y = 0
+      end
+    else
+      y = nil
+    end
+
+    if xsteps then
+      x = x + (xsteps * scroll.stepsize)
+    else
+      x = nil
+    end
+
+    return scroll:scrollto(x, y)
+  else
+    local xdim = scroll[_xdim]
+    local ydim = scroll[_ydim]
+    local x, y = xdim.value, ydim.value
+
+    if mode == nil or mode == 'line' then
+      if xsteps and xsteps ~= 0 then x = x + (xsteps * scroll.stepsize) end
+      if ysteps and ysteps ~= 0 then y = y + (ysteps * scroll.stepsize) end
+    elseif mode == 'page' then
+      if xsteps and xsteps ~= 0 then x = x + (xsteps * xdim.size) end
+      if ysteps and ysteps ~= 0 then y = y + (ysteps * ydim.size) end
+    end
+
+    return scroll:scrollto(x, y)
+  end
+end
+
 local function incpressed(button)
   local scrollbar = button[_scrollbar]
   local scroll = scrollbar[_scroll]
   if scrollbar.axis == 'y' then
-    scroll:step(nil, 1)
+    scrollstep(scroll, nil, 1)
   else
-    scroll:step(1, nil)
+    scrollstep(scroll, 1, nil)
   end
 end
 
@@ -405,9 +467,9 @@ local function decpressed(button)
   local scrollbar = button[_scrollbar]
   local scroll = scrollbar[_scroll]
   if scrollbar.axis == 'y' then
-    scroll:step(nil, -1)
+    scrollstep(scroll, nil, -1)
   else
-    scroll:step(-1, nil)
+    scrollstep(scroll, -1, nil)
   end
 end
 
@@ -875,25 +937,6 @@ function metatable:setrightborder(bordercel, linker, xval, yval, option)
   return self
 end
 
---mode is line or page
---TODO implement in metacel:step and call from this
-function metatable.step(scroll, xsteps, ysteps, mode)
-  scroll[_slot]:endflow(scroll:getflow('scroll'))      
-  local xdim = scroll[_xdim]
-  local ydim = scroll[_ydim]
-  local x, y = xdim.value, ydim.value
-
-  if mode == nil or mode == 'line' then
-    if xsteps and xsteps ~= 0 then x = x + (xsteps * scroll.stepsize) end
-    if ysteps and ysteps ~= 0 then y = y + (ysteps * scroll.stepsize) end
-  elseif mode == 'page' then
-    if xsteps and xsteps ~= 0 then x = x + (xsteps * xdim.size) end
-    if ysteps and ysteps ~= 0 then y = y + (ysteps * ydim.size) end
-  end
-
-  return scroll:scrollto(x, y)
-end
-
 local function scrollflowupdate(subject, x, y)
   local scroll = subject[_scroll]
 end
@@ -994,10 +1037,8 @@ function metacel:__link(scroll, link, linker, xval, yval, option)
     return scroll[_xbar], linker, xval, yval
   elseif option == 'raw' then
     return scroll, linker, xval, yval
-  elseif scroll[_slot] then
-    return scroll[_slot], linker, xval, yval, option 
   end
-  return scroll[_portal], linker, xval, yval
+  return scroll[_slot], linker, xval, yval, option
 end
 
 function metacel:__relink(scroll, link)
@@ -1012,9 +1053,9 @@ function metacel:onmousewheel(scroll, direction, x, y, intercepted)
   if not intercepted and scroll[_slot] then
     local invalue = scroll[_slot].y
     if cel.mouse.wheel.down == direction then
-      scroll:step(nil, cel.mouse.scrolllines or 1)
+      scrollstep(scroll, nil, cel.mouse.scrolllines or 1)
     elseif cel.mouse.wheel.up == direction then
-      scroll:step(nil, -(cel.mouse.scrolllines or 1))
+      scrollstep(scroll, nil, -(cel.mouse.scrolllines or 1))
     end
     return invalue ~= scroll[_slot].y
   end
@@ -1133,42 +1174,4 @@ do
   end
 end
 
-return metacel:newfactory({layout = layout,
-  colstep = function(scroll, xstep, ystep, mode)
-    scroll[_slot]:endflow()
-
-    local col = scroll:getsubject()
-    local x, y = scroll:getvalues()
-    if ystep and ystep ~= 0 then
-      local item = col:pick(0, y)
-
-      if item then
-        if ystep > 0 then
-          item = col:next(item)
-        else 
-          if y <= item.y then --to keep step to the top of a cel if we are in the middle of it
-            item = col:prev(item)
-          end
-        end
-      end
-
-      if item then
-        y = item.y
-      elseif ystep > 0 then
-        y = col.h
-      else
-        y = 0
-      end
-    else
-      y = nil
-    end
-
-    if xstep then
-      x = x + (xstep * scroll.stepsize)
-    else
-      x = nil
-    end
-
-    return scroll:scrollto(x, y)
-  end
-})
+return metacel:newfactory({layout = layout})

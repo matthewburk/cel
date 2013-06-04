@@ -1434,7 +1434,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     assert(slot)
 
     if face and not M.isface(face) then
-      face = getface('cel', face)
+      face = M.getface('cel', face)
     end
 
     slot.face = face or false
@@ -1597,6 +1597,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     return self
   end
 
+
   --TODO does not quite work
   function metacel:onmousemove(seq, x, y)
     local vx, vy = mouse:vector()
@@ -1670,7 +1671,19 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     end
   end
 
-  M[_seq_] = metacel:newfactory()
+  if _seq_ == 'col' then
+    M[_seq_] = metacel:newfactory({
+      iscol = function(cel)
+        return rawget(cel, _formation) == formation
+      end
+    })
+  else
+    M[_seq_] = metacel:newfactory({
+      isrow = function(cel)
+        return rawget(cel, _formation) == formation
+      end
+    })
+  end
 end --end main loop
 
 
