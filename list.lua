@@ -73,10 +73,17 @@ function metacel.metatable:getcurrent()
 end
 
 local function changecurrent(list, item)
+  local layout = list.face.layout or layout
+
   local current = list[_current]
+
+  if current then
+    list:setslotface(current, layout.slotface)
+  end
   list[_current] = item
+
   if item then
-    item:takefocus()
+    list:setslotface(item, layout.currentslotface)
   end
   return list:refresh()
 end

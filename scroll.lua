@@ -969,8 +969,6 @@ do
   end
 
   function metatable:scrolltocel(acel)
-    dprint('scroll', 'scrolltocel', acel)
-
     if not acel or not self[_slot] then
       return self
     end
@@ -991,6 +989,11 @@ do
     else
     end
     return self
+  end
+
+  function metatable:jumptocel(acel)
+    self:scrolltocel(acel)
+    self[_slot]:endflow(self:getflow('scroll')) 
   end
 end
 
