@@ -34,6 +34,7 @@ local layout = {
   slotface = nil,
   currentslotface = nil,  
   selectedslotface = nil,
+  selectedcurrentslotface = nil,
 }
 
 do
@@ -78,12 +79,20 @@ local function changecurrent(list, item)
   local current = list[_current]
 
   if current then
-    list:setslotface(current, layout.slotface)
+    if list[_selected] and list[_selected][current] then
+      list:setslotface(current, layout.selectedslotface)
+    else
+      list:setslotface(current, layout.slotface)
+    end
   end
   list[_current] = item
 
   if item then
-    list:setslotface(item, layout.currentslotface)
+    if list[_selected] and list[_selected][item] then
+      list:setslotface(item, layout.selectedcurrentslotface or layout.currentslotface)
+    else
+      list:setslotface(item, layout.currentslotface)
+    end
   end
   return list:refresh()
 end
@@ -127,13 +136,13 @@ function metacel.metatable:select(itemorindex, mode)
   local selected = self[_selected]
 
   local op
-  if mode == true then
+  if mode == true or mode == nil then
     if selected[item] then return self end
     op = 'select' 
   elseif mode == false then
     if not selected[item] then return self end
     op = 'unselect'  
-  else
+  elseif mode == 'toggle' then
     if selected[item] then
       op = 'unselect'  
     else
@@ -144,11 +153,20 @@ function metacel.metatable:select(itemorindex, mode)
   if op == 'select' then
     local layout = self.face.layout or layout
     selected[item] = true
-    self:setslotface(item, layout.selectedslotface)
+
+    if self[_current] == item then
+      self:setslotface(item, layout.selectedcurrentslotface or layout.currentslotface)
+    else
+      self:setslotface(item, layout.selectedslotface)
+    end
   elseif op == 'unselect' then
     selected[item] = nil
     if index then
-      self:setslotface(item, false)
+      if self[_current] == item then
+        self:setslotface(item, layout.currentslotface)
+      else
+        self:setslotface(item, layout.slotface)
+      end
     end
   end
 
