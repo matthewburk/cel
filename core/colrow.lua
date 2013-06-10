@@ -99,6 +99,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
           x = math.modf(x)
           w = math.floor(w)
 
+
           return math.max(x + w, w, -x)
         end
       end
@@ -1118,18 +1119,13 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
       links.maxas = math.min(links.maxas + slot.maxas, maxdim)
     end
 
-    if link[_minbs] > links.minbs then
-      local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
-      if edge > links.minbs then
-        links.minbs = edge
-        --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.3', 'links.minbs', links.minbs, link[_minbs]) end --]]
-        links.brace = link
-      end
-    elseif link == links.brace and link[_minbs] < link[_bs] then
-      local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
-      if edge < links.minbs then
-        links.brace = false 
-      end
+    local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
+    if edge > links.minbs then
+      links.minbs = edge
+      --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.3', 'links.minbs', links.minbs, link[_minbs]) end --]]
+      links.brace = link
+    elseif link == links.brace and edge < links.minbs then
+      links.brace = false 
     end
 
     if seq[_flux] == 0 then
@@ -1401,7 +1397,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     end
 
     slot.fixedlimits = (type(minas) == 'number' and 1 or 0) + (type(maxas) == 'number' and 2 or 0) --0, 1, 2 or 3
-    slot.flex = flex and math.floor(flex) or 0 
+    slot.flex = flex and math.floor(flex) or slot.flex --if flex is nil, use current 
 
     --apply slot.minas
     if slot.flex == 0 then
