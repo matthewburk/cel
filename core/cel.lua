@@ -161,6 +161,11 @@ do --metatable.addlinks
   end
 end
 
+do
+  function metatable:call(func)
+    return self, func(self)
+  end
+end
 do --metatable.join
   local joinlinker = joinlinker
   function metatable.join(cel, anchor, joiner, xval, yval)
@@ -1103,7 +1108,12 @@ do
   local cel_metacel = metacel
   function metatable:setface(face)
     local metacel = self[_metacel]
-    self[_face] = metacel[_face][_variations][face] or cel_metacel[_face][_variations][face] or metacel[_face]
+    local actual = metacel[_face][_variations][face] or cel_metacel[_face][_variations][face]
+    if not actual and type(face) == 'table' then
+      actual = self.face:new(face)
+    end
+
+    self[_face] = actual or metacel[_face]
     assert(self[_face])
     return metacel:setface(self, self[_face])
   end

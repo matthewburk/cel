@@ -23,118 +23,78 @@ THE SOFTWARE.
 --]]
 
 local cel = require 'cel'
-require 'cel.label'
-require 'cel.button'
 
-
-local _seq = {}
+local _list = {}
+local _col = {}
 local _minimized = {}
-local _offset = {}
+local _state = {}
 
-local metacel, metatable = cel.newmetacel('tree')
-
-do --tree.button
-  local button_metacel = cel.button.newmetacel('tree.button')
-
-  function button_metacel:__describe(button, t)
-    t.minimized = button.tree[_minimized]
-    t.len = button.tree[_seq]:len()
-  end
-
-  function metacel:newbutton(w, h, face)
-    return button_metacel:new(w, h, face)
-  end
-end
+local metacel, mt = cel.slot.newmetacel('tree')
 
 local layout = {
-  offset = 19,
+  root = {
+    link = 'width',
+  },
 
-  button = {
-    face = nil,
-    w = 13, 
-    h = 13,
-    xval = 3,
-    yval = nil,
-    linker = 'left.center',
+  list = {
+    link = {'left', 16},
   },
 }
 
-local function onclick(button)
-  local tree = button.tree
-  
-  if tree[_minimized] then
-    tree:maximize()
+local function minimize(tree)
+  dprint('minimize', tree, tree.id)
+  --tree[_col]:setslotflexandlimits(2, 0, 0, 0)
+  tree[_list]:unlink()
+  tree[_state] = 'minimized'
+  return tree
+end
+
+local function maximize(tree)
+  dprint('maximize', tree, tree.id)
+  local layout = tree.face.layout or layout
+  tree[_list]:link(tree[_col], layout.list.link)
+  --tree[_col]:setslotflexandlimits(2, 0, true, true)
+  tree[_state] = 'maximized'
+  return tree
+end
+
+function mt:getroot()
+  return self[_col]:get(1)
+end
+
+function mt:get(i)
+  return self[_list]:get(i)
+end
+
+function mt:getstate()
+  return self[_state]
+end
+
+function mt:togglestate()
+  if self[_state] == 'minimized' then
+    return maximize(self)
   else
-    tree:minimize()
+    return minimize(self)
   end
 end
 
-function metatable.maximize(tree)
-  if tree[_minimized] then
-    tree[_minimized] = nil
-    --tree:resize(nil, tree[_seq].h)
-    tree:flow(nil, nil, tree[_seq].w, tree[_seq].h, 'maximize')
-  end
+function mt.maximize(tree)
+  return maximize(tree)
 end
 
-function metatable.flux(tree, callback, ...)
-  return tree[_seq]:flux(callback, ...)
+function mt.minimize(tree)
+  return minimize(tree)
 end
 
-function metatable.minimize(tree)
-  if not tree[_minimized] then 
-    tree[_minimized] = true
-    --tree:resize(nil, tree[_seq]:get(1).h)
-    tree:flow(nil, nil, tree[_seq]:get(1).w, tree[_seq]:get(1).h, 'minimize')
-  end
-end
-
-function metatable.add(tree, item, index)
-  if type(item) == 'string' then
-    item = cel.label.new(item)
-  end
-
-  
-  return item:link(tree, nil, index and index + 1)
-end
-
-function metatable.get(tree, index, ...)
-  local item = tree[_seq][index]
-
-  --if itme is tree
-  --
-  --
-
-  if index == 1 then 
-    return
-  end
-
-  return item
-end
-
-function metacel:onlinkmove(tree, link)
-  if link == tree[_seq] and not tree[_minimized] then
-    tree:resize(link.w, link.h)
-  end
+function mt:flux(callback, ...)
+  self[_list]:flux(callback, ...)
+  return self
 end
 
 function metacel:__link(tree, link, linker, xval, yval, option)
-  if tree[_seq] then
-    local offset
-    if link[_offset] then
-      offset = tree[_offset]
-    else
-      offset = tree[_offset] --* 2
-    end
-  
-    return tree[_seq], nil, offset, nil, option 
+  if tree[_list] then
+    return tree[_list], linker, xval, yval, option 
   end
-  return tree, linker, xval, yval, option
-end
-
-function metacel:__describe(tree, t)
-  t.minimized = tree[_minimized]
-  t.len = tree[_seq]:len()
 end
 
 do
@@ -145,50 +105,28 @@ do
 
     if type(root) == 'string' then root = cel.label.new(root) end
 
-    local w = root.w + layout.offset
-    local h = root.h
+    local tree = _new(self, face)
 
-    local tree = _new(self, w, h, face)
-    local seq = cel.sequence.y.new()
-    local roothost = cel.new(w, h)
+    tree[_col] = cel.col.new():link(tree, 'width')
 
-    do
-      local layout = layout.button
-      local button = self:newbutton(layout.w, layout.h, layout.face)
-      button:link(roothost, layout.xval, layout.yval, layout.linker)
-      button.onclick = onclick 
-      button.tree = tree 
-    end
+    root:link(tree[_col], layout.root.link)
 
-    root:link(roothost, layout.offset, nil)
-    roothost:link(seq)
-    seq:link(tree)
+    tree.root = root
 
-    tree[_offset] = layout.offset
-    tree[_seq] = seq 
+    tree[_list] = cel.col.new()
+      :link(tree[_col], layout.list.link)
+
+    tree[_state] = 'maximized'
 
     return tree
   end
 
-  local _construct = metacel.construct
-  function metacel:construct(tree, t)
-    return _construct(self, tree, t)
+  local _assemble = metacel.assemble
+  function metacel:assemble(t, tree)
+    tree = tree or metacel:new(t.root, t.face)
+    return _assemble(self, t, tree)
   end
 end
 
-
-cel.tree = setmetatable(
-  {
-    new = function(root, face) return metacel:new(root, face) end,
-    newmetacel = function(name) return metacel:newmetacel(name) end,
-    layout = nil,
-  },
-  {__call = 
-    function(self, t)
-      local tree = metacel:new(t.root, t.face)
-      return metacel:construct(tree, t)
-    end
-  })
-
-return cel.tree
+return metacel:newfactory()
 

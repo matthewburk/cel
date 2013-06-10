@@ -36,13 +36,13 @@ celfacemt.__index = celfacemt
 function celfacemt:new(t)
   t = t or {}
   t.__index = t
-  self[_variations][t] = t
+  self[_variations][t] = t --TODO weak ref only
   return setmetatable(t, self)
 end
 
 function celfacemt:register(name)
   assert(name)
-  self[_variations][name] = self
+  self[_variations][name] = self --TODO when variations is weak ref make register store a strong ref
   return self
 end
 
