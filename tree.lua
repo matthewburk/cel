@@ -32,11 +32,14 @@ local _state = {}
 local metacel, mt = cel.slot.newmetacel('tree')
 
 local layout = {
+  gap=0,
+
   root = {
     link = 'width',
   },
 
   list = {
+    gap=0,
     link = {'left', 16},
   },
 }
@@ -92,8 +95,14 @@ function mt:flux(callback, ...)
 end
 
 function metacel:__link(tree, link, linker, xval, yval, option)
-  if tree[_list] then
-    return tree[_list], linker, xval, yval, option 
+  if not option then
+    local layout = tree.face.layout or layout
+    if link[_list] then --if link is another tree
+      return tree[_list], layout.root.link
+    else
+      --tree[_list] is nil before it is linked, so this won't have any effect
+      return tree[_list], layout.list.link 
+    end
   end
 end
 
@@ -107,13 +116,13 @@ do
 
     local tree = _new(self, face)
 
-    tree[_col] = cel.col.new():link(tree, 'width')
+    tree[_col] = cel.col.new(layout.gap):link(tree, 'width')
 
     root:link(tree[_col], layout.root.link)
 
     tree.root = root
 
-    tree[_list] = cel.col.new()
+    tree[_list] = cel.col.new(layout.list.gap)
       :link(tree[_col], layout.list.link)
 
     tree[_state] = 'maximized'
