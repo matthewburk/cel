@@ -120,6 +120,8 @@ setfenv(1, _ENV)
     return ret
   end
 
+  --TODO remove onlink, only used for scroll, dubious usage
+  --but maybe it is useful and onunlink needs to be added as well
   do --onlink 
     --only send to metacel
     --TODO work out a way to send extra param like onlinkmove and onresize

@@ -195,7 +195,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
       --if a linker prevents collapse to min size
       if links.as ~= seq[_as] 
       or links.bs ~= seq[_bs]
-      or rawget(seq, _linker) then
+      and rawget(seq, _linker) then
         local as, bs = seqtestlinker(seq, seq[_host], rawget(seq, _linker), rawget(seq, _xval), rawget(seq, _yval),
                                       links.as, links.bs, links.as, links.maxas, links.bs, nil)
 
@@ -1122,9 +1122,10 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
     if edge > links.minbs then
       links.minbs = edge
-      --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.3', 'links.minbs', links.minbs, link[_minbs]) end --]]
+      --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.4', 'links.minbs', links.minbs, link[_minbs]) end --]]
       links.brace = link
     elseif link == links.brace and edge < links.minbs then
+      --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.5', 'links.minbs', links.minbs, 'edge', edge) end --]]
       links.brace = false 
     end
 

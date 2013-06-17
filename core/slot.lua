@@ -86,7 +86,7 @@ do --slotformation.link
     local minh = math.max(edgey + host[_margin].h, host[_defaultminh])
 
     if minw ~= host[_minw] or minh ~= host[_minh] then
-      host:setlimits(minw, host[_maxw], minh, host[_maxh])
+      host:setlimits(minw, host[_maxw], minh, host[_maxh], minw, minh)
     end
 
     host:resize(host[_margin].w + link[_w], host[_margin].h + link[_h])
@@ -183,7 +183,7 @@ do --slotformation.linklimitschanged
     local minh = math.max((link[_minh] or 0) + margin.h, host[_defaultminh])
 
     --TODO this will break if adding margin exceeds maxdim
-    host:setlimits(minw, host[_maxw], minh, host[_maxh])
+    host:setlimits(minw, host[_maxw], minh, host[_maxh], minw, minh)
   end
 end
 
@@ -306,7 +306,7 @@ do --slotformation.unlink
     host[_slotlink] = false
     stackformation:unlink(host, link)
 
-    host:setlimits(w, host[_maxw], h, host[_maxh])
+    host:setlimits(w, host[_maxw], h, host[_maxh], w, h)
     host:resize(0, 0)
   end
 end
@@ -343,7 +343,7 @@ do
       local minh = math.max(edgey + margin.h, self[_defaultminh])
 
       if minw ~= self[_minw] or minh ~= self[_minh] then
-        self:setlimits(minw, self[_maxw], minh, self[_maxh])
+        self:setlimits(minw, self[_maxw], minh, self[_maxh], minw, minh)
       end
 
       return self:resize(margin.w + link[_w], margin.h + link[_h])

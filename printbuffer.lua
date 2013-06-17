@@ -22,11 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
 local cel = require 'cel'
-local metacel, metatable = cel.listbox.newmetacel('printbuffer')
+local metacel, metatable = cel.scroll.newmetacel('printbuffer')
 local _buffersize = {}
-local _textface = {}
 
 do
+  local textface = cel.getface('text'):new {
+    font=cel.loadfont('code')
+  }
+
   local newlabel = cel.text.new
   function metatable.print(self, ...)
     local out = {}
@@ -47,10 +50,10 @@ do
     end
     local text = table.concat(out)
 
-    if self:len() > self[_buffersize]  then
-      self:remove(1)
+    if self.list:len() > self[_buffersize]  then
+      self.list:remove(1)
     end
-    newlabel(text, self[_textface]):link(self, 'width')
+    newlabel(text, textface):link(self.list, 'width')
     self:scrollto(0, math.huge)
   end
 
@@ -81,9 +84,9 @@ function metatable:setbuffersize(size)
   self[_buffersize] = size
 
   if excess > 0 then
-    self:flux(function()
+    self.list:flux(function()
       for i = 1, excess do
-        self:remove(1)    
+        self.list:remove(1)    
       end
     end)
   end
@@ -95,9 +98,8 @@ do
     face = self:getface(face)
 
     local printbuffer = _new(self, w, h, face)
-    printbuffer[_textface] = cel.getface('text'):new {
-      font = cel.loadfont('code'),
-    }
+    printbuffer.list = cel.list.new()
+      :link(printbuffer, 'fill')
 
     printbuffer[_buffersize] = 200
     return printbuffer

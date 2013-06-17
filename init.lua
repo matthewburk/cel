@@ -35,6 +35,7 @@ require('cel.core.driver')
 require('cel.core.metacel')
 require('cel.core.cel')
 require('cel.core.root')
+require('cel.core.open')
 require('cel.core.colrow')
 M.slot = require('cel.core.slot')
 
@@ -978,7 +979,7 @@ do
   local forks = setmetatable({}, {__mode='k'})
 
   
-  function M.fork(acel, f)
+  function M.coroutine(acel, f)
     local fork = coroutine.wrap(f)
 
     local function yield(...)
@@ -989,7 +990,7 @@ do
     return fork(acel, yield)
   end
 
-  function M.resumefork(cel, ...)
+  function M.resume(cel, ...)
     local acel = cel
     local fork = forks[cel]
     while (not fork) and cel do

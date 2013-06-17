@@ -58,7 +58,7 @@ do
       list:setslotflexandlimits(maximize, 0, maximize.minh*p, maximize.minh*p)
     end
     if minimize then
-      list:setslotflexandlimits(minimize, 0, 0, minimize.maxh - minimize.maxh*p)
+      list:setslotflexandlimits(minimize, 0, 0, minimize.h - minimize.h*p)
     end
   end
 
@@ -100,6 +100,7 @@ do
     if header == self[_current] then
       local list = self[_list]
       local minimize = self[_current] and list:next(self[_current])
+      local maximize = nil
 
       self:flowvalue(self:getflow('transition'), 0, 1, function(self, p)
         list:flux(transition, list, maximize, minimize, p)

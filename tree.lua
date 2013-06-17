@@ -118,12 +118,16 @@ do
 
     tree[_col] = cel.col.new(layout.gap):link(tree, 'width')
 
+    tree[_col].__debug = true
+
     root:link(tree[_col], layout.root.link)
 
     tree.root = root
 
     tree[_list] = cel.col.new(layout.list.gap)
       :link(tree[_col], layout.list.link)
+
+    tree[_list].__debug = true
 
     tree[_state] = 'maximized'
 
