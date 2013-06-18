@@ -937,10 +937,6 @@ function metatable:setrightborder(bordercel, linker, xval, yval, option)
   return self
 end
 
-local function scrollflowupdate(subject, x, y)
-  local scroll = subject[_scroll]
-end
-
 do
   local function updateflow(scroll, subject, x, y)
     __updatevalue(scroll, scroll[_xdim], -x)
@@ -963,7 +959,7 @@ do
       end
 
       scroll[_slot]:endflow(scroll:getflow('scroll'))      
-      scroll[_slot]:flow(scroll:getflow('scroll'), -x, -y, nil, nil,  scroll[_updateflow])
+      scroll[_slot]:flow(scroll:getflow('scroll'), -x, -y, nil, nil, scroll[_updateflow])
     end
     return scroll
   end
@@ -1060,7 +1056,9 @@ function metacel:onmousewheel(scroll, direction, x, y, intercepted)
     elseif cel.mouse.wheel.up == direction then
       scrollstep(scroll, nil, -(cel.mouse.scrolllines or 1))
     end
-    return invalue ~= scroll[_slot].y
+    return true
+    --does not work with flows
+    --return invalue ~= scroll[_slot].y
   end
 end
 

@@ -173,8 +173,17 @@ end
 
 do --ENV.touch
   function touch(cel, x, y)
-    if x < 0 or y < 0 or x >= cel[_w] or y >= cel[_h] then
+    if x < 0 
+    or y < 0 
+    or x >= cel[_w] 
+    or y >= cel[_h] 
+    or cel.touch == false 
+    or cel[_metacel].touch == false then
       return false
+    end
+
+    if cel.touch == true or cel[_metacel].touch == true then
+      return true
     end
 
     if cel.touch ~= touch then
@@ -187,10 +196,11 @@ do --ENV.touch
       end
     end
 
+    --cel face can only restrict touch not add to area
     local celface = cel[_face] 
     celface = celface or cel[_metacel][_face]
 
-    if celface and celface.touch ~= nil and celface.touch ~= touch then
+    if celface.touch ~= nil and celface.touch ~= touch then
       if not celface:touch(x, y, cel[_w], cel[_h]) then
         return false
       end

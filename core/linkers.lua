@@ -23,6 +23,18 @@ THE SOFTWARE.
 --]]
 local M =  {}
 
+M.fixedwidth = function(hw, hh, x, y, w, h, fixedwidth)
+  return x, y, fixedwidth, h
+end
+
+M.fixedheight = function(hw, hh, x, y, w, h, fixedheight)
+  return x, y, w, fixedheight 
+end
+
+M.fixedsize = function(hw, hh, x, y, w, h, fixedwidth, fixedheight)
+  return x, y, fixedwidth, fixedheight 
+end
+
 M['hidden'] = function(hw, hh, x, y, w, h)
   return hw, hh, w, h
 end
