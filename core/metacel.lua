@@ -484,13 +484,13 @@ do --ENV.testlinker
   --TODO need to support option parameter
   function testlinker(cel, host, linker, xval, yval, nx, ny, nw, nh, minw, maxw, minh, maxh)
     if linker and type(linker) ~= 'function' then linker = linkers[linker] end
-    --linker = linker and linkers[linker] or linker --TODO this is probably quicker than checking the type of the linker do this everywhere
-    --if not linker then return cel[_x], cel[_y], cel[_w], cel[_h] end
+
+    --TODO this needs to be done in the formation row and col apply rules that limit x and y
+    if not linker then return nx or cel[_x], ny or cel[_y], nw or cel[_w], nh or cel[_h] end 
 
     if host and rawget(host, _formation) then
       return host[_formation]:testlinker(host, cel, linker, xval, yval, nx, ny, nw, nh, minw, maxw, minh, maxh)
     else
-      if not linker then return nx or cel[_x], ny or cel[_y], nw or cel[_w], nh or cel[_h] end
       local x, y, w, h = nx or cel[_x], ny or cel[_y], nw or cel[_w], nh or cel[_h]
       minw, maxw = minw or cel[_minw], maxw or cel[_maxw]
       minh, maxh = minh or cel[_minh], maxh or cel[_maxh]

@@ -1151,7 +1151,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     local slot = link[_slot]
     link[_slot] = nil
 
-    local gap = links.n > 1 and seq[_gap] or 0
+    local gap = links.n > 0 and seq[_gap] or 0
   
     if slot.flex == 0 then
       links.minas = links.minas - gap - slot.as

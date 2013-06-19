@@ -45,7 +45,6 @@ local layout = {
 }
 
 local function minimize(tree)
-  dprint('minimize', tree, tree.id)
   --tree[_col]:setslotflexandlimits(2, 0, 0, 0)
   tree[_list]:unlink()
   tree[_state] = 'minimized'
@@ -53,7 +52,6 @@ local function minimize(tree)
 end
 
 local function maximize(tree)
-  dprint('maximize', tree, tree.id)
   local layout = tree.face.layout or layout
   tree[_list]:link(tree[_col], layout.list.link)
   --tree[_col]:setslotflexandlimits(2, 0, true, true)
