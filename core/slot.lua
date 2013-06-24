@@ -169,21 +169,27 @@ do --slotformation.dolinker
   end
 end
 
-do --slotformation.linklimitschanged
-  function slotformation:linklimitschanged(host, link, ominw, omaxw, ominh, omaxh)
-    if link ~= host[_slotlink] then
-      return
+do --slotformation.setlinklimits
+  function slotformation:setlinklimits(host, link, minw, maxw, minh, maxh, w, h)
+    link[_minw] = minw
+    link[_maxw] = maxw
+    link[_minh] = minh
+    link[_maxh] = maxh
+
+    if link == host[_slotlink] then
+      local margin = host[_margin]
+      local minw = math.max(minw + margin.w, host[_defaultminw])
+      local minh = math.max(minh + margin.h, host[_defaultminh])
+
+      --TODO this will break if adding margin exceeds maxdim
+      host:setlimits(minw, host[_maxw], minh, host[_maxh], minw, minh)
     end
 
-    local margin = host[_margin]
-    local w = margin.w
-    local h = margin.h
-
-    local minw = math.max((link[_minw] or 0) + margin.w, host[_defaultminw])
-    local minh = math.max((link[_minh] or 0) + margin.h, host[_defaultminh])
-
-    --TODO this will break if adding margin exceeds maxdim
-    host:setlimits(minw, host[_maxw], minh, host[_maxh], minw, minh)
+    if w ~= link[_w] or h ~= link[_h] then
+      slotformation:movelink(host, link, link[_x], link[_y], w, h, minw, maxw, minh, maxh, link[_x], link[_y], link[_w], link[_h])
+    elseif rawget(link, _linker) then
+      slotformation:dolinker(host, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
+    end
   end
 end
 
@@ -336,7 +342,7 @@ do
     margin.w = l + r
     margin.h = t + b
 
-    local link = rawget(slot, _slotlink)
+    local link = rawget(self, _slotlink)
     if link then
       local edgex, edgey = slotformation:getbraceedges(self, link, link.linker, link.xval, link.yval)
       local minw = math.max(edgex + margin.w, self[_defaultminw])

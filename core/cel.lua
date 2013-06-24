@@ -41,8 +41,7 @@ local metatable = _ENV.metacel.metatable
 
 do --metatable.setlimits
   local floor = math.floor
-  --TODO replace max function with math.max
-  local function max(a, b) if a >= b then return a else return b end end
+  local max = math.max
 
   function metatable.setlimits(cel, minw, maxw, minh, maxh, nw, nh)
     if cel[_metacel].__setlimits then
@@ -59,13 +58,6 @@ do --metatable.setlimits
     local ominh = cel[_minh]
     local omaxh = cel[_maxh]
 
-    cel[_minw] = minw
-    cel[_maxw] = maxw
-    cel[_minh] = minh
-    cel[_maxh] = maxh
-
-    local limitschanged = ominw ~= minw or omaxw ~= maxw or ominh ~= minh or omaxh ~= maxh
-
     local w = nw or cel[_w]
     local h = nh or cel[_h]
 
@@ -77,26 +69,25 @@ do --metatable.setlimits
     event:wait()
 
     local host = rawget(cel, _host)
-    if host and limitschanged then
-      local formation = rawget(host, _formation)
-      if formation and formation.linklimitschanged then
-        formation:linklimitschanged(host, cel, ominw, omaxw, ominh, omaxh)
+    local formation = host and rawget(host, _formation)
+
+    if formation then
+      formation:setlinklimits(host, cel, minw, maxw, minh, maxh, w, h)
+    else
+      cel[_minw] = minw
+      cel[_maxw] = maxw
+      cel[_minh] = minh
+      cel[_maxh] = maxh
+
+      if w ~= cel[_w] or h ~= cel[_h] then
+        cel:resize(w, h)
+      elseif rawget(cel, _linker) then
+        dolinker(host, cel, rawget(cel, _linker), rawget(cel, _xval), rawget(cel, _yval))
       end
     end
 
-    --this resizes the cel if the limits now constrain it
-    --but also need to resize if the limits unconstrain it
-    --if i always resize it makes it really slow under certain conditions
-    --like a sequence of wrapping text
-    --don't do this, the formation should handle it only, so just do it for the stackformation
-    --or do it when there is no host
-    if w ~= cel[_w] or h ~= cel[_h] then
-      cel:resize(w, h)
-    elseif host and rawget(cel, _linker) then
-      dolinker(host, cel, rawget(cel, _linker), rawget(cel, _xval), rawget(cel, _yval))
-    end
-
     event:signal()
+
     return cel
   end
 end
@@ -162,8 +153,8 @@ do --metatable.addlinks
 end
 
 do
-  function metatable:call(func)
-    return self, func(self)
+  function metatable:call(func, ...)
+    return self, func(self, ...)
   end
 end
 do --metatable.join

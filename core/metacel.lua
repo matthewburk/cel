@@ -627,6 +627,7 @@ do --ENV.metacel
   metacel = {}
   metacel[_name] = 'cel'
   metacel[_face] = M.getface('cel')
+  metacel[_variations] = metacel[_face][_variations]
 end
 
 do --metacel.new
@@ -821,6 +822,7 @@ do --metacel.newmetacel
     metacel.metatable = metatable
    
     metacel[_face] = newmetaface(name, self[_face])
+    metacel[_variations] = metacel[_face][_variations]
 
     return metacel, metatable
   end
@@ -830,7 +832,8 @@ do --metacel.getface
   local _face = _face
   function metacel:getface(face)
     --TODO add _variations to metacel
-    local result = face and (self[_face][_variations][face] or metacel[_face][_variations][face])
+    --local result = face and (self[_face][_variations][face] or metacel[_face][_variations][face])
+    local result = face and (self[_variations][face] or metacel[_variations][face])
 
     --TODO remove this from here, it slows down everything, not worth the convenience
     if not result 

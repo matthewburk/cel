@@ -1072,7 +1072,12 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     end
   end
 
-  function formation:linklimitschanged(seq, link)
+  function formation:setlinklimits(seq, link, minw, maxw, minh, maxh, w, h)
+    link[_minw] = minw
+    link[_maxw] = maxw
+    link[_minh] = minh
+    link[_maxh] = maxh
+
     --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged', link) end --]]
     local links = seq[_links]
     local slot = link[_slot]
@@ -1119,13 +1124,23 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
       links.maxas = math.min(links.maxas + slot.maxas, maxdim)
     end
 
+    if w ~= link[_w] or h ~= link[_h] then
+      formation:movelink(seq, link, link[_x], link[_y], w, h, minw, maxw, minh, maxh, link[_x], link[_y], link[_w], link[_h])
+      return --move link will dolinker, getbraceedge, and reconcile 
+    end
+
+    if rawget(link, _linker) then
+      formation:dolinker(seq, link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
+    end
+
     local edge = getbraceedge(link, rawget(link, _linker), rawget(link, _xval), rawget(link, _yval))
+    --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.4', 'edge', edge, link, link.x, link.w) end --]]
     if edge > links.minbs then
       links.minbs = edge
-      --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.4', 'links.minbs', links.minbs, link[_minbs]) end --]]
+      --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.5', 'links.minbs', links.minbs, link[_minbs]) end --]]
       links.brace = link
     elseif link == links.brace and edge < links.minbs then
-      --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.5', 'links.minbs', links.minbs, 'edge', edge) end --]]
+      --[[if seq.__debug or link.__debug then dprint(_seq_, seq.id, 'linklimitschanged.6', 'links.minbs', links.minbs, 'edge', edge) end --]]
       links.brace = false 
     end
 
