@@ -1,43 +1,36 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Cel by matthewburk</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Cel : Embeddable Lua GUI" />
 
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Cel</title>
   </head>
+
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/matthewburk/cel">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/matthewburk/cel/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/matthewburk/cel/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
 
-    <div class="wrapper">
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/matthewburk/cel">View on GitHub</a>
 
-      <section>
-        <div id="title">
-          <h1>Cel</h1>
-          <p>Embeddable Lua GUI</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/matthewburk">matthewburk</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
-        </div>
+          <h1 id="project_title">Cel</h1>
+          <h2 id="project_tagline">Embeddable Lua GUI</h2>
 
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/matthewburk/cel/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/matthewburk/cel/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
         <p>Cel is free software: it may be used for any purpose, including commercial purposes, at absolutely no cost.
 Cel is licensed under the terms of the MIT license</p>
 
@@ -61,11 +54,49 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.</p>
 
+<p>Cel was designed to meet these requirements, in order of importance:
+1. Cel is not in control, it is driven by the host program.  This is the prime directive.
+2. Cel will not impose dependencies.
+3. Cel will enable, but not enforce sandboxing.  The host process must do 
+some work to realize this, otherwise requirements 1 and 2 would be broken. 
+This requirement was inspired by how World of Warcraft allowed user defined
+plugins to manipulate the gui.
+4. Cel will not define how or when rendering occurs, see requirements 1 and 2.
+5. Cel shall not impose or require fragile rules.  For example unlinking a
+cel will always work.  Seems obvious, but many gui libraries do not work
+like this.
+6. All cels are created equal.  Meaning all cels follow the same rules, so 
+there is not a special cel that is a container, all cels are containers.  A
+specialized cel can add functionality, but not alter the basics.  This goes
+a long way towards meeting requirent 5.
+7. A cel will not expose functions or state that will compromise any of the
+requirements.  This is requriement is to realize requirement 5.  The most 
+apparent consequnce of this requirement is that there is no way to get to a
+cel you don't already have a reference to, unless it is explicitly provied 
+for by a container, or the host process. For instance there is no 
+cel.gethost() function, this is to enforce both sandboxing and 
+     non-fragility.  For example a composite cel may depend on the presence
+    of the cels it is composed of.  To ensure this a composite cel will
+    not expose the individual cels and never need worry about the state of
+    those cels being modified externally.
+What this means in practice is that I can create cels and compose them and
+give access to only the host cel.  The host process may provide a way to 
+query a cel by name or some other method, but the interals of that host cel
+known only to the host cel.  </p>
+
 <p><a href="documentation/cel/cel.html">cel</a></p>
       </section>
-
     </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Cel maintained by <a href="https://github.com/matthewburk">matthewburk</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
     
+
   </body>
 </html>
