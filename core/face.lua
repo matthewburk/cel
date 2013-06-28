@@ -42,9 +42,14 @@ function celfacemt:new(t)
   return setmetatable(t, self)
 end
 
+function celfacemt:weakregister(name)
+  self[_variations][name] = self 
+  return self
+end
+
 function celfacemt:register(name)
   self[_registered][name] = self
-  self[_variations][name] = self --TODO when variations is weak ref make register store a strong ref
+  self[_variations][name] = self 
   return self
 end
 
@@ -98,26 +103,10 @@ do
     local face = getmetaface(metacelname)
 
     if name then
-      local result = face[_variations][name]
-
-      --TODO remove this from here, it slows down everything, not worth the convenience
-      if not result 
-      and type(name) == 'string'
-      and #name == 7 
-      and name:sub(1,1)=="#" then
-        local r = tonumber(name:sub(2,3), 16)
-        local g = tonumber(name:sub(4,5), 16)
-        local b = tonumber(name:sub(6,7), 16)
-
-        result = metafaces['cel']:new {
-          color = M.color.rgb8(r, g, b)
-        }:register(name)
-      end
-
-      return result
-    else
-      return face
+      return face[_variations][name] or driver.getface(face, name)
     end
+
+    return face
   end
 
   function M.isface(test)

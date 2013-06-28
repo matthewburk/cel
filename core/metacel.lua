@@ -647,7 +647,7 @@ do --metacel.new
       [_minh] = minh and floor(minh) or 0,
       [_maxh] = maxh and floor(maxh) or 2147483647,
       [_metacel] = self,
-      [_face] = self[_variations][face] or metacel[_variations][face] or (face and self:getface(face)),
+      [_face] = face and (self[_variations][face] or metacel[_variations][face] or M.getface(self[_name], face)),
       [_celid] = celid,
     }
     celid = celid + 1
@@ -830,19 +830,8 @@ end
 do --metacel.getface
   local _face = _face
   function metacel:getface(face)
-    --TODO add _variations to metacel
-    --local result = face and (self[_face][_variations][face] or metacel[_face][_variations][face])
-    local result = face and (self[_variations][face] or metacel[_variations][face])
-
-    --TODO remove this from here, it slows down everything, not worth the convenience
-    if not result 
-    and type(face) == 'string'
-    and #face == 7 
-    and face:sub(1,1)=="#" then
-      result = M.getface('cel', face)
-    end
-
-    return result or self[_face]
+    face = face and (self[_variations][face] or metacel[_variations][face] or M.getface(self[_name], face))
+    return face or self[_face]
   end
 end
 

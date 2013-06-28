@@ -734,6 +734,14 @@ do --loadfont TODO make driver supply path and extension
   end
 end
 
+function M.isutf8(s)
+  if driver.isutf8 then
+    M.isutf8 = driver.isutf8
+    return M.isutf8(s)
+  else
+    return true
+  end
+end
 do
   M.flows = {}
 
@@ -866,8 +874,8 @@ function M.composelinker(a, b)
     b = linkers[b]
   end
 
-  assert(a)
-  assert(b)
+  --assert(a)
+  --assert(b)
 
   --TODO memoize
   return function(hw, hh, x, y, w, h, xvals, yvals, minw, maxw, minh, maxh)
@@ -916,16 +924,6 @@ end
 
 ----[[ TODO load on demand
 
-
-function M.colorface(color)
-  local face = M.getface('cel', color..'#color#')
-  if not face then 
-    face = M.getface('cel'):new {
-      color = color
-    }:register(color..'#color#')
-  end
-  return face
-end
 
 M.string = {}
 

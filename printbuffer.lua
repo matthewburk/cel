@@ -36,6 +36,7 @@ do
     local runlen = 0
     for k, s in ipairs{...} do
       s = tostring(s)
+      s = cel.isutf8(s) and s or string.rep('#', #s)
       local len = s:len()
       runlen = runlen + len
 

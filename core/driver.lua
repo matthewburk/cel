@@ -371,5 +371,24 @@ function driver.option(opt, value)
   end
 end
 
+function driver.getface(metaface, key)
+  if type(key) == 'string' then
+    if #key == 7 and key:sub(1,1) == "#" then
+      local r = tonumber(key:sub(2,3), 16)
+      local g = tonumber(key:sub(4,5), 16)
+      local b = tonumber(key:sub(6,7), 16)
+      local color = M.color.rgb8(r, g, b)
+      return M.getface('cel'):new {
+        color=color
+      }:weakregister(key):weakregister(color)
+    elseif #key == 4 then
+      return M.getface('cel'):new {
+        color=key
+      }:weakregister(key)
+    end
+    --do not register, so it can be collected when no longer used
+  end
+end
+
 return driver
 
