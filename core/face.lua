@@ -28,6 +28,8 @@ setfenv(1, _ENV)
 
 local _metacelname = {} 
 local _variations = _variations 
+local _registered = {}
+local weak = {__mode='kv'}
 
 local celfacemt = {}
 
@@ -36,12 +38,12 @@ celfacemt.__index = celfacemt
 function celfacemt:new(t)
   t = t or {}
   t.__index = t
-  self[_variations][t] = t --TODO weak ref only
+  self[_variations][t] = t 
   return setmetatable(t, self)
 end
 
 function celfacemt:register(name)
-  assert(name)
+  self[_registered][name] = self
   self[_variations][name] = self --TODO when variations is weak ref make register store a strong ref
   return self
 end
@@ -62,7 +64,8 @@ end
 
 local celface = {
   [_metacelname] = 'cel',
-  [_variations] = {},
+  [_variations] = setmetatable({}, weak),
+  [_registered] = {},
 }
 
 celface.__index = celface
@@ -73,14 +76,13 @@ do
   }
 
   local function getmetaface(metacelname)
-    assert(type(metacelname) == 'string')
-
     local metaface = metafaces[metacelname]
 
     if not metaface then
       metaface = {
         [_metacelname] = metacelname,
-        [_variations]={},
+        [_variations]=setmetatable({}, weak),
+        [_registered] = {},
         __index = true,
       }
       metaface.__index = metaface
@@ -88,8 +90,6 @@ do
       setmetatable(metaface, celface)
       metafaces[metacelname] = metaface
     end
-
-    assert(metaface)
 
     return metaface
   end
@@ -126,8 +126,6 @@ do
 
   --called when a new metacel is created
   function _ENV.newmetaface(metacelname, proto)
-    assert(type(metacelname) == 'string')
-
     local metaface = metafaces[metacelname]
 
     if metaface then
@@ -135,7 +133,8 @@ do
     else
       metaface = {
         [_metacelname] = metacelname,
-        [_variations]={},
+        [_variations]=setmetatable({}, weak),
+        [_registered] = {},
         __index = true,
       }
       metaface.__index = metaface
@@ -143,7 +142,6 @@ do
       metafaces[metacelname] = metaface
     end
 
-    assert(metaface)
     return metaface
   end
 end

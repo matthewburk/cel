@@ -43,7 +43,6 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   local _minbs = _seq_ == 'col' and _minw or _minh
   local _maxbs = _seq_ == 'col' and _maxw or _maxh
   local rawget = rawget
-  local assert = assert
   local math = math
   local table = table
   local _w = _w
@@ -67,7 +66,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   local function indexof(seq, link)
     local links = seq[_links]
     local index = link[_index]
-    assert(index)
+    --assert(index)
 
     if links[index] ~= link then
       for i = 1, links.n do
@@ -79,7 +78,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
       end
     end
 
-    assert(index == link[_index])
+    --assert(index == link[_index])
     return index
   end
 
@@ -150,7 +149,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
         end
       end
 
-      assert(brace or links.n == 0)
+      --assert(brace or links.n == 0)
 
 
       links.brace = brace
@@ -184,7 +183,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     function collapse(seq, links)
       --if we don't have a brace then links.minbs may be invalid find the brace
       rebrace(seq)
-      assert(links.brace or links.n == 0)
+      --assert(links.brace or links.n == 0)
 
       --collapse seq to its min size
       links.as = links.minas
@@ -231,7 +230,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
       local unmaxedflex = links.flex
       local extra = links.as - links.minas
 
-      assert(extra>=0)
+      --assert(extra>=0)
       --assign slot.as for each slot with flex
       if unmaxedflex > 0 then 
         local mult = extra/unmaxedflex
@@ -267,7 +266,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
         links.maxas = seqmaxas
       end
 
-      assert(extra>=0)
+      --assert(extra>=0)
       --dolinkers to respond to new slot.as
       do --reform TODO only reform when it is necessary, avoid on initial build of seq
         local a = 0
@@ -372,10 +371,10 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
         end
       end
 
-      assert(seq[_as] == links.as)
-      assert(seq[_bs] == links.bs)
+      --assert(seq[_as] == links.as)
+      --assert(seq[_bs] == links.bs)
       --[[if seq.__debug then dprint(_seq_, seq.id, 'setwidthandheight.10', 'links.minas', links.minas) end --]]
-      assert(seq[_as] >= links.minas)
+      --assert(seq[_as] >= links.minas)
       --[[if seq.__debug then dprint(_seq_, seq.id, 'setwidthandheight.11', 'w', seq.w, 'h', seq.h) end --]]
     end
   end
@@ -385,7 +384,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   --relex if the *excess* as of a seq changes
   local function reconcile(seq)
     --[[if seq.__debug then dprint(_seq_, seq.id, 'reconcile') end --]]
-    assert(seq[_flux] == 0)
+    --assert(seq[_flux] == 0)
     
     event:wait()
     seq[_flux] = 1
@@ -1204,7 +1203,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
           iend = imid - 1
         else
           if not (ain >= value + range) then
-            assert(ain >= value + range)
+            --assert(ain >= value + range)
           end
           istart = imid + 1
         end
@@ -1398,7 +1397,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     local links = self[_links]
     local link = type(indexorlink) == 'number' and self:get(indexorlink) or indexorlink
     local slot = link[_slot]
-    assert(slot)
+    --assert(slot)
 
     --undo slot.flex
     links.flex = links.flex - slot.flex
@@ -1443,7 +1442,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   function metatable:setslotface(indexorlink, face)
     local link = type(indexorlink) == 'number' and self:get(indexorlink) or indexorlink
     local slot = link[_slot]
-    assert(slot)
+    --assert(slot)
 
     if face and not M.isface(face) then
       face = M.getface('cel', face)

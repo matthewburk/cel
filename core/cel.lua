@@ -205,9 +205,11 @@ do --metatable.link
   --top link (a cel overriding this could change that by linking additional cels after,and should document that it does)
   --unless cel is already linked to host or cel and host are the same cel
   --]]
+  local type = type
+  local rawget = rawget
   function metatable.link(cel, host, linker, xval, yval, option)
-    assert(cel)
-    assert(host)
+    --assert(cel)
+    --assert(host)
     if not host then error('host is nil') end
     if cel == host then error('attempt to link cel to self') end
 
@@ -225,11 +227,12 @@ do --metatable.link
       end
     end
 
+    --[[ removed becuase don't think this is very useful
     while rawget(host, '__link') do
       host = rawget(host, '__link')
     end
-
     if not host or not host[_x] then error('retargeted host is invalid') end
+    --]]
 
     --[[ don't do this becuase option would be ignored, document that this will unlink the cel from its host and link it again
     --with new linker and option, use relink to avoid the unlink
@@ -443,6 +446,7 @@ do --metatable.unhide
   end
 end
 
+--TODO remove
 do --metatable.setappstatus
   local _appstatus = _appstatus
   function metatable.setappstatus(cel, appstatus)
@@ -808,7 +812,7 @@ do --metatable.takefocus
 
   --TODO merge into metatable.takefocus
   pickfocus = function(device, target)
-    assert(target)
+    --assert(target)
 
     --TODO should not have to do seperate code path for root
     --
@@ -819,7 +823,7 @@ do --metatable.takefocus
     end
 
     if target == _ENV.root then
-      assert(_ENV.root)
+      --assert(_ENV.root)
       for i = device_focus.n, 1, -1 do
         event:onblur(device_focus[i])
         device_focus[device_focus[i]] = nil
@@ -830,13 +834,13 @@ do --metatable.takefocus
       device_focus[1] = _ENV.root
       device_focus[_ENV.root] = 1
       event:onfocus(_ENV.root)
-      assert(_ENV.root)
+      --assert(_ENV.root)
       return
     end
 
     --TODO don't call out through metatable, give opportunity to mess it up
     local z = islinkedto(target, _ENV.root)
-      assert(_ENV.root)
+      --assert(_ENV.root)
 
     if not z then
       return
@@ -935,11 +939,11 @@ do --metatable.freemouse
         t[k] = nil
       end
 
-      assert(_ENV.root)
+      --assert(_ENV.root)
 
       t[_ENV.root] = true
       t.trap = _ENV.root
-      assert(_ENV.root)
+      --assert(_ENV.root)
 
       if onfail then onfail(cel, mouse, reason or 'freed') end
     end
@@ -1030,12 +1034,14 @@ do --metatable.sink
   end
 end
 
+--TODO remove, not used enough
 do --metatable.set_
   function metatable:set_(t)
     self._ = t
     return self
   end
 end
+
 do --metatable.__index
   local rawsub = {
     x = _x, 
@@ -1054,8 +1060,8 @@ do --metatable.__index
     t = _y,
   }
 
-  --local rawget = rawget
-  --local getX, getY = getX, getY
+  local rawget = rawget
+  local getX, getY = getX, getY
 
   function metatable.__index(t, k)
     local result = metatable[k]; if result then return result end
@@ -1099,13 +1105,13 @@ do
   local cel_metacel = metacel
   function metatable:setface(face)
     local metacel = self[_metacel]
-    local actual = metacel[_face][_variations][face] or cel_metacel[_face][_variations][face]
+    local actual = metacel[_variations][face] or cel_metacel[_variations][face]
     if not actual and type(face) == 'table' then
       actual = self.face:new(face)
     end
 
     self[_face] = actual or metacel[_face]
-    assert(self[_face])
+    --assert(self[_face])
     return metacel:setface(self, self[_face])
   end
 end

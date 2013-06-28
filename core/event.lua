@@ -83,7 +83,7 @@ setfenv(1, _ENV)
 
     function event:signal()
       local count = self.count
-      assert(count and count > 0)
+      --assert(count and count > 0)
       count = count - 1
       self.count = count
 

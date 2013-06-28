@@ -51,7 +51,7 @@ do --ENV.joinlinker
     end
 
     if joinparams2 then
-      assert(joinedcel == joinparams2.joinedcel)
+      --assert(joinedcel == joinparams2.joinedcel)
       anchor = joinparams2.anchor
 
       if joinedcel[_host] ~= anchor[_host] then
@@ -148,10 +148,10 @@ do --ENV.move
     local minw, maxw = cel[_minw], cel[_maxw]
     local minh, maxh = cel[_minh], cel[_maxh]
 
-    assert(minw)
-    assert(maxw)
-    assert(minh)
-    assert(maxh)
+    --assert(minw)
+    --assert(maxw)
+    --assert(minh)
+    --assert(maxh)
     if w ~= ow or h ~= oh then 
       if w > maxw then w = maxw end
       if w < minw then w = minw end
@@ -164,7 +164,7 @@ do --ENV.move
     local host = rawget(cel, _host)
     local formation = host and rawget(host, _formation) or stackformation
 
-    assert(minw)
+    --assert(minw)
     local ok = formation:movelink(host, cel, x, y, w, h, minw, maxw, minh, maxh, ox, oy, ow, oh)
 
     return cel
@@ -379,7 +379,7 @@ do --ENV.celmoved
   local joinlinker = joinlinker
   function celmoved(host, link, x, y, w, h, ox, oy, ow, oh)
     local _link = link
-    assert(link)
+    --assert(link)
     if rawget(link, _formation) and link[_formation].moved then
       link[_formation]:moved(link, x, y, w, h, ox, oy, ow, oh)
     else
@@ -422,7 +422,7 @@ end
 
 do --ENV.islinkedto
   function islinkedto(cel, host)
-    assert(cel)
+    --assert(cel)
 
     if cel == host then
       return nil
@@ -525,10 +525,10 @@ do --stackformation.dolinker
     local minw, maxw, minh, maxh = link[_minw], link[_maxw], link[_minh], link[_maxh]
     local x, y, w, h = linker(host[_w], host[_h], ox, oy, ow, oh, xval, yval, minw, maxw, minh, maxh)
 
-    assert(minw)
-    assert(maxw)
-    assert(minh)
-    assert(maxh)
+    --assert(minw)
+    --assert(maxw)
+    --assert(minh)
+    --assert(maxh)
 
     if w ~= ow or h ~= oh then
       if w > maxw then w = maxw end
@@ -634,21 +634,20 @@ do --metacel.new
   local floor = math.floor
   local celid = 1
 
-  --local _x, _y, _w, _h = _x, _y, _w, _h
+  local _x, _y, _w, _h = _x, _y, _w, _h
 
-  function metacel:new(w, h, face, minw, maxw, minh, maxh)
+  function metacel:new(w, h, face, minw, maxw, minh, maxh) --TODO do not accept limits in new, too much overhead for rare usage
     local cel = {
       [_x] = 0,
       [_y] = 0,
       [_w] = w and floor(w) or 0,
       [_h] = h and floor(h) or 0,
-      [_minw] = minw and floor(minw) or 0,
-      [_maxw] = maxw and floor(maxw) or 2^31-1,
+      [_minw] = minw and floor(minw) or 0, --TODO put defaults for minw/maxw in metatable
+      [_maxw] = maxw and floor(maxw) or 2147483647,
       [_minh] = minh and floor(minh) or 0,
-      [_maxh] = maxh and floor(maxh) or 2^31-1,
+      [_maxh] = maxh and floor(maxh) or 2147483647,
       [_metacel] = self,
-      --TODO add _variations to metacel to avoid extra lookup
-      [_face] = self[_face][_variations][face] or metacel[_face][_variations][face],
+      [_face] = self[_variations][face] or metacel[_variations][face] or (face and self:getface(face)),
       [_celid] = celid,
     }
     celid = celid + 1
@@ -658,10 +657,8 @@ end
 
 do --metacel.assemble
   local metacel = metacel
-
-  local unpack = unpack
   function metacel:assemble(t, cel)
-    assert(type(cel) == 'table' or type(cel) == 'nil')
+    --assert(type(cel) == 'table' or type(cel) == 'nil')
     cel = cel or metacel:new(t.w, t.h, t.face)
     cel._ = t._ or cel._
     event:wait()
@@ -713,7 +710,7 @@ do --metacel.newfactory
   function metacel:newfactory(metatable)
     local metacel = self
 
-    assert(not rawget(M, metacel[_name]))
+    --assert(not rawget(M, metacel[_name]))
 
     local factory = {}
 
@@ -775,8 +772,6 @@ do --metacel.newmetacel
 
     metatable[_name] = name --TODO don't put name in metatable, are we useing name at all???
 
-    local getX, getY = getX, getY
-    local rawget = rawget
 
     local rawsub = {
       x = _x, 
@@ -794,6 +789,10 @@ do --metacel.newmetacel
       l = _x,
       t = _y,
     }
+
+    local type = type
+    local getX, getY = getX, getY
+    local rawget = rawget
 
     metatable.__index = function(t, k)
       local result = metatable[k]; if result then return result end
@@ -853,7 +852,9 @@ do --metacel.setface
   end
 end
 
-do --metacel.assembleentry 
+do --metacel.assembleentry
+  local unpack = unpack
+  local type = type
   function metacel:assembleentry(host, entry, entrytype, linker, xval, yval, option)
     if 'table' == entrytype then
       if entry.link then
