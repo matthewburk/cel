@@ -1105,7 +1105,8 @@ do
   local cel_metacel = metacel
   function metatable:setface(face)
     local metacel = self[_metacel]
-    local actual = metacel[_variations][face] or cel_metacel[_variations][face]
+    local actual = face and (metacel[_variations][face] or cel_metacel[_variations][face] or M.getface(metacel[_name], face))
+    --TODO this should be in driver
     if not actual and type(face) == 'table' then
       actual = self.face:new(face)
     end
