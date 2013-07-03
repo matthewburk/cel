@@ -1460,10 +1460,11 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   function metatable:clear() 
     event:wait()
     local links = self[_links] 
+
     self:flux(function()
-      repeat
+      while links.n > 0 do
         links[links.n]:unlink()
-      until links.n == 0 
+      end
     end)
     event:signal()
   end
