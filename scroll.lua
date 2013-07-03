@@ -964,7 +964,7 @@ do
     return scroll
   end
 
-  function metatable:scrolltocel(acel)
+  function metatable:scrolltocel(acel, align)
     if not acel or not self[_slot] then
       return self
     end
@@ -978,11 +978,14 @@ do
     local x, y, w, h = self:getportalrect()
     x, y = self:getvalues()
 
-    if y + h < iy + acel.h then
-      self:scrollto(nil, iy + acel.h - h)
-    elseif iy < y then
+    if align == 'top' then
       self:scrollto(nil, iy)
     else
+      if y + h < iy + acel.h then
+        self:scrollto(nil, iy + acel.h - h)
+      elseif iy < y then
+        self:scrollto(nil, iy)
+      end
     end
     return self
   end

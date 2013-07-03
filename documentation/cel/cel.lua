@@ -10,7 +10,6 @@ export['cel'] {
 
       code[=[
       {
-        celhandle = userdata,
         id = number,
         host = description,
         x = number,
@@ -29,6 +28,8 @@ export['cel'] {
         face = face,
         metacel = string,
         metacel = boolean,
+        disabled = boolean,
+        disabled = 'host',
         flowcontext = any,
         [1,n] = description,
       }
@@ -51,7 +52,7 @@ export['cel'] {
         param.table{
           name='clip';
           [[defines a rectangle in absolute coordinates, that the cel is cliped to. 
-            This will always be as or more restrictive than the clipping recatangle for the host.
+            This will always be at least as restrictive as the clipping recatangle for the host.
             If the area defined by clip is <= 0 for a cel then that cel is not described.
             Which means that clip.l < clip.r is always true and clip.t < clip.b is always true.]];
           tabledef {
@@ -69,6 +70,9 @@ export['cel'] {
                       type of cel such as 'button', 'label', 'listbox', 'root']];
         param.boolean[[metacel - If metacel is false, the description is of a virtual cel, 
         that was never actually created.]]; 
+        param.boolean[[disabled - true if cel is disabled.]],
+        param.string[[disabled - 'host' if cel's host is disabled.]],
+
         param['description'][[[1,n] - This is the array portion of the cels description, 
         (it meets the requirements for the # operator to return its length).
         Any cel that is linked to the cel and is not entirely clipped will
@@ -172,7 +176,7 @@ export['cel'] {
     [[Creates a new cel.]];
 
     params = {
-      param.number[[width - default is 0.]];
+      param.number[[w - width, default is 0.]];
       param.number[[h - height, default is 0.]];
       param.face[[face - face or face name.]];
     };
@@ -265,37 +269,26 @@ export['cel'] {
 
   functiondef['cel.loadfont([name[, size]])'] {
     [[Returns a new or existing font.]];
-    [[If the font already exists it is returned, otherwise the driver.loadfont will
-    be invoked to load the font.  If the driver.loadfont() fails it is called again, with 'default' for the font
+    [[If the font already exists it is returned, otherwise driver.loadfont(name, size) will
+    be invoked to load the font.  If driver.loadfont(name, size) fails it is called again, with 'default' for the font
     name.]];
     [[The driver may choose to not honor the requested name or size]];
 
     params = {
       param.any {
         name='name';
-        [[A formatted string that specifies the facename, weight, and slant of the
-        font: 'facename:weight:slant'; weight and slant may be ommitted.]];
+        [[A string that specifies the font name. The driver will interpert the name.]];
 
         list {
-          header=[[facename is interpreted by the driver, the driver must implement the following face names.]];
-          key.code[[A face suitable for displaying lua source code.]];
+          header=[[name is interpreted by the driver, the driver must implement the following names.]];
+          key.code[[A font suitable for displaying lua source code.]];
           key.monospace[[A monospace font, like courier]];
           key.serif[[A serif font, like times new roman]];
           key.sansserif[[A sansserif font, like arial]];
-          key.default[[The driver defined defaul font face]];
-        };
-        list {
-          header=[[weight can be:]];
-          key.normal[[normal wieght]];
-          key.bold[[bold weight]];
-        };
-        list {
-          header=[[slant can be:]];
-          key.normal[[no slant]];
-          key.italic[[italic slant]];
+          key.default[[The driver defined default font face]];
         };
       };
-      param.number[[size - the size in points(not pixels) of the font.]];
+      param.number[[size - the size (in driver specified units) of the font.]];
     };
 
     returns = {
@@ -314,6 +307,7 @@ export['cel'] {
       param.linker[[a linker function.]];
     };
   };
+
   functiondef['cel.addlinker(name, linker)'] {
     [[Associates the given linker function to the given name]];
     [[If the given name is already associated to a linker then addlinker fails and returns false
@@ -327,6 +321,7 @@ export['cel'] {
       param.linker[[the linker function.]];
     };
   };
+
   functiondef['cel.composelinker(a, b)'] {
     [[Returns a linker that is composed of 2 existing linkers.]];
     [[Linker a is executed and the results are
@@ -334,8 +329,9 @@ export['cel'] {
 
     [[In other words the new linker does this:]];
     code[=[
-    x, y, w, h = a(hw, hh, x, y, w, h, xval and xval[1], yval and yval[2], ...)
-    return b(hw, hh, x, y, w, h, xval and xval[2], yval and yval[2], ...)
+    x, y, w, h = a(hw, hh, x, y, w, h, xval and xval[1], yval and yval[1], minw, maxw, minh, maxh)
+    --enforce limits on w, h
+    return b(hw, hh, x, y, w, h, xval and xval[2], yval and yval[2], minw, maxw, minh, maxh)
     ]=];
 
     params = {
@@ -347,16 +343,17 @@ export['cel'] {
       param.linker[[a linker function that takes a table for xval and yval.]];
     };
   };
+
   functiondef['cel.rcomposelinker(a, b)'] {
     [[Returns a linker that is composed of 2 existing linkers. This is a recursive composition.]];
     [[Linker a is executed and the results represent a virtual host cel, linker b is called
-    with the w and h of the virtual host and x, y translated to the position of the virutal host.  
+    with the w and h of the virtual host and x, y translated to the position of the virtual host.  
     The results from b are translated back to the real host space and returned.]];
 
     [[In other words the new linker does this:]];
     code[=[
-    local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, xval and xval[1], yval and yval[1], ...)
-    x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, xval and xval[2], yval and yval[2], ...)
+    local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, xval and xval[1], yval and yval[1], minw, maxw, minh, maxh)
+    x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, xval and xval[2], yval and yval[2], minw, maxw, minh, maxh)
     return x + vhx, y + vhy, w, h
     ]=];
 
@@ -393,6 +390,19 @@ export['cel'] {
     };
   };
 
+  functiondef['cel.tocel(value[, host])'] {
+    [[Returns value if value is a cel.]];
+    [[Returns a label (or host defined) cel if value is a string.]];
+
+    params = {
+      param.any[[value - value to create cel from.]];
+      param.cel[[host - host cel to intepret value.]];
+    };
+    returns = {
+      param.cel[[A cel or nil.]];
+    };
+  };
+
   functiondef['cel.doafter(ms, task)'] {
     [[Executes function <em>task</em> after <em>ms</em> milliseconds.]];
     [[Elapsed milliseconds is based on cel.timer().]];
@@ -400,20 +410,14 @@ export['cel'] {
     params = {
       param.number[[ms - minimum number of milliseconds to wait before executing task.
       If ms is 0, then task is executed on the next driver tick.]];
-      param['function'][[task - task function.]];
+      param['function'][[task - task function.  If task returns a number then it is rescheduled
+      to run after (return value) milliseconds.]];
     };
     returns = {
-      param['function'] {
-        callbackdef['function(option)'] {
-        [[a function that will cancel the doafter when called.]];
-          params = {
-            param.string[[option - 'cancel' will unschedule the pending task.]];
-          };
-        };
-      };
+      param['function'][[task - task function.]];
     };
   };
-  --TODO remove
+
   functiondef['cel.translate(from, x, y, to)'] {
     [[Given a point relative to cel from returns the point relative to cel to.]]; 
     [[Returns nil if to is not a host of from.]];
@@ -428,9 +432,6 @@ export['cel'] {
       param.number[[x coordinate of point relative to cel to.]];
       param.number[[y coordinate of point relative to cel to.]];
     };
-
-  };
-  functiondef['cel.tocel(v, host)'] {
   };
 
   functiondef['cel.getface(metacelname[, name])'] {
@@ -491,8 +492,11 @@ export['cel'] {
   
     returns = {
       param.table {
-        [[a table contianing a description of the root cel.]];
+        [[a table describing the root cel.]];
+      },
 
+      param.table {
+        [[a table with metadata of this description.]];
         tabledef {
           code[=[
           {
@@ -504,7 +508,6 @@ export['cel'] {
               t = number,
               b = number,
             },
-            description = table,
           }
           ]=];
 
@@ -521,23 +524,19 @@ export['cel'] {
               param.number[[b - the bottom of the rectangle.]];
             };
           };
-          param.table[[description - The description of the root cel.]];
         }; 
       };
+
+      param.boolean[[true if the root description is new.]];
     };
   };
 
-  functiondef['cel.getdescription()'] {
-    'Returns the current description.';
-    [[The current description is the last one returned by cel.describe()]];
-  };
-
-  functiondef['cel.printdescription([description])'] { 
-    'Prints a description to stdout.';
-    [[If a description is not provided the current description is used.]];
+  functiondef['cel.printdescription(description[, metadata])'] { 
+    [[Prints a description to stdout.]];
     
     params = {
-      param.table[[description - if present this description is printed.]];
+      param.table[[description - description obtained from cel.describe().]];
+      param.table[[metadata - metadata obtained from cel.describe().]];
     };
   };
 
