@@ -22,14 +22,81 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
 
-local M = require 'cel.core.module'
-local _ENV = require 'cel.core.env'
-setfenv(1, _ENV)
+local type = type
+local pairs = pairs
 
-local mouse = require('cel.core.mouse')
-local keyboard = require('cel.core.keyboard')
+local CEL = require 'cel.core.env'
 
-_ENV.driver = {}
+local _host = CEL._host
+local _trap = CEL._trap
+local _focus = CEL._focus
+local _x = CEL._x
+local _y = CEL._y
+local _w = CEL._w
+local _h = CEL._h
+local _vectorx = CEL._vectorx
+local _vectory = CEL._vectory
+local _keys = CEL._keys
+local _states = CEL._states
+local _disabled = CEL._disabled
+local _refresh = CEL._refresh
+
+CEL.mouse = {
+  [_x] = 0,
+  [_y] = 0,
+  [_vectorx] = 0,
+  [_vectory] = 0,
+  [_focus] = {},
+  [_states] = {},
+  scrolllines = 1,
+  buttons = {},
+  states = {},
+  wheel = {},
+}
+
+CEL.keyboard = { 
+  [_focus] = {n = 0},
+  [_keys] = {},
+  keys = {},
+  states = {},
+}
+
+local mouse = CEL.mouse
+local keyboard = CEL.keyboard
+local event = CEL.event
+local driver = CEL.driver
+local flows = CEL.flows
+local timer = CEL.timer
+
+local tasks = {} 
+
+function CEL.doafter(ms, f)
+  if not f then
+    error('expected a function', 2)
+  end
+
+  local task = {
+    func = f;
+    due = timer.millis + ms,
+    next = nil,
+  }
+
+  local prev = tasks
+  local next = tasks.next
+
+  while next do
+    if task.due < next.due then
+      task.next = next
+      break
+    end
+    prev = next
+    next = next.next
+  end
+
+  prev.next = task
+
+  return f
+end
 
 local function doflows()
   event:wait()
@@ -135,8 +202,6 @@ function driver.mousemove(x, y)
   end
 
   event:wait()
-
-  mouse.motion = true
 
   mouse[_vectorx] = x - mouse[_x]
   mouse[_vectory] = y - mouse[_y]
@@ -358,7 +423,7 @@ function driver.command(command, data)
 end
 
 function driver.descriptionchanged()
-  return _ENV.root[_refresh] and true or false
+  return CEL.root[_refresh] and true or false
 end
 
 function driver.changecursor(cursor)
@@ -367,28 +432,6 @@ end
 
 function driver.option(opt, value)
   if opt == 'cachedescriptions' then
-    _ENV.usedescriptioncache = value
+    CEL.usedescriptioncache = value
   end
 end
-
-function driver.getface(metaface, key)
-  if type(key) == 'string' then
-    if #key == 7 and key:sub(1,1) == "#" then
-      local r = tonumber(key:sub(2,3), 16)
-      local g = tonumber(key:sub(4,5), 16)
-      local b = tonumber(key:sub(6,7), 16)
-      local color = M.color.rgb8(r, g, b)
-      return M.getface('cel'):new {
-        color=color
-      }:weakregister(key):weakregister(color)
-    elseif #key == 4 then
-      return M.getface('cel'):new {
-        color=key
-      }:weakregister(key)
-    end
-    --do not register, so it can be collected when no longer used
-  end
-end
-
-return driver
-

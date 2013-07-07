@@ -21,52 +21,132 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
-local M = require 'cel.core.module'
-local _ENV = require 'cel.core.env'
-setfenv(1, _ENV)
 
-M.util = require('cel.util')
+local CEL = require 'cel.core.env'
 
-local mouse = require('cel.core.mouse')
-local keyboard = require('cel.core.keyboard')
-require('cel.core.face')
-require('cel.core.event')
-require('cel.core.driver')
-require('cel.core.metacel')
-require('cel.core.cel')
-require('cel.core.root')
-require('cel.core.open')
-require('cel.core.colrow')
-M.slot = require('cel.core.slot')
+local _metacel = CEL._metacel
 
-do --cel.installdriver
+require 'cel.core.cel'
+require 'cel.core.colrow'
+require 'cel.core.slot'
+
+local mouse = CEL.mouse
+local keyboard = CEL.keyboard
+local metacel = CEL.metacel
+local driver = CEL.driver
+
+local linkers = require 'cel.core.linkers'
+
+local M = CEL.M
+
+do --keyboard
+  M.keyboard = keyboard
+
+  local modifiers = {shift = {'lshift', 'rshift'}, alt = {'lalt', 'ralt'}, ctrl = {'lctrl', 'rctrl'}}
+
+  function M.keyboard:isdown(key)
+    if self[_keys][key] then
+      return true
+    end
+
+    if modifiers[key] then
+      for k,v in pairs(modifiers[key]) do
+        if self[_keys][v] then
+          return true
+        end
+      end
+    end
+    return false
+  end
+end
+
+do --mouse
+  M.mouse = mouse
+
+  function M.mouse:pick(debug)
+    event:wait()
+    CEL.pick(self, debug)
+    event:signal()
+    return self
+  end
+
+  function M.mouse:xy()
+    return self[_x], self[_y]
+  end
+
+  function M.mouse:vector()
+    return self[_vectorx], self[_vectory]
+  end
+
+  function M.mouse:isdown(button)
+    return self[_states][button] == self.states.down 
+  end
+end
+
+do --installdriver
+  local function readonly(t, proxy)
+    local mt = {
+      __index = t,
+      __newindex = function(t, k, v)
+        error('attempt to update a read-only table', 2)
+      end
+    }
+    setmetatable(proxy, mt)
+    return proxy
+  end
+
   function M.installdriver(mousetable, keyboardtable, t)
     function M.installdriver()
       error('a driver is already installed')
     end
 
-    M.util.readonly(mousetable.buttons, mouse.buttons)
-    M.util.readonly(mousetable.states, mouse.states)
-    M.util.readonly(mousetable.wheel, mouse.wheel)
-    M.util.readonly(keyboardtable.keys, keyboard.keys)
-    M.util.readonly(keyboardtable.states, keyboard.states)
+    readonly(mousetable.buttons, mouse.buttons)
+    readonly(mousetable.states, mouse.states)
+    readonly(mousetable.wheel, mouse.wheel)
+    readonly(keyboardtable.keys, keyboard.keys)
+    readonly(keyboardtable.states, keyboard.states)
 
-    driver.root = _ENV.root
-    return driver
+    assert(CEL.root)
+    CEL.driver.root = CEL.root
+    assert(CEL.driver.root)
+
+    function CEL.driver.getface(metaface, key)
+      if type(key) == 'string' then
+        if #key == 7 and key:sub(1,1) == "#" then
+          local r = tonumber(key:sub(2,3), 16)
+          local g = tonumber(key:sub(4,5), 16)
+          local b = tonumber(key:sub(6,7), 16)
+          local color = M.color.rgb8(r, g, b)
+          return M.getface('cel'):new {
+            color=color
+          }:weakregister(key):weakregister(color)
+        elseif #key == 4 then
+          return M.getface('cel'):new {
+            color=key
+          }:weakregister(key)
+        end
+        --do not register, so it can be collected when no longer used
+      end
+    end
+
+    return CEL.driver
   end
 end
 
---cel.timer
 function M.timer()
-  return timer.millis 
+  return CEL.timer.millis 
 end
 
---cel.newmetacel
+M.getface = CEL.getface
+
+function M.isface(test)
+  return type(test) == 'table' and test[_metacelname] and true or false
+end
+
 function M.newmetacel(name)
-  return _ENV.metacel:newmetacel(name)
+  return metacel:newmetacel(name)
 end
 
---cel.new
 function M.new(w, h, face)
   return metacel:new(w, h, face and metacel:getface(face))
 end
@@ -84,72 +164,78 @@ function M.tocel(v, host)
   end
 end
 
-do --cel.debugjoins
-  function M.debugjoins()
-    dprint(string.rep('-', 40))
-    local a = 0
-    for anchor, t in pairs(joins) do
-      a = a + 1
-      dprint('anchor', anchor)
+function M.translate(from, x, y, to) 
+  while from do
+    x = x + from[_x]
+    y = y + from[_y]
 
-      local j = 0
-      for joinedcel in pairs(t) do
-        dprint('  joinedcel', joinedcel)
-        j = j + 1
-      end
-      dprint(j, string.rep('j', j))
+    if to == from[_host] then
+      return x, y
     end
-    dprint(a, string.rep('a', a))
+
+    from = from[_host] 
   end
 end
 
-do --cel.translate
-  function M.translate(from, x, y, to) 
-    while from do
-      x = x + from[_x]
-      y = y + from[_y]
+function M.getlinker(name)
+  return linkers[name] 
+end
 
-      if to == from[_host] then
-        return x, y
-      end
+function M.addlinker(name, linker)
+  if type(name) ~= 'string' then
+    return false, 'name of linker must be a string'
+  end
+  if linkers[name] then
+    return false, 'linker '..name..' already exists'
+  end
+  linkers[name] = linker
+  return linker
+end
 
-      from = from[_host] 
-    end
+function M.composelinker(a, b)
+  if type(a) == 'string' then a = linkers[a] end
+  if type(b) == 'string' then b = linkers[b] end
+
+  --TODO memoize
+  return function(hw, hh, x, y, w, h, xvals, yvals, minw, maxw, minh, maxh)
+    x, y, w, h = a(hw, hh, x, y, w, h, xvals and xvals[1], yvals and yvals[1], minw, maxw, minh, maxh)
+    --TODO why am i clamping to min/max here, shouldn't w/h be able to be outside of min/max then a cel will 
+    --enforce that min/max after executing a linker
+    if w > maxw then w = maxw end
+    if w < minw then w = minw end
+    if h > maxh then h = maxh end
+    if h < minh then h = minh end
+    x, y, w, h = b(hw, hh, x, y, w, h, xvals and xvals[2], yvals and yvals[2], minw, maxw, minh, maxh)
+    return x, y, w, h
   end
 end
 
-function M.touchlinksonly(cel, x, y)
-  local metacel = cel[_metacel]
-  local formation = rawget(cel, _formation)
-
-  if formation and formation.pick then
-    local link = formation:pick(cel, x, y)
-    if touch(link, x - link[_x], y - link[_y]) then
-      return true
-    end
-    return false
+do
+  local function recurse(a, b, hw, hh, x, y, w, h, xvals, yvals, minw, maxw, minh, maxh)
+    local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, xvals and xvals[1], yvals and yvals[1], minw, maxw, minh, maxh)
+    x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, xvals and xvals[2], yvals and yvals[2], minw, maxw, minh, maxh)
+    return x + vhx, y + vhy, w, h
   end
 
-  for link in  links(cel) do
-    if touch(link, x - link[_x], y - link[_y]) then
-      return true
+  function M.rcomposelinker(a, b)
+    if type(a) == 'string' then a = linkers[a] end
+    if type(b) == 'string' then b = linkers[b] end
+
+    return function(...)
+      return recurse(a, b, ...)
     end
   end
-  return false
-end
-
-function M.notouch()
-  return false
 end
 
 do --cel.describe, cel.printdescription
+  local updaterect = CEL.updaterect
+
   local metadescription = {
     updaterect = updaterect 
   }
   local count = 0
   local _description
 
-  local updaterect = updaterect
   function M.describe()
     local altered = false
     if not _description or root[_refresh] then
@@ -204,44 +290,7 @@ do --cel.describe, cel.printdescription
   end
 end
 
-do --cel.doafter
-  tasks = {} --ENV.tasks
-
-  --TODO optimize, can create a lot of gc churn
-  function M.doafter(ms, f)
-    if not f then
-      error('expected a function', 2)
-    end
-
-    local task = {
-      func = f;
-      due = M.timer() + ms,
-      next = nil,
-    }
-
-    local prev = tasks
-    local next = tasks.next
-
-    while next do
-      if task.due < next.due then
-        task.next = next
-        break
-      end
-      prev = next
-      next = next.next
-    end
-
-    prev.next = task
-
-    return f
-  end
-end
-
-do --cel.getlinker
-  function M.getlinker(name)
-    return linkers[name] 
-  end
-end
+M.doafter = CEL.doafter
 
 do --clipboard
   local defaultclipboard = {}
@@ -866,59 +915,6 @@ do
   end
 end
 
-function M.composelinker(a, b)
-  if type(a) == 'string' then
-    a = linkers[a]
-  end
-  if type(b) == 'string' then
-    b = linkers[b]
-  end
-
-  --assert(a)
-  --assert(b)
-
-  --TODO memoize
-  return function(hw, hh, x, y, w, h, xvals, yvals, minw, maxw, minh, maxh)
-    x, y, w, h = a(hw, hh, x, y, w, h, xvals and xvals[1], yvals and yvals[1], minw, maxw, minh, maxh)
-    --TODO why am i clamping to min/max here, shouldn't w/h be able to be outside of min/max then a cel will 
-    --enforce that min/max after executing a linker
-    if w > maxw then w = maxw end
-    if w < minw then w = minw end
-    if h > maxh then h = maxh end
-    if h < minh then h = minh end
-    x, y, w, h = b(hw, hh, x, y, w, h, xvals and xvals[2], yvals and yvals[2], minw, maxw, minh, maxh)
-    return x, y, w, h
-  end
-end
-
-function M.addlinker(name, linker)
-  if type(name) ~= 'string' then
-    return false, 'name of linker must be a string'
-  end
-  if linkers[name] then
-    return false, string.format('linker %s already exists', name)
-  end
-  linkers[name] = linker
-  return linker
-end
-
-do
-  local empty = {}
-  local function recurse(a, b, hw, hh, x, y, w, h, xvals, yvals, minw, maxw, minh, maxh)
-    local vhx, vhy, vhw, vhh = a(hw, hh, x, y, w, h, xvals and xvals[1], yvals and yvals[1], minw, maxw, minh, maxh)
-    x, y, w, h = b(vhw, vhh, x - vhx, y - vhy, w, h, xvals and xvals[2], yvals and yvals[2], minw, maxw, minh, maxh)
-    return x + vhx, y + vhy, w, h
-  end
-
-  function M.rcomposelinker(a, b)
-    if type(a) == 'string' then a = linkers[a] end
-    if type(b) == 'string' then b = linkers[b] end
-
-    return function(...)
-      return recurse(a, b, ...)
-    end
-  end
-end
 
 
 
@@ -945,7 +941,7 @@ function M.newnamespace(N)
   local __index = function(namespace, k)
     --print('namespace __index', namespace, k)
     local v = M[k]
-    if M.isfactory(v) then
+    if CEL.factories[v] then
       namespace[k] = setmetatable({}, {
         __index = v,
         __call = function(_, t)
@@ -1010,10 +1006,8 @@ do
   end
 end
 
-do --cel.trackmouse
-  function M.trackmouse(func)
-    _ENV.mousetrackerfuncs[func] = true
-  end
+function M.trackmouse(func)
+  CEL.mousetrackerfuncs[func] = true
 end
 
 do

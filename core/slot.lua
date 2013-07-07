@@ -21,32 +21,45 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
-local M = require 'cel.core.module'
-local _ENV = require 'cel.core.env'
-setfenv(1, _ENV)
 
-local mouse = require('cel.core.mouse')
-local keyboard = require('cel.core.keyboard')
+local rawget = rawget
+local math = math
 
-local _margin = {}
-local _slotlink = {}
-local _defaultminw = {}
-local _defaultminh = {}
+local CEL = require 'cel.core.env'
+
+local _formation = CEL._formation
+local _links = CEL._links
+local _next = CEL._next
+local _prev = CEL._prev
+local _x = CEL._x
+local _y = CEL._y
+local _w = CEL._w
+local _h = CEL._h
+local _linker = CEL._linker
+local _xval = CEL._xval
+local _yval = CEL._yval
+local _minw = CEL._minw
+local _minh = CEL._minh
+local _maxw = CEL._maxw
+local _maxh = CEL._maxh
+
+local _margin = CEL.privatekey('_margin')
+local _slotlink = CEL.privatekey('_slotlink')
+local _defaultminw = CEL.privatekey('_defaultminw')
+local _defaultminh = CEL.privatekey('_defaultminh')
+
+local maxdim = CEL.maxdim
+local stackformation = CEL.stackformation
+local event = CEL.event
+local celmoved = CEL.celmoved
 
 local slotformation = {}
-local math = math
-local table = table
-local stackformation = stackformation
-local rawget = rawget
 
 local function slotlinker(hw, hh, x, y, w, h)
   return x, y, w, h
 end
 
-slotformation.links = stackformation.links
-
 do --slotformation.getbraceedges
-  local math = math
   function slotformation:getbraceedges(host, link, linker, xval, yval)
     if not linker then
       return link[_x] + link[_w], link[_y] + link[_h]
@@ -132,7 +145,6 @@ end
 --]]
 
 do --slotformation.testlinker --TODO need to pass option to testlinker and reroute this to stacklinker
-  local math = math
   function slotformation:testlinker(host, link, linker, xval, yval, nx, ny, nw, nh, minw, maxw, minh, maxh)
     if link ~= host[_slotlink] then
       return stackformation:testlinker(host, link, linker, xval, yval)
@@ -147,7 +159,6 @@ end
 
 do --slotformation.dolinker
   --called anytime the link[_linker] needs to be enforced
-  local celmoved = celmoved
   function slotformation:dolinker(host, link, linker, xval, yval)
     if link ~= host[_slotlink] then
       return stackformation:dolinker(host, link, linker, xval, yval)
@@ -238,7 +249,6 @@ end
 
 do --slotformation.movelink
   --movelink should only be called becuase move was explicitly called, make sure that is the case
-  local math = math
   function slotformation:movelink(host, link, x, y, w, h, minw, maxw, minh, maxh, ox, oy, ow, oh)
     if link ~= host[_slotlink] then
       return stackformation:movelink(host, link, x, y, w, h, minw, maxw, minh, maxh, ox, oy, ow, oh)
@@ -299,7 +309,6 @@ do --slotformation.movelink
 end
 
 do --slotformation.unlink
-  local math = math
   function slotformation:unlink(host, link)
     if link ~= host[_slotlink] then
       return stackformation:unlink(host, link)
@@ -321,7 +330,7 @@ do --slotformation.describelinks
   slotformation.describelinks = stackformation.describelinks
 end
 
-local metacel, metatable = metacel:newmetacel('slot')
+local metacel, metatable = CEL.metacel:newmetacel('slot')
 
 do
   function metatable:setmargins(l, t, r, b)
@@ -366,8 +375,6 @@ do --metatable.get
 end
 
 do --metacel.new, metacel.assemble
-  local math = math
-
   local _new = metacel.new
   function metacel:new(face, l, t, r, b, minw, minh)
     face = self:getface(face)
@@ -401,4 +408,4 @@ do --metacel.new, metacel.assemble
   end
 end
 
-return metacel:newfactory() 
+CEL.M.slot = metacel:newfactory() 

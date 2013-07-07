@@ -22,12 +22,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 --]]
 
-local M = require 'cel.core.module'
-local _ENV = require 'cel.core.env'
-setfenv(1, _ENV)
+local rawget = rawget
+local math = math
+local type = type
+local unpack = unpack
+local setmetatable = setmetatable
+local table = table
 
-local mouse = require('cel.core.mouse')
-local keyboard = require('cel.core.keyboard')
+local CEL = require 'cel.core.env'
+
+local _formation = CEL._formation
+local _host = CEL._host
+local _links = CEL._links
+local _slot = CEL._next --intentional rename
+local _focus = CEL._focus
+local _x = CEL._x
+local _y = CEL._y
+local _w = CEL._w
+local _h = CEL._h
+local _metacel = CEL._metacel
+local _linker = CEL._linker
+local _xval = CEL._xval
+local _yval = CEL._yval
+local _minw = CEL._minw
+local _minh = CEL._minh
+local _maxw = CEL._maxw
+local _maxh = CEL._maxh
+local _disabled = CEL._disabled
+local _refresh = CEL._refresh
+
+local _dcache = CEL.privatekey('_dcache')
+local _flux = CEL.privatekey('_flux')
+local _slotface = CEL.privatekey('_slotface')
+local _index = CEL.privatekey('_index')
+local _gap = CEL.privatekey('_gap')
+
+local maxdim = CEL.maxdim
+local event = CEL.event
+local mouse = CEL.mouse
+local describe = CEL.describe
+local touch = CEL.touch
+local celmoved = CEL.celmoved
+local testlinker = CEL.testlinker
+local getface = CEL.getface
+
+local M = CEL.M
 
 --_a major coordinate
 --_b minor coordinate
@@ -42,24 +81,6 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   local _maxas = _seq_ == 'col' and _maxh or _maxw
   local _minbs = _seq_ == 'col' and _minw or _minh
   local _maxbs = _seq_ == 'col' and _maxw or _maxh
-  local rawget = rawget
-  local math = math
-  local table = table
-  local _w = _w
-  local _h = _h
-  local _x = _x
-  local _y = _y
-  local _minw = _minw
-  local _maxw = _maxw
-  local _minh = _minh
-  local _maxh = _maxh
-  local _dcache = {}
-  local _links = {}
-  local _flux = {}
-  local _slotface = {}
-  local _slot = _next
-  local _index = {}
-  local _gap = {}
 
   local formation = {__nojoin=true}
 
@@ -166,13 +187,11 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   local collapse do
     local seqtestlinker do
       if _seq_ == 'col' then 
-        local testlinker = testlinker
         function seqtestlinker(seq, host, linker, xval, yval, nas, nbs, minas, maxas, minbs, maxbs)
           local _, _, w, h = testlinker(seq, host, linker, xval, yval, nil, nil, nbs, nas, minbs, maxbs, minas, maxas)
           return h, w
         end
       else
-        local testlinker = testlinker
         function seqtestlinker(seq, host, linker, xval, yval, nas, nbs, minas, maxas, minbs, maxbs)
           local _, _, w, h = testlinker(seq, host, linker, xval, yval, nil, nil, nas, nbs, minas, maxas, minbs, maxbs)
           return w, h
@@ -521,7 +540,6 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   --  slot.w/h = slot.minw/h
   --end
   do --formation.link
-    local getface = M.getface
     local nooption = {}
     
     function formation:link(seq, link, linker, xval, yval, option)
@@ -1382,7 +1400,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   end
 
   --define metacel
-  local metacel, metatable = metacel:newmetacel(_seq_)
+  local metacel, metatable = CEL.metacel:newmetacel(_seq_)
 
   function metacel:touch(cel, x, y)
     local link = formation:pick(cel, x, y)
@@ -1445,7 +1463,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
     --assert(slot)
 
     if face and not M.isface(face) then
-      face = M.getface('cel', face)
+      face = getface('cel', face)
     end
 
     slot.face = face or false
@@ -1623,7 +1641,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
   do --metacel.new, metacel.assemble
     --TODO don't accept defaultslotface in new
     local _new = metacel.new
-    local slotface = M.getface('cel')
+    local slotface = getface('cel')
     function metacel:new(gap, face, defaultslotface)
       face = self:getface(face)
       local seq = _new(self, 0, 0, face)
@@ -1641,7 +1659,7 @@ for _, _seq_ in ipairs{ 'col', 'row' } do
 
       seq[_gap] = gap or 0
       seq[_maxas] = 0    
-      seq[_slotface] = M.getface('cel', defaultslotface) or slotface
+      seq[_slotface] = getface('cel', defaultslotface) or slotface
       seq[_formation] = formation
 
       if seq.id == 150 or seq.id == 696 then seq.__debug = true end
