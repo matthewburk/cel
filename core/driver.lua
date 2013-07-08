@@ -209,10 +209,10 @@ function driver.mousemove(x, y)
   mouse[_y] = y
 
   --lx and ly are x and y translated into mouse[_focus] coordinates
-  local lx, ly = pick(mouse)
+  local lx, ly = CEL.pick(mouse)
   local target = mouse[_focus].focus or mouse[_trap].trap
 
-  event:ontrackmouse('move', x, y)
+  event:ontrackmouse('move', lx, ly)
 
   while target do
     if not target[_disabled] then event:onmousemove(target, lx, ly) end
@@ -237,7 +237,7 @@ function driver.mousedown(x, y, button, alt, ctrl, shift)
   states.ctrl = ctrl
   states.shift = shift
 
-  local lx, ly = pick(mouse)
+  local lx, ly = CEL.pick(mouse)
   local target = mouse[_focus].focus or mouse[_trap].trap
   local trigger = {false}
 
@@ -265,7 +265,7 @@ function driver.mouseup(x, y, button, alt, ctrl, shift)
   states.ctrl = ctrl
   states.shift = shift
 
-  local lx, ly = pick(mouse)
+  local lx, ly = CEL.pick(mouse)
   local target = mouse[_focus].focus or mouse[_trap].trap
   local trigger = {false}
 
@@ -285,7 +285,7 @@ end
 function driver.mousewheel(x, y, direction, lines)
   driver.mousemove(x,y)
   event:wait()
-  local lx, ly = pick(mouse)
+  local lx, ly = CEL.pick(mouse)
   local target = mouse[_focus].focus or mouse[_trap].trap
   local trigger = {false}
 

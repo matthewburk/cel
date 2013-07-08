@@ -540,6 +540,64 @@ export['cel'] {
     };
   };
 
+  functiondef['cel.trackmouse(tracker)'] { 
+    [[Send all mouse events to tracker.]];
+   
+
+    params = {
+      param['function'] {
+        name='tracker';    
+        [[Called when a mouse event occurs. Return false to stop tracking. The tracker is called after mouse picking is done 
+        and before any cel:onmouse[action]() functions.]];    
+        callbackdef["tracker('move', x, y)"] {
+          params = {
+            param.string[[action - 'move']];
+            param.number[[x - The x position of the mouse relative to the cel with mouse focus when the event was created.]];
+            param.number[[y - The y position of the mouse relative to the cel with mouse focus when the event was created.]];
+          };
+        };
+        callbackdef["tracker('down', button, x, y)"] {
+          params = {
+            param.string[[action - 'down']];
+            param.any[[button - The mouse button that was pressed down.  A value in cel.mouse.buttons.]];
+            param.number[[x - The x position of the mouse relative to the cel with mouse focus when the event was created.]];
+            param.number[[y - The y position of the mouse relative to the cel with mouse focus when the event was created.]];
+          };
+        };
+        callbackdef["tracker('up', button, x, y)"] {
+          params = {
+            param.string[[action - 'up']];
+            param.any[[button - The mouse button that was released.  A value in cel.mouse.buttons.]];
+            param.number[[x - The x position of the mouse relative to the cel with mouse focus when the event was created.]];
+            param.number[[y - The y position of the mouse relative to the cel with mouse focus when the event was created.]];
+          };
+        };
+        callbackdef["tracker('wheel', direction, x, y)"] {
+          params = {
+            param.string[[action - 'wheel']];
+            param.any[[direction - cel.mouse.wheeldirection.up or cel.mouse.wheeldirection.down.]];
+            param.number[[x - The x position of the mouse relative to the cel with mouse focus when the event was created.]];
+            param.number[[y - The y position of the mouse relative to the cel with mouse focus when the event was created.]];
+          };
+        };
+      };
+    };
+  };
+
+
+  functiondef['cel.newnamespace(N)'] { 
+    [[Creates a namespace.  When you extend the Cel library by adding new metacels or other 
+    functionality it should be done with a namespace.]];
+    
+    params = {
+      param.table[[N - a table that represents the namespace.]];
+    };
+
+    returns = {
+      param.table[[N]];
+    };
+  };
+
   --The name of celdef is the name of its metacel
   celdef['cel'] {
     [[The primary building block of the cel library.]];
@@ -1092,63 +1150,6 @@ export['cel'] {
       };
     };
 
-    functiondef['cel:addlistener(event, listener)'] {
-      [[Registers a callback function for the specified event.]];
-      [[Any events that were queued before addlistener will not be seen passed to the listener.]];
-      [[There can be any number of listeners for an event, order of seeing the events is not
-        specified between listeners.]];
-      [[An event will be seen by the metacel and/or the cel event callback before the listener sees it.]];
-      [[When creating a factory or metacel that needs to see events on other cels using a listener is the best choice,
-      becuase the event callback function is for use by the creator of a cel.]];
-      [[Using a listener is not common, typically the event callback will be defined for the cel (or metacel) only.]];
-
-      params = {
-        param.string[[event - the name of the event.]];
-        param['function'][[listener - function to call when event happens.]];
-      };
-
-      returns = {
-        param.cel[[self]];
-      };
-
-      examples = {
-        [==[
-        local cel = require 'cel'
-        local host = ...
-
-        local listbox = cel.listbox.new(host.w/2):link(host, 'edges', 5, 5) 
-
-        function host:onmouseup(button, x, y, intercepted)
-          listbox:insert('callback ' ..' '.. button ..' '.. x ..' '.. y ..' '.. tostring(intercepted))
-        end
-
-        host:addlistener('onmouseup', function()
-          listbox:insert('listener 1')
-          listbox:scrollto(nil, math.huge)
-        end)
-        host:addlistener('onmouseup', function()
-          listbox:insert('listener 2')
-          listbox:scrollto(nil, math.huge)
-        end)
-        ]==];
-      };
-    };
-
-    functiondef['cel:removelistener(event, listener)'] {
-      [[Removes a listener from the cel.]];
-      [[Does nothing is listener is not a listener that was added via addlistener.]];
-      [[The listener will not see any events after removelistner returns.]];
-
-      params = {
-        param.string[[event - the name of the event.]];
-        param['function'][[listener - function to call when event happens.]];
-      };
-
-      returns = {
-        param.cel[[self]];
-      };
-    };
-
     functiondef['cel:pget(...)'] {
       [[Get multiple properties of a cel by name.]];
       [[This can be more effecient when you need to get multiple properties, but less effecient for 1.]];
@@ -1187,15 +1188,6 @@ export['cel'] {
         ]==],
       };
     };
-
-    functiondef['cel:dump'] {
-      [[prints cel state for debugging purposes.]];
-
-      returns = {
-        param.cel[[self]];
-      };
-    };
-
 
     functiondef['cel:flow(flowfunction, x, y, w, h[, update[, finalize]])'] {
       [[moves the cel, but 1 or more intermediate states can be injected by the flow callback.]];

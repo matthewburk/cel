@@ -868,6 +868,135 @@
         
         </div>
       </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.trackmouse(tracker)&nbsp;
+          <span class="functiondesc">Send all mouse events to tracker.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Send all mouse events to tracker.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">tracker</span>&nbsp;<span class="paramtype">function</span></code></dt> 
+          <dd>Called when a mouse event occurs. Return false to stop tracking. The tracker is called after mouse picking is done 
+        and before any cel:onmouse[action]() functions.       <div class="callbackdef">
+        <h4 class="callbacksig">
+          tracker('move', x, y)&nbsp;
+          <span class="callbackdesc"></span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">action</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>'move'</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The x position of the mouse relative to the cel with mouse focus when the event was created.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The y position of the mouse relative to the cel with mouse focus when the event was created.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div class="callbackdef">
+        <h4 class="callbacksig">
+          tracker('down', button, x, y)&nbsp;
+          <span class="callbackdesc"></span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">action</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>'down'</dd>
+                     <dt><code><span class="paramname">button</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>The mouse button that was pressed down.  A value in cel.mouse.buttons.</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The x position of the mouse relative to the cel with mouse focus when the event was created.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The y position of the mouse relative to the cel with mouse focus when the event was created.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div class="callbackdef">
+        <h4 class="callbacksig">
+          tracker('up', button, x, y)&nbsp;
+          <span class="callbackdesc"></span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">action</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>'up'</dd>
+                     <dt><code><span class="paramname">button</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>The mouse button that was released.  A value in cel.mouse.buttons.</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The x position of the mouse relative to the cel with mouse focus when the event was created.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The y position of the mouse relative to the cel with mouse focus when the event was created.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div class="callbackdef">
+        <h4 class="callbacksig">
+          tracker('wheel', direction, x, y)&nbsp;
+          <span class="callbackdesc"></span>
+        </h4>
+        <div class="callbackfulldesc">
+        <p></p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">action</span>&nbsp;<span class="paramtype">string</span></code></dt> 
+          <dd>'wheel'</dd>
+                     <dt><code><span class="paramname">direction</span>&nbsp;<span class="paramtype">any</span></code></dt> 
+          <dd>cel.mouse.wheeldirection.up or cel.mouse.wheeldirection.down.</dd>
+                     <dt><code><span class="paramname">x</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The x position of the mouse relative to the cel with mouse focus when the event was created.</dd>
+                     <dt><code><span class="paramname">y</span>&nbsp;<span class="paramtype">number</span></code></dt> 
+          <dd>The y position of the mouse relative to the cel with mouse focus when the event was created.</dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+      </dd>
+          </dl>
+        </div>
+        
+        </div>
+      </div>
+             <div title="function" class="functiondef">
+        <p class="functiondefheader">function</p>
+        <h3 class="functionsig">
+          cel.newnamespace(N)&nbsp;
+          <span class="functiondesc">Creates a namespace.  When you extend the Cel library by adding new metacels or other 
+    functionality it should be done with a namespace.</span>
+        </h3>
+        <div class="functionfulldesc">
+        <p>Creates a namespace.  When you extend the Cel library by adding new metacels or other 
+    functionality it should be done with a namespace.</p>
+                <div class="arguments">
+          <span class="arguments">arguments</span>
+          <dl class="arguments">          <dt><code><span class="paramname">N</span>&nbsp;<span class="paramtype">table</span></code></dt> 
+          <dd>a table that represents the namespace.</dd>
+          </dl>
+        </div>
+                <div class="returns">
+          <span class="returns">returns</span>
+          <dl class="returns">          <dt><code>table</code></dt> 
+          <dd>N</dd>
+          </dl>
+          </div>
+        
+        </div>
+      </div>
        <div class="celdef">
       <h1>cel<p class="celdefdesc">(cel)<br><br>The primary building block of the cel library.</p></h1>
       The primary building block of the cel library. The name cel is short for control element. The functions and behavior defined by a cel are shared by all cels.       <div title="function" class="functiondef">
@@ -1375,58 +1504,6 @@
         <div class="functionfulldesc">
         <p>Enables the cel. A cel is enabled until cel:disable() is called.</p>
         
-                <div class="returns">
-          <span class="returns">returns</span>
-          <dl class="returns">          <dt><code>cel</code></dt> 
-          <dd>self</dd>
-          </dl>
-          </div>
-        
-        </div>
-      </div>
-             <div title="function" class="functiondef">
-        <p class="functiondefheader">function</p>
-        <h3 class="functionsig">
-          cel:addlistener(event, listener)&nbsp;
-          <span class="functiondesc">Registers a callback function for the specified event.</span>
-        </h3>
-        <div class="functionfulldesc">
-        <p>Registers a callback function for the specified event. Any events that were queued before addlistener will not be seen passed to the listener. There can be any number of listeners for an event, order of seeing the events is not
-        specified between listeners. An event will be seen by the metacel and/or the cel event callback before the listener sees it. When creating a factory or metacel that needs to see events on other cels using a listener is the best choice,
-      becuase the event callback function is for use by the creator of a cel. Using a listener is not common, typically the event callback will be defined for the cel (or metacel) only.</p>
-                <div class="arguments">
-          <span class="arguments">arguments</span>
-          <dl class="arguments">          <dt><code><span class="paramname">event</span>&nbsp;<span class="paramtype">string</span></code></dt> 
-          <dd>the name of the event.</dd>
-                     <dt><code><span class="paramname">listener</span>&nbsp;<span class="paramtype">function</span></code></dt> 
-          <dd>function to call when event happens.</dd>
-          </dl>
-        </div>
-                <div class="returns">
-          <span class="returns">returns</span>
-          <dl class="returns">          <dt><code>cel</code></dt> 
-          <dd>self</dd>
-          </dl>
-          </div>
-        
-        </div>
-      </div>
-             <div title="function" class="functiondef">
-        <p class="functiondefheader">function</p>
-        <h3 class="functionsig">
-          cel:removelistener(event, listener)&nbsp;
-          <span class="functiondesc">Removes a listener from the cel.</span>
-        </h3>
-        <div class="functionfulldesc">
-        <p>Removes a listener from the cel. Does nothing is listener is not a listener that was added via addlistener. The listener will not see any events after removelistner returns.</p>
-                <div class="arguments">
-          <span class="arguments">arguments</span>
-          <dl class="arguments">          <dt><code><span class="paramname">event</span>&nbsp;<span class="paramtype">string</span></code></dt> 
-          <dd>the name of the event.</dd>
-                     <dt><code><span class="paramname">listener</span>&nbsp;<span class="paramtype">function</span></code></dt> 
-          <dd>function to call when event happens.</dd>
-          </dl>
-        </div>
                 <div class="returns">
           <span class="returns">returns</span>
           <dl class="returns">          <dt><code>cel</code></dt> 

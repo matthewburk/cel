@@ -298,7 +298,25 @@ do --metacel['.slot']
   end
 
   do
-    local normalize = cel.util.normalize_padding
+    --TODO remove this, or implement the same everywere that margin/padding is applied
+    local normalize = function(padding, w, h, ...)
+      if not padding then
+        return 0, 0, 0, 0, ...
+      end
+
+      w = w or 0
+      h = h or 0
+
+      local l = padding.l or 0
+      local t = padding.t or 0
+      if type(l) == 'function' then l = math.floor(l(w, h) + .5) end
+      if type(t) == 'function' then t = math.floor(t(w, h) + .5) end
+      local r = padding.r or l
+      local b = padding.b or t
+      if type(r) == 'function' then r = math.floor(r(w, h) + .5) end
+      if type(b) == 'function' then b = math.floor(b(w, h) + .5) end
+      return l, t, r, b, ...
+    end
 
     local _new = meta_slot.new
     function meta_slot:new(menu, item)

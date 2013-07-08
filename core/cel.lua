@@ -75,6 +75,7 @@ local stackformation = CEL.stackformation
 local mouse = CEL.mouse
 local keyboard = CEL.keyboard
 local driver = CEL.driver
+local flows = CEL.flows
 
 local linkers = require 'cel.core.linkers'
 
@@ -676,6 +677,7 @@ do
   metacel[_name] = 'cel'
   metacel[_face] = getface('cel')
   metacel[_variations] = metacel[_face][_variations]
+  metacel[_variations][metacel[_face]] = metacel[_face]
   metacel.metatable = {
     touch = touch,
     refresh = refresh, 
@@ -877,6 +879,7 @@ do
    
     metacel[_face] = newmetaface(name, self[_face])
     metacel[_variations] = metacel[_face][_variations]
+    metacel[_variations][metacel[_face]] = metacel[_face]
 
     return metacel, metatable
   end
@@ -1075,6 +1078,7 @@ end
 
 do
   local cel_metacel = metacel
+  --TODO doc
   function metatable:setface(face)
     local metacel = self[_metacel]
     local actual = face and (metacel[_variations][face] or cel_metacel[_variations][face] or getface(metacel[_name], face))
@@ -1415,6 +1419,67 @@ do --metatable.takefocus
     end
   end
 
+  local function takefocus(device, target)
+    --TODO should not have to do seperate code path for root
+    local device_focus = device[_focus]
+
+    if target == device_focus[device_focus.n] then
+      return
+    end
+
+    if target == CEL.root then
+      for i = device_focus.n, 1, -1 do
+        event:onblur(device_focus[i])
+        device_focus[device_focus[i]] = nil
+        device_focus[i] = nil
+      end
+
+      device_focus.n = 1
+      device_focus[1] = CEL.root
+      device_focus[CEL.root] = 1
+      event:onfocus(CEL.root)
+      return
+    end
+
+    local z = islinkedto(target, CEL.root)
+
+    if not z then
+      return
+    else
+      z = z + 1 
+    end
+
+    local cutoff = 1 --root always has focus, or does it?
+
+    for host in hosts(target) do
+      if device_focus[host] then
+        cutoff = device_focus[host] + 1
+        break
+      end
+    end
+
+    for i = device_focus.n, cutoff, -1 do
+      event:onblur(device_focus[i])
+      device_focus[device_focus[i]] = nil
+      device_focus[i] = nil
+    end
+
+    device_focus.n = z
+    device_focus[z] = target
+    device_focus[target] = z
+    event:onfocus(target)
+
+    for host in hosts(target) do
+      if device_focus[host] then
+        break
+      end
+      z = z - 1
+      device_focus[z] = host
+      device_focus[host] = z
+      event:onfocus(host)
+    end
+  end
+
   function metatable.takefocus(cel, source)
     if source == mouse then
       return 
@@ -1422,70 +1487,7 @@ do --metatable.takefocus
 
     source = source or keyboard
     event:wait()
-    do
-      local device = source
-      local target = cel
-
-      --TODO should not have to do seperate code path for root
-      local device_focus = device[_focus]
-
-      if target == device_focus[device_focus.n] then
-        return
-      end
-
-      if target == CEL.root then
-        for i = device_focus.n, 1, -1 do
-          event:onblur(device_focus[i])
-          device_focus[device_focus[i]] = nil
-          device_focus[i] = nil
-        end
-
-        device_focus.n = 1
-        device_focus[1] = CEL.root
-        device_focus[CEL.root] = 1
-        event:onfocus(CEL.root)
-        return
-      end
-
-      local z = islinkedto(target, CEL.root)
-
-      if not z then
-        return
-      else
-        z = z + 1 
-      end
-
-      local cutoff = 1 --root always has focus, or does it?
-
-      for host in hosts(target) do
-        if device_focus[host] then
-          cutoff = device_focus[host] + 1
-          break
-        end
-      end
-
-      for i = device_focus.n, cutoff, -1 do
-        event:onblur(device_focus[i])
-        device_focus[device_focus[i]] = nil
-        device_focus[i] = nil
-      end
-
-      device_focus.n = z
-      device_focus[z] = target
-      device_focus[target] = z
-      event:onfocus(target)
-
-      for host in hosts(target) do
-        if device_focus[host] then
-          break
-        end
-        z = z - 1
-        device_focus[z] = host
-        device_focus[host] = z
-        event:onfocus(host)
-      end
-    end
-    
+    takefocus(source, cel)
     --TODO only refresh if focus actually changed
     refresh(cel)
     event:signal()
@@ -1618,7 +1620,7 @@ end
 
 do --metatable.flow, metatable.flowvalue, metatable.flowlink
   local function addflow(cel, flow, fx, fy, fw, fh, context, update, finalize, xval, yval, linker)
-    CEL.flows[cel] = {
+    flows[cel] = {
       context = context,
       ox = cel[_x], oy = cel[_y], ow = cel[_w], oh = cel[_h],
       fx = fx, fy = fy, fw = fw, fh = fh,
@@ -1866,3 +1868,4 @@ CEL.touch = touch
 CEL.celmoved = celmoved
 CEL.testlinker = testlinker 
 CEL.getface = getface
+CEL.pick = pick

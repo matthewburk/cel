@@ -24,16 +24,29 @@ THE SOFTWARE.
 
 local CEL = require 'cel.core.env'
 
+local _host = CEL._host
+local _name = CEL._name
+local _x = CEL._x
+local _y = CEL._y
+local _w = CEL._w
+local _h = CEL._h
 local _metacel = CEL._metacel
+local _refresh = CEL._refresh
+local _vectorx = CEL._vectorx
+local _vectory = CEL._vectory
+local _keys = CEL._keys
+local _states = CEL._states
 
 require 'cel.core.cel'
 require 'cel.core.colrow'
 require 'cel.core.slot'
 
+local event = CEL.event
 local mouse = CEL.mouse
 local keyboard = CEL.keyboard
 local metacel = CEL.metacel
 local driver = CEL.driver
+local root = CEL.root
 
 local linkers = require 'cel.core.linkers'
 
@@ -95,6 +108,7 @@ do --installdriver
     return proxy
   end
 
+  --doc
   function M.installdriver(mousetable, keyboardtable, t)
     function M.installdriver()
       error('a driver is already installed')
@@ -143,18 +157,22 @@ function M.isface(test)
   return type(test) == 'table' and test[_metacelname] and true or false
 end
 
+--doc
 function M.newmetacel(name)
   return metacel:newmetacel(name)
 end
 
+--doc
 function M.new(w, h, face)
   return metacel:new(w, h, face and metacel:getface(face))
 end
 
+--doc
 function M.iscel(t)
   return type(t) == 'table' and rawget(t, _metacel) ~= nil
 end
 
+--doc
 function M.tocel(v, host)
   local typ = type(v)
   if typ == 'table' and rawget(v, _metacel) then return v end
@@ -164,6 +182,7 @@ function M.tocel(v, host)
   end
 end
 
+--doc
 function M.translate(from, x, y, to) 
   while from do
     x = x + from[_x]
@@ -177,10 +196,12 @@ function M.translate(from, x, y, to)
   end
 end
 
+--doc
 function M.getlinker(name)
   return linkers[name] 
 end
 
+--doc
 function M.addlinker(name, linker)
   if type(name) ~= 'string' then
     return false, 'name of linker must be a string'
@@ -192,6 +213,7 @@ function M.addlinker(name, linker)
   return linker
 end
 
+--doc
 function M.composelinker(a, b)
   if type(a) == 'string' then a = linkers[a] end
   if type(b) == 'string' then b = linkers[b] end
@@ -217,6 +239,7 @@ do
     return x + vhx, y + vhy, w, h
   end
 
+  --doc
   function M.rcomposelinker(a, b)
     if type(a) == 'string' then a = linkers[a] end
     if type(b) == 'string' then b = linkers[b] end
@@ -229,6 +252,7 @@ end
 
 do --cel.describe, cel.printdescription
   local updaterect = CEL.updaterect
+  local describe = CEL.describe
 
   local metadescription = {
     updaterect = updaterect 
@@ -236,6 +260,7 @@ do --cel.describe, cel.printdescription
   local count = 0
   local _description
 
+  --doc
   function M.describe()
     local altered = false
     if not _description or root[_refresh] then
@@ -245,7 +270,7 @@ do --cel.describe, cel.printdescription
       updaterect.b = 0
 
       count = count + 1
-      metadescription.timer = M.timer()
+      metadescription.timer = CEL.timer.millis
       metadescription.count = count 
       _description = describe(root, nil, 0, 0, 0, 0, root[_w], root[_h])
 
@@ -277,6 +302,7 @@ do --cel.describe, cel.printdescription
     end
   end
 
+  --doc
   function M.printdescription(t, metadescription)
     if metadescription then
       io.write(string.format('count:%d\ntimer:%d\n', metadescription.count, metadescription.timer))
@@ -290,11 +316,13 @@ do --cel.describe, cel.printdescription
   end
 end
 
+--doc
 M.doafter = CEL.doafter
 
 do --clipboard
   local defaultclipboard = {}
 
+  --TODO doc
   function M.clipboard(command, data)
     if driver.clipboard then
       return driver.clipboard(command, data)
@@ -756,6 +784,7 @@ do --loadfont TODO make driver supply path and extension
     end
   end
 
+  --doc
   function M.loadfont(name, size)
     name = name or 'default'
     size = size or 12 
@@ -783,6 +812,7 @@ do --loadfont TODO make driver supply path and extension
   end
 end
 
+--TODO remove
 function M.isutf8(s)
   if driver.isutf8 then
     M.isutf8 = driver.isutf8
@@ -859,6 +889,7 @@ do
         return lerp(ov, fv, dis/fdis), true
       end
 
+      --TODO doc
       function M.flows.constant(pixelspersecond, mode)
         local f = flows[pixelspersecond]
 
@@ -878,6 +909,7 @@ do
     end
 
     local flows = setmetatable({}, {__mode = 'v'})
+    --TODO doc
     function M.flows.linear(millis)
       local f = flows[millis]
 
@@ -896,6 +928,7 @@ do
     end
 
     local flows = setmetatable({}, {__mode = 'v'})
+    --TODO doc
     function M.flows.smooth(millis)
       local f = flows[millis]
 
@@ -915,18 +948,7 @@ do
   end
 end
 
-
-
-
-----[[ TODO load on demand
-
-
-M.string = {}
-
-function M.string.link(s, host, ...)
-  return host[_metacel]:__celfromstring(host, s):link(host, ...)
-end
-
+--doc
 function M.newnamespace(N)
 
   N.cel = setmetatable({}, {
@@ -972,7 +994,8 @@ end
 do
   local forks = setmetatable({}, {__mode='k'})
 
-  
+ 
+  --TODO doc
   function M.coroutine(acel, f)
     local fork = coroutine.wrap(f)
 
@@ -984,6 +1007,7 @@ do
     return fork(acel, yield)
   end
 
+  --TODO doc
   function M.resume(cel, ...)
     local acel = cel
     local fork = forks[cel]
@@ -1006,6 +1030,7 @@ do
   end
 end
 
+--doc
 function M.trackmouse(func)
   CEL.mousetrackerfuncs[func] = true
 end
