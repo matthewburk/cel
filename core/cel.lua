@@ -249,41 +249,74 @@ local function refreshunlink(cel, link)
   return refresh(cel)
 end
 
-local function touch(cel, x, y)
-  if x < 0 
-  or y < 0 
-  or x >= cel[_w] 
-  or y >= cel[_h] 
-  or cel.touch == false --TODO rawget?
-  or cel[_metacel].touch == false then --TODO rawget?
+local touch do
+  local function touchlinksonly(cel, x, y)
+    local metacel = cel[_metacel]
+    local formation = rawget(cel, _formation)
+
+    if formation and formation.pick then
+      local link = formation:pick(cel, x, y)
+      if touch(link, x - link[_x], y - link[_y]) then
+        return true
+      end
+      return false
+    end
+
+    local link = rawget(cel, _links)
+    while link do
+      if touch(link, x - link[_x], y - link[_y]) then
+        return true
+      end
+      link = link[_next]
+    end
     return false
   end
 
-  if cel.touch == true or cel[_metacel].touch == true then --TODO rawget?
+  function touch(cel, x, y)
+    if x < 0 
+    or y < 0 
+    or x >= cel[_w] 
+    or y >= cel[_h] 
+    or cel.touch == false --TODO rawget?
+    or cel[_metacel].touch == false then --TODO rawget?
+      return false
+    end
+
+    if cel.touch == true or cel[_metacel].touch == true then --TODO rawget?
+      return true
+    end
+
+    if cel.touch ~= touch then
+      if cel.touch == 'links' then
+        return touchlinksonly(cel, x, y)
+      end
+      if not cel:touch(x, y) then
+        return false
+      end
+    elseif cel[_metacel].touch ~= nil and cel[_metacel].touch ~= touch then
+      if cel[_metacel].touch == 'links' then
+        return touchlinksonly(cel, x, y)
+      end
+      if not cel[_metacel]:touch(cel, x, y) then
+        return false
+      end
+    end
+
+    --cel face can only restrict touch not add to area
+    local celface = cel[_face] 
+    celface = celface or cel[_metacel][_face]
+
+    if celface.touch ~= nil and celface.touch ~= touch then
+      if celface.touch == 'links' then
+        return touchlinksonly(cel, x, y)
+      end
+      if not celface:touch(x, y, cel[_w], cel[_h]) then
+        return false
+      end
+    end
+    
     return true
   end
-
-  if cel.touch ~= touch then
-    if not cel:touch(x, y) then
-      return false
-    end
-  elseif cel[_metacel].touch ~= nil and cel[_metacel].touch ~= touch then
-    if not cel[_metacel]:touch(cel, x, y) then
-      return false
-    end
-  end
-
-  --cel face can only restrict touch not add to area
-  local celface = cel[_face] 
-  celface = celface or cel[_metacel][_face]
-
-  if celface.touch ~= nil and celface.touch ~= touch then
-    if not celface:touch(x, y, cel[_w], cel[_h]) then
-      return false
-    end
-  end
-  
-  return true
 end
 
 local pick do
@@ -329,7 +362,7 @@ local pick do
       x = x - cel[_x]
       y = y - cel[_y]
 
-      if CEL.touch(cel, x, y) then
+      if touch(cel, x, y) then
         if mouse_focus[z] then
           if mouse_focus[z] ~= cel then
             for i = #mouse_focus, z, -1 do
