@@ -36,6 +36,7 @@ CEL._disabled = privatekey('_disabled')
 CEL._refresh = privatekey('_refresh')
 CEL._appstatus = privatekey('_appstatus')
 CEL._hidden = privatekey('_hidden')
+CEL._metacelname = privatekey('_metacelname')
 
 CEL.maxdim = 2^31-1
 CEL.maxpos = 2^31-1

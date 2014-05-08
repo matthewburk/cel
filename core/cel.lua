@@ -607,7 +607,7 @@ end
 local getface
 local newmetaface
 do --face
-  local _metacelname = {}
+  local _metacelname = CEL._metacelname
   local _registered = {}
   local weak = {__mode='kv'}
 

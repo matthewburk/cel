@@ -147,7 +147,18 @@ end
 do --slotformation.testlinker --TODO need to pass option to testlinker and reroute this to stacklinker
   function slotformation:testlinker(host, link, linker, xval, yval, nx, ny, nw, nh, minw, maxw, minh, maxh)
     if link ~= host[_slotlink] then
-      return stackformation:testlinker(host, link, linker, xval, yval)
+      local x, y, w, h = nx or link[_x], ny or link[_y], nw or link[_w], nh or link[_h]
+      minw, maxw = minw or link[_minw], maxw or link[_maxw]
+      minh, maxh = minh or link[_minh], maxh or link[_maxh]
+
+      x, y, w, h = linker(host[_w], host[_h], x, y, w, h, xval, yval, minw, maxw, minh, maxh)
+
+      if w > maxw then w = maxw end
+      if w < minw then w = minw end
+      if h > maxh then h = maxh end
+      if h < minh then h = minh end
+
+      return math.modf(x), math.modf(y), math.floor(w), math.floor(h)
     end
 
     local x, y, w, h = nx or link[_x], ny or link[_y], nw or link[_w], nh or link[_h]
@@ -209,6 +220,8 @@ do --slotformation.linker
     local margin = host[_margin]
     local hw = host[_w] - margin.w
     local hh = host[_h] - margin.h
+    x = x - margin.l
+    y = y - margin.t
 
     maxw = math.min(hw, maxw)
     maxh = math.min(hh, maxh)
@@ -352,7 +365,7 @@ do
     margin.h = t + b
 
     local link = rawget(self, _slotlink)
-    if link then
+    if link then --TODO this does not maintain margins if link exists before a margin is set
       local edgex, edgey = slotformation:getbraceedges(self, link, link.linker, link.xval, link.yval)
       local minw = math.max(edgex + margin.w, self[_defaultminw])
       local minh = math.max(edgey + margin.h, self[_defaultminh])
@@ -376,19 +389,13 @@ end
 
 do --metacel.new, metacel.assemble
   local _new = metacel.new
-  function metacel:new(face, l, t, r, b, minw, minh)
+  function metacel:new(minw, minh, face)
     face = self:getface(face)
-    l = math.max(0, math.floor(l or 0))
-    t = math.max(0, math.floor(t or 0))
-    r = math.max(0, math.floor(r or l))
-    b = math.max(0, math.floor(b or t))
 
-    local slot = _new(self, 0, 0, face) --add minw, minh
+    local slot = _new(self, minw, minh, face, minw, nil, minh, nil)
     slot[_defaultminw] = minw or 0
     slot[_defaultminh] = minh or 0
-    slot[_minw] = math.max(l + r, minw or 0) --TODO set in assemble
-    slot[_minh] = math.max(t + b, minh or 0) --TODO set in assemble
-    slot[_margin] = {l = l, t = t, r = r, b = b, w = l + r, h = t + b}
+    slot[_margin] = {l = 0, t = 0, r = 0, b = 0, w = 0, h = 0}
     slot[_formation] = slotformation
     slot[_slotlink] = false 
 
@@ -398,10 +405,9 @@ do --metacel.new, metacel.assemble
   local _assemble = metacel.assemble
   function metacel:assemble(t, slot)
     local margin = t.margin
+    slot = slot or metacel:new(t.minw, t.minh, t.face)
     if margin then
-      slot = slot or metacel:new(t.face, margin.l, margin.t, margin.r, margin.b, t.minw, t.minh)
-    else
-      slot = slot or metacel:new(t.face, 0, 0, 0, 0, t.minw, t.minh)
+      slot:setmargins(margin.l, margin.t, margin.r, margin.b)
     end
     _assemble(self, t, slot)
     return slot
